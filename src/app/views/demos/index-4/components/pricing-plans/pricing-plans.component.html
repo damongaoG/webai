@@ -1,0 +1,66 @@
+<section
+  id="price"
+  class="py-20"
+  data-aos="fade-up"
+  data-aos-easing="ease"
+  data-aos-duration="1000"
+>
+  <div class="container">
+    <div class="mb-10 flex items-end justify-between">
+      <div class="mx-auto max-w-2xl text-center">
+        <h2 class="mb-4 text-3xl font-medium capitalize text-white">
+          Pricing and plans for everyone
+        </h2>
+        <p class="text-sm font-medium text-default-200">
+          Start working with Tailwindcss It allows you to compose complex
+          designs <br />
+          by combining and customizing utility classes..
+        </p>
+      </div>
+    </div>
+
+    <div class="overflow-hidden rounded-2xl">
+      <div class="grid gap-px sm:grid-cols-2 lg:grid-cols-4 lg:items-center">
+        @for (plan of pricingPlans; track $index) {
+          <div class="flex h-full flex-col text-center">
+            <div class="bg-default-950/40 px-8 pb-5 pt-8">
+              <h4 class="text-lg font-medium text-default-200">
+                {{ plan.name }}
+              </h4>
+            </div>
+
+            <div class="h-full bg-default-950/40 px-8 lg:mt-px lg:py-5">
+              <span class="mt-7 text-5xl font-bold text-default-200">
+                @if (plan.price != 0) {
+                  <span class="-me-2 text-2xl font-bold">{{ currency }}</span>
+                }
+                {{ plan.price === 0 ? 'Free' : plan.price }}
+              </span>
+            </div>
+
+            <div
+              class="flex justify-center bg-default-950/40 px-8 pt-7 lg:mt-px"
+            >
+              <ul class="space-y-2.5 text-center text-sm">
+                @for (feature of plan.features; track $index) {
+                  <li class="text-default-200">
+                    {{ feature }}
+                  </li>
+                }
+              </ul>
+            </div>
+
+            <div class="bg-default-950/40 px-8 py-8">
+              <a
+                class="inline-flex items-center justify-center gap-2 rounded-full border border-white/10 px-6 py-2 text-white transition-all duration-300 hover:bg-primary-hover"
+                href="javascript: void(0);"
+              >
+                Sign up
+              </a>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+</section>

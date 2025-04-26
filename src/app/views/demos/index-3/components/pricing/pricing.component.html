@@ -1,0 +1,83 @@
+<section id="price" class="py-14">
+  <div class="container">
+    <div class="mb-10 flex items-end justify-between">
+      <div class="mx-auto max-w-2xl text-center">
+        <h2 class="mb-4 text-3xl font-medium capitalize text-white">
+          We've got a plan that's perfect for you
+        </h2>
+        <p class="text-sm font-medium text-default-200">
+          Start working with Tailwindcss It allows you to compose complex
+          designs <br />
+          by combining and customizing utility classes..
+        </p>
+        <div class="mt-6 flex items-center justify-center gap-4">
+          <span class="text-base font-medium text-default-200">Monthly</span>
+          <label
+            for="pricing-input"
+            class="relative inline-flex cursor-pointer items-center"
+          >
+            <input
+              type="checkbox"
+              id="pricing-input"
+              value=""
+              class="peer sr-only"
+            />
+            <span
+              class="h-4 w-11 rounded-full bg-default-700 after:absolute after:left-[2px] after:top-1/2 after:h-5 after:w-5 after:-translate-y-1/2 after:rounded-full after:border after:border-default-950 after:bg-primary after:ring-2 after:ring-primary after:ring-offset-2 after:ring-offset-default-950 after:transition-all after:content-[''] peer-checked:after:translate-x-full peer-checked:after:border-default-950"
+            ></span>
+          </label>
+          <span class="text-base font-medium text-default-200">Yearly</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 gap-10 md:grid-cols-2 lg:grid-cols-3">
+      @for (plan of pricingPlans; track $index) {
+        <div data-aos="zoom-in" data-aos-easing="ease" data-aos-duration="1000">
+          <div
+            class="rounded-xl bg-slate-950/40 transition-all duration-500 hover:-translate-y-2"
+          >
+            <div class="rounded-xl border border-white/10">
+              <div class="p-6">
+                <h5 class="text-base font-medium text-primary">
+                  {{ plan.name }}
+                </h5>
+                <p
+                  class="relative mt-5 text-5xl font-normal tracking-tight text-white"
+                >
+                  {{ currency }}{{ plan.price
+                  }}<sub class="text-lg font-normal text-default-200">/mo</sub>
+                </p>
+                <p class="mt-4 text-default-300">
+                  Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+                </p>
+                <a
+                  href="javascript: void(0);"
+                  class="flex items-center justify-center gap-2 border {{
+                    plan.isPopular
+                      ? 'bg-primary border-primary'
+                      : 'border-white/10'
+                  }}  text-white py-2 px-6 mt-6 rounded-lg hover:bg-primary-hover transition-all duration-300"
+                  >Get started
+                  <lucide-icon name="move-right" class="h-5 w-5"></lucide-icon
+                ></a>
+                <hr class="my-5 border-dashed border-white/10" />
+                <ul role="list" class="mt-3 text-sm text-default-700">
+                  @for (feature of plan.features; track $index) {
+                    <li class="flex items-center gap-2 py-2">
+                      <lucide-icon
+                        name="check"
+                        class="me-1 inline-block h-5 w-5 text-primary"
+                      ></lucide-icon>
+                      <span class="text-default-50">{{ feature }}</span>
+                    </li>
+                  }
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</section>

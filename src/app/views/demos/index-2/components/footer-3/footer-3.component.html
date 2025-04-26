@@ -1,0 +1,124 @@
+<footer class="bg-default-950/40 backdrop-blur-3xl">
+  <div class="container py-20">
+    <div class="grid grid-cols-2 gap-10 md:grid-cols-4 lg:gap-16">
+      <div class="col-span-2 md:col-span-2">
+        <img src="assets/images/logo.png" class="h-10" alt="" />
+        <p class="mt-6 text-base font-medium text-default-200 md:w-3/4">
+          Start working with Tailwindcss It allows you to compose complex
+          designs by combining and customizing utility classes.
+        </p>
+        <div class="mt-6">
+          <h6 class="mb-4 text-base text-white">Follow US :</h6>
+          <ul class="flex flex-wrap items-center gap-1">
+            @for (icon of socialIcons; track $index) {
+              <li>
+                <a
+                  href="javascript:void(0);"
+                  class="group inline-flex h-10 w-10 items-center justify-center rounded-lg border border-white/10 transition-all duration-500 hover:bg-primary"
+                  ><lucide-icon
+                    [name]="icon"
+                    class="h-5 w-5 text-default-300 group-hover:text-white"
+                  ></lucide-icon
+                ></a>
+              </li>
+            }
+          </ul>
+        </div>
+      </div>
+
+      <div>
+        <ul class="flex flex-col gap-3">
+          <h5 class="mb-2 font-medium text-default-200 lg:text-lg xl:text-xl">
+            Company
+          </h5>
+          <li>
+            <a
+              href="javascript:void(0);"
+              class="text-base font-normal text-slate-300 transition-all hover:text-primary"
+              >About</a
+            >
+          </li>
+          <li>
+            <a
+              href="javascript:void(0);"
+              class="text-base font-normal text-slate-300 transition-all hover:text-primary"
+              >Developers</a
+            >
+          </li>
+          <li>
+            <a
+              href="javascript:void(0);"
+              class="text-base font-normal text-slate-300 transition-all hover:text-primary"
+              >Blog</a
+            >
+          </li>
+          <li>
+            <a
+              href="javascript:void(0);"
+              class="text-base font-normal text-slate-300 transition-all hover:text-primary"
+              >Contact</a
+            >
+          </li>
+        </ul>
+      </div>
+
+      <div>
+        <ul class="flex flex-col gap-3">
+          <h5 class="mb-2 font-medium text-default-200 lg:text-lg xl:text-xl">
+            Service
+          </h5>
+          <li>
+            <a
+              href="javascript:void(0);"
+              class="text-base font-normal text-slate-300 transition-all hover:text-primary"
+              >Developer Driven</a
+            >
+          </li>
+          <li>
+            <a
+              href="javascript:void(0);"
+              class="text-base font-normal text-slate-300 transition-all hover:text-primary"
+              >DMCA policy</a
+            >
+          </li>
+          <li>
+            <a
+              href="javascript:void(0);"
+              class="text-base font-normal text-slate-300 transition-all hover:text-primary"
+              >Private IPFS</a
+            >
+          </li>
+          <li>
+            <a
+              href="javascript:void(0);"
+              class="text-base font-normal text-slate-300 transition-all hover:text-primary"
+              >News</a
+            >
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="border-t border-white/10 py-6">
+    <div
+      class="container flex h-full flex-wrap items-center justify-center gap-4 text-center md:justify-between md:text-start"
+    >
+      <p class="text-base font-medium text-default-400">
+        {{ currentYear }}
+        © WebAi -
+        <a href="javascript: void(0);"
+          >Design & Crafted
+          <lucide-icon
+            name="heart"
+            class="inline h-4 w-4 fill-red-500 text-red-500"
+          ></lucide-icon>
+          by {{ developedBy }}</a
+        >
+      </p>
+      <p class="text-base font-medium text-default-400">
+        <a href="javascript: void(0);">Terms Conditions & Policy</a>
+      </p>
+    </div>
+  </div>
+</footer>

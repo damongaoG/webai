@@ -1,0 +1,125 @@
+<section id="categories" class="py-24">
+  <div class="container relative">
+    <div class="mb-10 flex flex-wrap items-center justify-between">
+      <div>
+        <h2 class="mb-2 text-4xl font-medium capitalize text-white">
+          Trending Categories
+        </h2>
+        <p class="text-sm font-medium text-default-200">
+          Start working with Tailwindcss It allows you to compose complex
+          designs <br />
+          by combining and customizing utility classes..
+        </p>
+      </div>
+      <a
+        href="javascript: void(0);"
+        class="inline-flex items-center justify-center gap-2 rounded-full border border-white/10 px-4 py-1.5 text-sm text-white transition-all duration-300 hover:bg-primary-hover"
+        >See More <lucide-icon name="move-right" class="h-5 w-5"></lucide-icon
+      ></a>
+    </div>
+
+    <div
+      class="mt-8 grid grid-cols-1 gap-[30px] sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
+    >
+      @for (item of trendingCategories; track $index) {
+        <div
+          class="group relative overflow-hidden rounded-lg bg-default-950/40 backdrop-blur-3xl duration-500 ease-in-out"
+          data-aos="zoom-in"
+          data-aos-duration="800"
+        >
+          <div class="p-3">
+            <div class="relative">
+              <img [src]="item.image" alt="" class="rounded-md" />
+
+              <div
+                class="-trandefault-y-1/2 absolute end-0 start-0 top-1/2 scale-0 text-center opacity-0 duration-500 ease-in-out group-hover:scale-100 group-hover:opacity-100"
+              >
+                <a
+                  href="javascript: void(0);"
+                  class="inline-flex items-center gap-2 rounded-full border border-primary bg-primary px-6 py-1.5 text-center align-middle text-base font-semibold tracking-wide text-white duration-500 hover:border-primary-hover hover:bg-primary-hover"
+                  >Place Bid
+                  <lucide-icon
+                    name="navigation"
+                    class="h-4 w-4 fill-white"
+                  ></lucide-icon
+                ></a>
+              </div>
+
+              @if (item.hasTime) {
+                <div
+                  class="absolute start-0 top-0 p-2 transition-all duration-700"
+                >
+                  <div class="inline-flex w-full justify-center">
+                    <div
+                      class="rounded-full bg-gradient-to-r from-rose-500 to-blue-600 px-2.5 py-1"
+                    >
+                      <p
+                        id="auction-item-1"
+                        class="flex flex-col text-sm font-bold text-white"
+                      >
+                        {{ countdown.days }} : {{ countdown.hours }} :
+                        {{ countdown.minutes }} : {{ countdown.seconds }}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+
+            <div class="relative pt-3">
+              <div class="mb-3 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <img
+                    [src]="item.avatar"
+                    class="h-10 w-10 rounded-full"
+                    alt=""
+                  />
+                  <span>
+                    <a
+                      href="javascript: void(0);"
+                      class="text-sm font-medium text-default-100 hover:text-primary"
+                      >{{ item.username }}</a
+                    >
+                    <span class="block text-xs text-default-100">{{
+                      item.name
+                    }}</span>
+                  </span>
+                </div>
+                <a
+                  href="javascript: void(0);"
+                  class="inline-flex h-9 w-9 items-center justify-center text-center align-middle text-lg tracking-wide text-default-100 duration-500 hover:text-red-600 focus:text-red-600"
+                  ><i class="mdi mdi-heart"></i
+                ></a>
+              </div>
+
+              <div class="flex items-center justify-between">
+                <div>
+                  <span class="block font-semibold text-default-100"
+                    >Current Bid</span
+                  >
+                  <span class="block font-semibold text-primary"
+                    ><i
+                      class="mdi mdi-ethereum me-1 text-xl leading-none text-primary"
+                    ></i
+                    >{{ item.currentBid }} ETH</span
+                  >
+                </div>
+                <div class="text-end">
+                  <span class="block font-semibold text-default-100"
+                    >Last Bid</span
+                  >
+                  <span class="block font-semibold text-primary"
+                    ><i
+                      class="mdi mdi-ethereum me-1 text-xl leading-none text-primary"
+                    ></i
+                    >{{ item.lastBid }} ETH</span
+                  >
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</section>

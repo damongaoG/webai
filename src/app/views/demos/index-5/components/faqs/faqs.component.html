@@ -1,0 +1,71 @@
+<section id="faq" class="py-20">
+  <div class="container">
+    <div class="mb-10 flex items-end justify-between">
+      <div class="mx-auto max-w-2xl text-center">
+        <h2 class="mb-4 text-3xl font-medium capitalize text-white">
+          Any questions
+        </h2>
+        <p class="text-sm font-medium text-default-200">
+          Start working with Tailwindcss It allows you to compose complex
+          designs <br />
+          by combining and customizing utility classes..
+        </p>
+      </div>
+    </div>
+
+    <div class="mx-auto max-w-3xl">
+      <div class="hs-accordion-group space-y-4">
+        @for (
+          item of faqsData;
+          track $index;
+          let idx = $index;
+          let first = $first
+        ) {
+          <div
+            class="hs-accordion border border-white/10 bg-default-950/40 backdrop-blur-3xl rounded-lg overflow-hidden {{
+              first && 'active'
+            }}"
+            id="faq-{{ idx }}"
+            data-aos="fade-up"
+            data-aos-easing="ease"
+            data-aos-duration="1000"
+          >
+            <button
+              class="hs-accordion-toggle inline-flex w-full items-center justify-between gap-x-3 px-6 py-4 text-left capitalize text-white transition-all"
+              aria-controls="faq-accordion-1"
+            >
+              <h5 class="flex text-base font-semibold">
+                <lucide-icon
+                  name="circle-help"
+                  class="me-3 h-5 w-5 stroke-white align-middle"
+                ></lucide-icon>
+                {{ item.question }}
+              </h5>
+              <lucide-icon
+                name="chevron-up"
+                class="h-4 w-4 transition-all duration-500 hs-accordion-active:-rotate-90"
+              ></lucide-icon>
+            </button>
+            <div
+              id="faq-{{ idx }}"
+              class="hs-accordion-content {{
+                !first && 'hidden'
+              }} w-full overflow-hidden transition-[height] duration-300"
+              aria-labelledby="faq-1"
+            >
+              <div class="px-6 pb-4 pt-0">
+                <p class="mb-2 text-sm font-medium text-default-300">
+                  {{ item.answer }}
+                </p>
+                <p class="text-sm font-medium text-default-300">
+                  Nullam dictum felis eu pede mollis pretium. Integer tincidunt.
+                  Cras dapibus.
+                </p>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+</section>

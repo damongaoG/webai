@@ -1,0 +1,76 @@
+<section
+  id="testimonials"
+  class="py-20"
+  data-aos="fade-down"
+  data-aos-easing="ease"
+  data-aos-duration="1000"
+>
+  <div class="container">
+    <div class="mb-10 flex items-end justify-between">
+      <div class="mx-auto max-w-2xl text-center">
+        <h2 class="mb-4 text-3xl font-medium capitalize text-white">
+          What Our Users Say
+        </h2>
+        <p class="text-sm font-medium text-default-200">
+          Start working with Tailwindcss It allows you to compose complex
+          designs <br />
+          by combining and customizing utility classes..
+        </p>
+      </div>
+    </div>
+
+    <div>
+      <div class="relative m-auto flex gap-8 overflow-hidden">
+        @for (testimonials of userTestimonialChunks; track $index) {
+          <div
+            class="marquee__group flex min-w-full flex-shrink-0 justify-around gap-8"
+          >
+            @for (item of testimonials; track $index) {
+              <div>
+                <div class="relative m-2 w-full lg:w-full">
+                  <div class="group">
+                    <div
+                      class="w-full translate-x-1 rounded-xl border border-black transition-all duration-500"
+                    >
+                      <div
+                        class="relative z-10 h-full rounded-xl bg-default-950 p-6"
+                      >
+                        <div class="flex items-center gap-3">
+                          <div>
+                            <img
+                              [src]="item.avatar"
+                              class="h-12 w-12 rounded-full"
+                              alt=""
+                            />
+                          </div>
+                          <div>
+                            <h3 class="text-xl font-medium text-default-200">
+                              {{ item.name }}
+                            </h3>
+                            <p
+                              class="mt-1 text-sm font-normal text-default-400"
+                            >
+                              user
+                            </p>
+                          </div>
+                        </div>
+                        <p
+                          class="mt-4 max-w-xs text-base font-medium text-default-300"
+                        >
+                          {{ item.description }}
+                        </p>
+                      </div>
+                    </div>
+                    <div
+                      class="absolute left-0 top-0 -z-10 h-full w-full rounded-xl bg-primary"
+                    ></div>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+</section>

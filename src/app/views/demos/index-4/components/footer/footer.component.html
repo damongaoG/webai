@@ -1,0 +1,61 @@
+<footer
+  class="bg-default-950/40 backdrop-blur-3xl"
+  data-aos="fade-down"
+  data-aos-easing="ease"
+  data-aos-duration="1000"
+>
+  <div class="container py-20 lg:px-20">
+    <div class="mb-6">
+      <img src="assets/images/logo.png" class="mx-auto h-14" />
+    </div>
+
+    <div class="flex flex-wrap items-center justify-center gap-5">
+      <a
+        href="javascript: void(0);"
+        class="text-lg font-medium text-default-400 transition-all duration-500 hover:text-white"
+        >Management</a
+      >
+      <a
+        href="javascript: void(0);"
+        class="text-lg font-medium text-default-400 transition-all duration-500 hover:text-white"
+        >Reporting</a
+      >
+      <a
+        href="javascript: void(0);"
+        class="text-lg font-medium text-default-400 transition-all duration-500 hover:text-white"
+        >Tracking</a
+      >
+      <a
+        href="javascript: void(0);"
+        class="text-lg font-medium text-default-400 transition-all duration-500 hover:text-white"
+        >Subscibe</a
+      >
+      <a
+        href="javascript: void(0);"
+        class="text-lg font-medium text-default-400 transition-all duration-500 hover:text-white"
+        >Company</a
+      >
+    </div>
+    <div class="mt-6">
+      <h6 class="mb-4 text-center text-lg font-semibold text-white">
+        Follow US :
+      </h6>
+      <ul class="flex flex-wrap items-center justify-center gap-1">
+        @for (icon of socialIcons; track $index) {
+          <li>
+            <a
+              href="javascript:void(0);"
+              class="group inline-flex h-10 w-10 items-center justify-center rounded-lg border border-white/10 transition-all duration-500 hover:bg-primary"
+              ><lucide-icon
+                [name]="icon"
+                class="h-5 w-5 text-default-300 group-hover:text-white"
+              ></lucide-icon
+            ></a>
+          </li>
+        }
+      </ul>
+    </div>
+  </div>
+
+  <app-footer />
+</footer>

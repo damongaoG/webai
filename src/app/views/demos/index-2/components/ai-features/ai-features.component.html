@@ -1,0 +1,40 @@
+<section id="features" class="pb-24">
+  <div class="container">
+    <div class="mb-10 flex items-end justify-between">
+      <div class="mx-auto max-w-2xl text-center">
+        <h2 class="mb-4 text-3xl font-medium capitalize text-white">
+          The AI Generator that helps you Create amazing image taster.
+        </h2>
+      </div>
+    </div>
+
+    <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+      @for (feature of features; track $index) {
+        <div class="rounded-lg bg-default-950/40 p-10">
+          <div class="text-center">
+            <lucide-icon
+              [name]="feature.icon"
+              class="mx-auto h-10 w-10 text-primary"
+            ></lucide-icon>
+            <h2 class="mt-4 text-2xl font-medium text-default-200">
+              {{ feature.name }}
+            </h2>
+            <p class="mt-4 text-base font-normal text-default-300">
+              {{ feature.description }}
+            </p>
+            <a
+              href="javascript: void(0);"
+              class="group relative mt-5 inline-flex items-center gap-2 text-primary"
+            >
+              <span
+                class="absolute -bottom-0 h-px w-7/12 rounded bg-primary/80 transition-all duration-500 group-hover:w-full"
+              ></span>
+              Lead more
+              <lucide-icon name="move-right" class="h-4 w-4"></lucide-icon>
+            </a>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</section>

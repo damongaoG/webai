@@ -1,0 +1,57 @@
+<section class="py-20" id="demo">
+  <div class="container">
+    <div class="mx-auto mb-14 text-center">
+      <span
+        class="mb-2 inline-flex rounded-full border-x-2 border-x-primary bg-primary/20 px-2 text-base font-semibold text-primary"
+        >Pre Built</span
+      >
+      <h2 class="mb-2.5 text-3xl font-semibold text-default-100">Home Pages</h2>
+      <p class="text-base font-medium text-default-300">
+        Start working with Tailwindcss <br />
+        It allows you to compose complex designs.
+      </p>
+    </div>
+
+    <div
+      class="aos-init aos-animate flex flex-wrap justify-center"
+      data-aos="fade-up"
+      data-aos-duration="1000"
+    >
+      @for (item of demoPages; track $index) {
+        <a [routerLink]="item.url" target="_blank" class="w-full p-3 lg:w-1/2">
+          <div
+            class="group relative rounded-lg bg-default-950/40 text-center shadow-xl transition-all duration-500 hover:-translate-y-2"
+          >
+            <div class="p-4">
+              <div class="relative overflow-hidden rounded-lg">
+                <img
+                  alt="demo-img"
+                  class="w-full rounded-lg"
+                  [src]="item.image"
+                />
+                <div
+                  class="absolute inset-0 flex h-full w-full cursor-pointer items-center justify-center bg-white/10 opacity-0 transition-all duration-300 group-hover:opacity-100"
+                >
+                  <div
+                    class="hover:bg-primary-600 inline-flex items-center justify-center rounded-full bg-primary py-1.5 pe-2 ps-5 text-center align-middle text-base font-semibold text-white duration-500"
+                  >
+                    Live Preview
+                    <span
+                      class="ms-3 inline-flex h-8 w-8 items-center justify-center rounded-full border border-white bg-white text-primary"
+                      ><i class="mdi mdi-share-all-outline text-lg"></i
+                    ></span>
+                  </div>
+                </div>
+              </div>
+              <h5
+                class="mt-5 text-center text-xl font-semibold capitalize text-white"
+              >
+                {{ item.name }}
+              </h5>
+            </div>
+          </div>
+        </a>
+      }
+    </div>
+  </div>
+</section>

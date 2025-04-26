@@ -1,0 +1,32 @@
+<div
+  class="mx-auto max-w-5xl overflow-hidden rounded-2xl bg-default-950/40 backdrop-blur-2xl"
+>
+  <div class="grid gap-10 lg:grid-cols-2">
+    <auth-image />
+
+    <div class="flex h-full flex-col p-10 lg:ps-0">
+      <div class="pb-10">
+        <a routerLink="/" class="flex">
+          <img src="assets/images/logo.png" alt="dark logo" class="h-10" />
+        </a>
+      </div>
+      <div class="my-auto pb-6 text-center">
+        <h4 class="mb-4 text-2xl font-bold text-white">See you Again!</h4>
+        <p class="mx-auto mb-5 max-w-sm text-default-300">
+          You are now successfully sign out.
+        </p>
+        <div class="flex items-start justify-center">
+          <img src="assets/images/logout.svg" alt="" class="h-40" />
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="mt-5 w-full text-center">
+  <p class="text-base font-medium leading-6 text-default-300">
+    Back to
+    <a routerLink="/auth/login" class="ms-1 font-semibold text-primary"
+      >Log In</a
+    >
+  </p>
+</div>

@@ -1,0 +1,123 @@
+<section
+  id="home"
+  class="relative overflow-hidden pb-14 pt-[72px]"
+  data-aos="zoom-out"
+  data-aos-easing="ease"
+  data-aos-duration="1000"
+>
+  <div class="px-10">
+    <div
+      class="overflow-hidden rounded-2xl bg-cover bg-no-repeat"
+      style="background-image: url(assets/images/ai/img-3.jpg)"
+    >
+      <div class="rounded-2xl bg-default-950/70">
+        <div class="container">
+          <div class="relative p-6">
+            <div
+              class="-z-1 absolute start-80 top-20 animate-[spin_10s_linear_infinite]"
+            >
+              <img src="assets/images/ai/star.svg" alt="" />
+            </div>
+            <div
+              class="tot-auto -z-1 absolute bottom-40 end-60 animate-[spin_10s_linear_infinite]"
+            >
+              <img src="assets/images/ai/star.svg" alt="" />
+            </div>
+            <div
+              class="tot-auto -z-1 absolute bottom-96 end-36 animate-[spin_10s_linear_infinite]"
+            >
+              <img src="assets/images/ai/star.svg" alt="" />
+            </div>
+
+            <div class="flex h-full items-center justify-center py-36">
+              <div class="relative mx-auto max-w-3xl text-center">
+                <span
+                  class="rounded-md bg-white/10 px-3 py-1 text-sm font-medium uppercase tracking-wider text-white/80"
+                  >AI knowledge hub</span
+                >
+                <h1
+                  class="mt-10 text-3xl font-semibold text-white md:text-5xl/snug"
+                >
+                  AI-Powered Solution For Effective Business.
+                </h1>
+                <p
+                  class="mx-auto mt-5 w-3/4 text-base font-normal text-default-200"
+                >
+                  Lorem lpsum Dolor sit Amet, Consectetur Adipiscing Elit, sed
+                  Do Eiusmod Tempor Incididunt Ut Labore Et Dolore Magna Aliqua.
+                  Ut Enim Ad Minim, Quis Nostrud Exercitation Ullamco Laboris
+                  Nisi Ut Aliquip
+                </p>
+
+                <div
+                  class="mt-10 flex flex-wrap items-center justify-center gap-6"
+                >
+                  <a
+                    href="javascript: void(0);"
+                    class="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-6 py-2 text-white transition-all duration-300 hover:bg-primary-hover"
+                    >Discover More</a
+                  >
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section
+  class="pb-20"
+  data-aos="zoom-in"
+  data-aos-easing="ease"
+  data-aos-duration="1000"
+>
+  <div>
+    <div class="relative m-auto flex gap-8 overflow-hidden">
+      <div
+        class="marquee__group flex min-w-full flex-shrink-0 items-center justify-around gap-8"
+      >
+        @for (item of marqueeGroup1; track $index) {
+          <div class="py-3">
+            <h2 class="text-5xl font-medium text-white">{{ item }}</h2>
+          </div>
+        }
+      </div>
+
+      <div
+        aria-hidden="true"
+        class="marquee__group flex min-w-full flex-shrink-0 items-center justify-around gap-8"
+      >
+        @for (item of marqueeGroup1; track $index) {
+          <div class="py-3">
+            <h2 class="text-5xl font-medium text-white">{{ item }}</h2>
+          </div>
+        }
+      </div>
+    </div>
+
+    <div class="marquee--reverse m-auto mt-7 flex gap-8 overflow-hidden">
+      <div
+        class="marquee__group flex min-w-full flex-shrink-0 items-center justify-around gap-8 delay-[31s]"
+      >
+        @for (item of marqueeGroup2; track $index) {
+          <div class="py-3">
+            <h2 class="text-5xl font-medium text-white">{{ item }}</h2>
+          </div>
+        }
+      </div>
+
+      <div
+        aria-hidden="true"
+        class="marquee__group flex min-w-full flex-shrink-0 items-center justify-around gap-8 delay-[31s]"
+      >
+        @for (item of marqueeGroup2; track $index) {
+          <div class="py-3">
+            <h2 class="text-5xl font-medium text-white">{{ item }}</h2>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,84 @@
+<footer class="bg-default-950/40 backdrop-blur-3xl">
+  <div class="container lg:px-20">
+    <div class="flex flex-col justify-between gap-14 py-24 lg:flex-row">
+      <div class="lg:w-3/12">
+        <a routerLink="" class="logo flex items-center gap-2">
+          <img src="assets/images/logo.png" class="w-36" alt="" />
+        </a>
+
+        <p class="mt-6 max-w-xs text-sm font-medium text-default-200">
+          Start working with Tailwindcss It allows you to compose complex
+          designs by combining and customizing utility classes.
+        </p>
+        <h5 class="mb-4 mt-6 text-base font-semibold text-default-200">
+          Follow Us :
+        </h5>
+        <ul class="flex flex-wrap items-center gap-1">
+          @for (icon of socialIcons; track $index) {
+            <li>
+              <a
+                href="javascript:void(0);"
+                class="group inline-flex h-8 w-8 items-center justify-center rounded-md border border-white/10 transition-all duration-500 hover:bg-primary"
+                ><lucide-icon
+                  [name]="icon"
+                  class="h-4 w-4 text-default-300 group-hover:text-white"
+                ></lucide-icon
+              ></a>
+            </li>
+          }
+        </ul>
+      </div>
+
+      <div class="lg:w-8/12">
+        <div class="grid gap-6 sm:grid-cols-2 md:grid-cols-4">
+          @for (item of footerLinks; track $index) {
+            <div>
+              <ul class="flex flex-col gap-3">
+                <h5
+                  class="mb-2 font-semibold text-default-200 lg:text-lg xl:text-xl"
+                >
+                  {{ item.title }}
+                </h5>
+                @for (link of item.links; track $index) {
+                  <li>
+                    <a
+                      href="javascript:void(0);"
+                      class="inline-flex items-center gap-2 text-base font-semibold text-default-100 transition-all hover:text-primary"
+                      ><lucide-icon
+                        name="circle-slash"
+                        class="inline-block h-7 w-4"
+                      ></lucide-icon
+                      >{{ link.name }}</a
+                    >
+                  </li>
+                }
+              </ul>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="border-t border-white/10 py-6">
+    <div
+      class="container flex h-full flex-wrap items-center justify-center gap-4 text-center md:justify-between md:text-start lg:px-20"
+    >
+      <p class="text-base font-medium text-default-400">
+        {{ currentYear }}
+        © WebAi -
+        <a href="javascript: void(0);"
+          >Design & Crafted
+          <lucide-icon
+            name="heart"
+            class="inline h-4 w-4 fill-red-500 text-red-500"
+          ></lucide-icon>
+          by {{ developedBy }}</a
+        >
+      </p>
+      <p class="text-base font-medium text-default-400">
+        <a href="javascript: void(0);">Terms Conditions & Policy</a>
+      </p>
+    </div>
+  </div>
+</footer>

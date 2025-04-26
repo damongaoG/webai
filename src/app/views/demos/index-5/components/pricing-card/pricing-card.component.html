@@ -1,0 +1,122 @@
+<section id="price" class="py-20">
+  <div class="container">
+    <div class="gap-10 lg:flex">
+      <div
+        class="mb-10 flex flex-col items-center lg:ms-0 xl:items-start"
+        data-aos="fade-right"
+        data-aos-easing="ease"
+        data-aos-duration="1000"
+      >
+        <h1 class="text-2xl font-medium capitalize text-white lg:text-3xl">
+          Our Pricing Plan
+        </h1>
+
+        <div class="mt-2">
+          <span class="inline-block h-1 w-40 rounded-full bg-primary"></span>
+          <span
+            class="mx-1 inline-block h-1 w-3 rounded-full bg-primary"
+          ></span>
+          <span class="inline-block h-1 w-1 rounded-full bg-primary"></span>
+        </div>
+
+        <div class="mt-4 flex items-center justify-center gap-4">
+          <span class="text-base text-white">Monthly</span>
+          <label
+            for="pricing-input"
+            class="relative inline-flex cursor-pointer items-center"
+          >
+            <input
+              type="checkbox"
+              id="pricing-input"
+              value=""
+              class="peer sr-only"
+            />
+            <span
+              class="h-4 w-11 rounded-full bg-default-700 after:absolute after:left-[2px] after:top-1/2 after:h-5 after:w-5 after:-translate-y-1/2 after:rounded-full after:border after:border-default-950 after:bg-primary after:ring-2 after:ring-primary after:ring-offset-2 after:ring-offset-default-950 after:transition-all after:content-[''] peer-checked:after:translate-x-full peer-checked:after:border-default-950"
+            ></span>
+          </label>
+          <span class="text-base text-white">Yearly</span>
+        </div>
+
+        <p class="mb-6 mt-4 font-medium text-default-200">
+          You can get All Access by selecting your plan!
+        </p>
+
+        <a
+          href="javascript: void(0);"
+          class="group relative inline-flex items-center gap-2 text-primary"
+        >
+          <span
+            class="absolute -bottom-0 h-px w-7/12 rounded bg-primary/80 transition-all duration-500 group-hover:w-full"
+          ></span>
+          Select &amp; try
+          <lucide-icon name="move-right" class="h-4 w-4"></lucide-icon>
+        </a>
+      </div>
+
+      <div
+        class="flex-1"
+        data-aos="fade-left"
+        data-aos-easing="ease"
+        data-aos-duration="1000"
+      >
+        <div
+          class="flex flex-col items-center justify-center gap-x-4 gap-y-8 md:flex-row"
+        >
+          @for (plan of pricingPlans; track $index) {
+            <div
+              class="rounded-lg border border-white/10 bg-default-950/40 backdrop-blur-3xl"
+            >
+              <div class="p-6">
+                <h1
+                  class="text-xl font-medium capitalize text-default-100 lg:text-2xl"
+                >
+                  {{ plan.name }}
+                </h1>
+
+                <p class="mt-4 text-default-300">
+                  {{ plan.description }}
+                </p>
+
+                <h2
+                  class="mt-4 text-2xl font-semibold text-default-200 sm:text-3xl"
+                >
+                  {{ currency }}{{ plan.price }}
+                  <span class="text-base font-medium">/Month</span>
+                </h2>
+
+                <p class="mt-1 text-default-300">Monthly payment</p>
+
+                <button
+                  type="button"
+                  class="mt-6 w-full transform rounded-md bg-primary/20 px-4 py-2 capitalize tracking-wide text-primary transition-colors duration-300 hover:bg-primary hover:text-white focus:bg-primary focus:text-white focus:outline-none"
+                >
+                  Start Now
+                </button>
+              </div>
+              <hr class="border-white/10" />
+              <div class="p-6">
+                <h1
+                  class="text-lg font-medium capitalize text-white lg:text-xl"
+                >
+                  What’s included:
+                </h1>
+                <div class="mt-8 space-y-4">
+                  @for (feature of plan.features; track $index) {
+                    <div class="flex items-center gap-4">
+                      <lucide-icon
+                        [name]="feature.icon"
+                        class="w-5 h-5 {{ feature.variant }}"
+                      ></lucide-icon>
+                      <span class="text-default-300">{{ feature.name }}</span>
+                    </div>
+                  }
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

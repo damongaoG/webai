@@ -1,0 +1,64 @@
+<section
+  id="home"
+  class="relative overflow-hidden pb-20 pt-40"
+  data-aos="zoom-out"
+  data-aos-easing="ease"
+  data-aos-duration="1000"
+>
+  <div
+    class="-z-1 absolute start-80 top-1/2 h-14 w-14 animate-[spin_10s_linear_infinite] rounded-2xl rounded-br-none rounded-tl-none bg-primary/10"
+  ></div>
+  <div
+    class="-z-1 absolute end-80 top-1/2 h-14 w-14 animate-ping rounded-full bg-primary/20"
+  ></div>
+  <div class="container">
+    <div class="text-center">
+      <div class="mt-6 flex justify-center">
+        <div class="max-w-2xl">
+          <h1 class="mb-6 text-5xl/tight font-medium text-default-100">
+            Unleash the potential of ai for your business
+          </h1>
+          <p class="mx-auto text-base font-medium text-default-300 lg:max-w-md">
+            Et harum quidem rerum facilis est et expedita distinctio nam libero
+            tempore est nihil.
+          </p>
+        </div>
+      </div>
+
+      <div>
+        <lightgallery [settings]="settings">
+          <a
+            href="https://www.youtube.com/embed/5wOhrU2V-SI?si=vCWHEfjx8d-ZgKVp"
+            class="glightbox m-3 flex min-h-[calc(100%-3.5rem)] items-center overflow-hidden sm:mx-auto sm:w-full sm:max-w-2xl"
+            title="YouTube video player"
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowfullscreen
+          >
+            <button
+              data-hs-overlay=" #watchvideomodal"
+              class="relative mx-auto mt-10 flex items-center justify-center gap-2.5 rounded-full bg-primary/40 px-6 py-3.5 text-base font-medium text-white ring-4 ring-primary/25 transition-all duration-300 hover:bg-primary"
+            >
+              <lucide-icon name="play" class="h-6 w-6"></lucide-icon>
+              Watch Video
+            </button>
+          </a>
+        </lightgallery>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- watch modal
+<div id="watchvideomodal"
+  class="hs-overlay hidden w-full h-full fixed top-0 left-0 z-[60] overflow-x-hidden overflow-y-auto">
+  <div
+    class="hs-overlay-open:mt-7 hs-overlay-open:opacity-100 duration-500 mt-0 opacity-0 ease-in-out transition-all sm:max-w-2xl sm:w-full m-3 sm:mx-auto min-h-[calc(100%-3.5rem)] flex items-center">
+    <div class="flex flex-col w-full shadow-sm rounded-xl overflow-hidden">
+      <iframe width="100%" height="400" src="https://www.youtube.com/embed/5wOhrU2V-SI?si=vCWHEfjx8d-ZgKVp"
+        title="YouTube video player" frameborder="0"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        allowfullscreen></iframe>
+    </div>
+  </div>
+</div> -->

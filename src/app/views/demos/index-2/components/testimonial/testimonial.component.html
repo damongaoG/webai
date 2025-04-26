@@ -1,0 +1,99 @@
+<section
+  class="pb-24"
+  data-aos="fade-up"
+  data-aos-easing="ease"
+  data-aos-duration="1000"
+>
+  <div class="container">
+    <div
+      class="relative rounded-xl bg-default-950/20 p-6 backdrop-blur-sm md:p-20"
+    >
+      <div class="hidden lg:block">
+        <div class="-z-1 absolute start-32 top-10 h-14 w-14">
+          <img
+            src="assets/images/avatars/img-1.png"
+            class="rounded-full"
+            alt=""
+          />
+        </div>
+        <div class="-z-1 absolute start-10 top-64 h-14 w-14">
+          <img
+            src="assets/images/avatars/img-2.png"
+            class="rounded-full"
+            alt=""
+          />
+        </div>
+        <div class="-z-1 absolute bottom-10 start-32 h-14 w-14">
+          <img
+            src="assets/images/avatars/img-3.png"
+            class="rounded-full"
+            alt=""
+          />
+        </div>
+
+        <div class="-z-1 absolute end-32 top-10 h-14 w-14">
+          <img
+            src="assets/images/avatars/img-4.png"
+            class="rounded-full"
+            alt=""
+          />
+        </div>
+        <div class="-z-1 absolute end-10 top-64 h-14 w-14">
+          <img
+            src="assets/images/avatars/img-5.png"
+            class="rounded-full"
+            alt=""
+          />
+        </div>
+        <div class="-z-1 absolute bottom-10 end-32 h-14 w-14">
+          <img
+            src="assets/images/avatars/img-6.png"
+            class="rounded-full"
+            alt=""
+          />
+        </div>
+      </div>
+
+      <div class="swiper testimonial-swiper">
+        <swiper-container
+          [config]="swiperConfig"
+          init="false"
+          class="swiper-wrapper pb-20"
+        >
+          @for (item of testimonials; track $index) {
+            <swiper-slide class="swiper-slide">
+              <div class="mx-auto max-w-2xl text-center">
+                <lucide-angular
+                  name="quote"
+                  class="mx-auto h-8 w-8 fill-primary text-primary"
+                ></lucide-angular>
+                <p class="mt-7 text-lg font-medium text-default-200">
+                  {{ item.description }}
+                </p>
+                <img
+                  [src]="item.avatar"
+                  class="mx-auto my-8 h-16 rounded-full"
+                  alt=""
+                />
+                <h2 class="text-xl font-medium text-default-200">
+                  {{ item.name }}
+                </h2>
+                <p class="mt-1 text-sm font-normal text-default-400">
+                  {{ item.role }}
+                </p>
+                <div class="mt-1 flex items-center justify-center gap-1">
+                  <lucide-icon name="star" class="h-4 w-4 stroke-yellow-300" />
+                  <lucide-icon name="star" class="h-4 w-4 stroke-yellow-300" />
+                  <lucide-icon name="star" class="h-4 w-4 stroke-yellow-300" />
+                  <lucide-icon name="star" class="h-4 w-4 stroke-yellow-300" />
+                  <lucide-icon name="star" class="h-4 w-4 stroke-yellow-300" />
+                </div>
+              </div>
+            </swiper-slide>
+          }
+        </swiper-container>
+        <div class="swiper-pagination"></div>
+      </div>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,55 @@
+<section id="features" class="py-20">
+  <div class="container">
+    <div class="mb-10 flex items-end justify-between">
+      <div class="mx-auto max-w-2xl text-center">
+        <h2 class="mb-4 text-3xl font-medium capitalize text-white">
+          AI Generate Content In Seconds
+        </h2>
+        <p class="text-sm font-medium text-default-200">
+          Start working with Tailwindcss It allows you to compose complex
+          designs <br />
+          by combining and customizing utility classes..
+        </p>
+      </div>
+    </div>
+    <div class="grid gap-6 lg:grid-cols-3">
+      @for (chunks of featureChunks; track $index) {
+        <div
+          class="space-y-6"
+          data-aos="fade-up"
+          data-aos-easing="ease"
+          data-aos-duration="1000"
+        >
+          @for (feature of chunks; track $index) {
+            <div
+              class="hover:-trandefault-y-2 rounded-xl border-s-2 border-primary bg-default-950/40 backdrop-blur-3xl transition-all duration-500"
+            >
+              <div class="p-10">
+                <lucide-icon
+                  [name]="feature.icon"
+                  class="h-10 w-10 text-primary"
+                ></lucide-icon>
+                <h3 class="mb-4 mt-8 text-2xl font-medium text-white">
+                  {{ feature.title }}
+                </h3>
+                <p class="mb-4 text-sm font-medium text-default-100">
+                  {{ feature.description }}
+                </p>
+                <a
+                  href="javascript: void(0);"
+                  class="group relative inline-flex items-center gap-2 text-primary"
+                >
+                  <span
+                    class="absolute -bottom-0 h-px w-7/12 rounded bg-primary/80 transition-all duration-500 group-hover:w-full"
+                  ></span>
+                  Read More
+                  <lucide-icon name="move-right" class="h-4 w-4"></lucide-icon>
+                </a>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  </div>
+</section>

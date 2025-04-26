@@ -1,0 +1,121 @@
+<section id="faq" class="py-20">
+  <div class="container">
+    <div class="grid gap-6 xl:grid-cols-2">
+      <div
+        class="text-center xl:text-start"
+        data-aos="fade-right"
+        data-aos-easing="ease"
+        data-aos-duration="1000"
+      >
+        <h2 class="mb-4 text-3xl font-medium capitalize text-white">
+          Frequently asked questions
+        </h2>
+        <p class="text-sm font-medium text-default-200">
+          Start working with Tailwindcss It allows you to compose complex
+          designs <br />
+          by combining and customizing utility classes..
+        </p>
+        <a
+          href="javascript: void(0);"
+          class="mt-10 inline-flex items-center justify-center gap-2 rounded-full border border-white/10 px-6 py-2 text-white transition-all duration-300 hover:bg-primary-hover"
+          >See More
+          <lucide-icon name="move-right" class="h-5 w-5"></lucide-icon>
+        </a>
+      </div>
+
+      <div data-aos="fade-left" data-aos-easing="ease" data-aos-duration="1000">
+        <div class="hs-accordion-group space-y-4">
+          @for (
+            item of faqsData;
+            track $index;
+            let idx = $index;
+            let first = $first
+          ) {
+            <div
+              class="hs-accordion border border-white/10 bg-default-950/40 backdrop-blur-3xl rounded-lg overflow-hidden {{
+                first ? 'active' : ''
+              }}"
+              id="faq-{{ idx }}"
+            >
+              <button
+                class="hs-accordion-toggle inline-flex w-full items-center justify-between gap-x-3 px-6 py-4 text-left capitalize text-white transition-all"
+                aria-controls="faq-accordion-1"
+              >
+                <h5 class="flex text-base font-semibold">
+                  <lucide-icon
+                    name="circle-help"
+                    class="me-3 h-5 w-5 stroke-white align-middle"
+                  ></lucide-icon>
+                  How does AI-BOX generate content?
+                </h5>
+                <lucide-icon
+                  name="chevron-up"
+                  class="h-4 w-4 transition-all duration-500 hs-accordion-active:-rotate-90"
+                ></lucide-icon>
+              </button>
+              <div
+                id="faq-accordion-{{ idx }}"
+                class="hs-accordion-content {{
+                  !first ? 'hidden' : ''
+                }} w-full overflow-hidden transition-[height] duration-300"
+                aria-labelledby="faq-1"
+              >
+                <div class="px-6 pb-4 pt-0">
+                  <p class="mb-2 text-sm font-medium text-default-300">
+                    AI-BOX utillzex advanced algorithms and machine learning
+                    techniques to generate content based on user inputs and
+                    desired parameters, resulting in unique and customized
+                    AI-generated creations.
+                  </p>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section
+  class="py-20"
+  data-aos="fade-up"
+  data-aos-easing="ease"
+  data-aos-duration="1000"
+>
+  <div class="container">
+    <div class="mx-auto max-w-xl text-center">
+      <h2 class="mb-4 text-3xl font-medium capitalize text-white">
+        Supercharge your content generation process.
+      </h2>
+      <p class="text-sm font-medium text-default-200">
+        Start working with Tailwindcss It allows you to compose complex designs
+        <br />
+        by combining and customizing utility classes..
+      </p>
+      <form class="mt-6 space-y-2">
+        <div class="relative w-full">
+          <input
+            type="email"
+            id="subcribe"
+            class="h-14 w-full rounded-lg border-white/10 bg-default-950/40 py-4 pe-32 ps-4 text-white backdrop-blur-3xl focus:border-white/10 focus:ring-0"
+            placeholder="Enter your email :"
+            name="email"
+          />
+          <button
+            type="button"
+            class="hover:border-primary-700 absolute end-[8px] top-[8px] inline-flex h-10 items-center justify-center gap-2 rounded-md border-primary bg-primary px-6 text-white hover:bg-primary-hover"
+          >
+            <span class="hidden text-base font-medium text-white md:block"
+              >Start for free</span
+            >
+            <lucide-icon
+              name="send"
+              class="block h-5 w-5 text-default-300 group-hover:text-white md:hidden"
+            ></lucide-icon>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>

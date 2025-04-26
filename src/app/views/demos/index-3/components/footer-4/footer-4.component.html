@@ -1,0 +1,47 @@
+<footer class="bg-default-950/40">
+  <div class="container">
+    <div class="grid grid-cols-2 gap-10 py-20 lg:grid-cols-9 lg:gap-16">
+      <div class="col-span-2 sm:col-span-1 lg:col-span-3">
+        <img src="assets/images/logo.png" class="h-10" alt="" />
+
+        <div class="mt-7">
+          <h6 class="mb-4 text-base text-white">Follow US :</h6>
+          <ul class="flex flex-wrap items-center gap-1">
+            @for (icon of socialIcons; track $index) {
+              <li>
+                <a
+                  href="javascript:void(0);"
+                  class="group inline-flex h-10 w-10 items-center justify-center rounded-lg border border-white/10 transition-all duration-500 hover:bg-primary"
+                  ><lucide-icon
+                    [name]="icon"
+                    class="h-5 w-5 text-default-300 group-hover:text-white"
+                  ></lucide-icon
+                ></a>
+              </li>
+            }
+          </ul>
+        </div>
+      </div>
+
+      @for (item of footerLinks; track $index) {
+        <div class="col-span-2 sm:col-span-1 lg:col-span-2">
+          <ul class="flex flex-col gap-3">
+            <h5 class="mb-2 font-medium text-white lg:text-lg xl:text-xl">
+              {{ item.title }}
+            </h5>
+            @for (link of item.links; track $index) {
+              <li>
+                <a
+                  href="javascript:void(0);"
+                  class="text-base font-normal text-default-200 transition-all hover:text-white"
+                  >{{ link.name }}</a
+                >
+              </li>
+            }
+          </ul>
+        </div>
+      }
+    </div>
+  </div>
+  <app-footer />
+</footer>

@@ -1,0 +1,64 @@
+<section id="faq" class="pb-24">
+  <div class="container">
+    <div class="mb-10 flex flex-wrap items-center justify-between">
+      <div>
+        <h2 class="mb-2 text-4xl font-medium capitalize text-white">Faqs</h2>
+        <p class="text-sm font-medium text-default-200">
+          Start working with Tailwindcss It allows you to compose complex
+          designs <br />
+          by combining and customizing utility classes..
+        </p>
+      </div>
+    </div>
+
+    <div class="grid gap-6 lg:grid-cols-2">
+      @for (chunk of faqChunks; track $index) {
+        <div
+          class="hs-accordion-group space-y-4"
+          data-aos="fade-left"
+          data-aos-easing="ease"
+          data-aos-duration="1000"
+        >
+          @for (item of chunk; track $index; let first = $first) {
+            <div
+              class="hs-accordion border border-white/10 {{
+                first && 'active'
+              }} bg-default-950/40 backdrop-blur-3xl rounded-lg overflow-hidden"
+              id="faq-{{ item.id }}"
+            >
+              <button
+                class="hs-accordion-toggle inline-flex w-full items-center justify-between gap-x-3 px-6 py-4 text-left capitalize text-white transition-all"
+                aria-controls="faq-2"
+              >
+                <h5 class="flex text-base font-semibold">
+                  <lucide-icon
+                    name="circle-alert"
+                    class="me-3 h-5 w-5 stroke-white"
+                  ></lucide-icon>
+                  {{ item.question }}
+                </h5>
+                <lucide-icon
+                  name="chevron-up"
+                  class="h-4 w-4 transition-all duration-500 hs-accordion-active:-rotate-90"
+                ></lucide-icon>
+              </button>
+              <div
+                id="faq-{{ item.id }}"
+                class="hs-accordion-content {{
+                  !first && 'hidden'
+                }} w-full overflow-hidden transition-[height] duration-300"
+                aria-labelledby="faq-2"
+              >
+                <div class="px-6 pb-4 pt-0">
+                  <p class="text-sm font-medium text-default-300">
+                    {{ item.answer }}
+                  </p>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  </div>
+</section>
