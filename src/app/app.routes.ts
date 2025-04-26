@@ -1,7 +1,7 @@
+import { Routes } from '@angular/router'
 import { inject } from '@angular/core'
-import { Router, Routes } from '@angular/router'
-import { AuthenticationService } from '@/app/services/auth.service'
-import { AuthLayoutComponent } from '@layouts/auth-layout/auth-layout.component'
+import { Router } from '@angular/router'
+import { AuthService } from './services/auth.service'
 
 export const routes: Routes = [
   {
@@ -19,8 +19,8 @@ export const routes: Routes = [
     canActivate: [
       (url: any) => {
         const router = inject(Router)
-        const authService = inject(AuthenticationService)
-        if (!authService.session) {
+        const authService = inject(AuthService)
+        if (!authService.isAuthenticated()) {
           return router.createUrlTree(['/auth/login'], {
             queryParams: { returnUrl: url._routerState.url },
           })
@@ -30,9 +30,19 @@ export const routes: Routes = [
     ],
   },
   {
-    path: 'auth',
-    component: AuthLayoutComponent,
-    loadChildren: () =>
-      import('./views/auth/auth.route').then((mod) => mod.AUTH_PAGES_ROUTES),
+    path: "auth",
+    children: [
+      {
+        path: "login",
+        loadComponent: () =>
+          import("./pages/auth/login/login.component").then(
+            (m) => m.LoginComponent
+          ),
+      },
+    ],
+  },
+  {
+    path: "**",
+    redirectTo: "",
   },
 ]

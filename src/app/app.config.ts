@@ -17,6 +17,7 @@ import {
 import { BrowserModule } from '@angular/platform-browser'
 import { provideStore } from '@ngrx/store'
 import { rootReducer } from './store'
+import { NzMessageModule } from 'ng-zorro-antd/message'
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -26,6 +27,9 @@ export const appConfig: ApplicationConfig = {
     provideStore(rootReducer),
     provideEffects(AuthenticationEffects),
     provideHttpClient(withFetch(), withInterceptorsFromDi()),
-    importProvidersFrom(BrowserModule),
+    importProvidersFrom(
+      BrowserModule,
+      NzMessageModule
+    ),
   ],
 }

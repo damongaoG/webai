@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core'
 import { ActivatedRoute, Router } from '@angular/router'
-import { AuthenticationService } from '@/app/services/auth.service'
+import { AuthService } from '@/app/services/auth.service'
 import { Actions, createEffect, ofType } from '@ngrx/effects'
 import { catchError, exhaustMap, map, of } from 'rxjs'
 import {
@@ -10,13 +10,15 @@ import {
   logout,
   logoutSuccess,
 } from './authentication.actions'
+import { User } from './auth.model'
+import { LoginAdminDto } from '@/app/interfaces/login-admin-dto'
 
 @Injectable()
 export class AuthenticationEffects {
   private actions$ = inject(Actions)
 
   constructor(
-    private authService: AuthenticationService,
+    private authService: AuthService,
     private router: Router,
     private route: ActivatedRoute
   ) {}
@@ -25,16 +27,31 @@ export class AuthenticationEffects {
     this.actions$.pipe(
       ofType(login),
       exhaustMap(({ email, password }) => {
-        return this.authService.login(email, password).pipe(
-          map((user) => {
-            if (user) {
+        const loginData: LoginAdminDto = {
+          username: email,
+          password: password,
+          rememberMe: false,
+          verifyCode: ''
+        };
+        
+        return this.authService.login(loginData).pipe(
+          map((result) => {
+            if (result.code === 1 && result.data) {
+              const user: User = {
+                id: result.data.id,
+                email: result.data.email,
+                // No username in LoginAdminVo
+              };
+              
               const returnUrl =
                 this.route.snapshot.queryParams['returnUrl'] || '/'
               this.router.navigateByUrl(returnUrl)
+              
+              return loginSuccess({ user })
             }
-            return loginSuccess({ user })
+            throw new Error(result.error?.message || 'Login failed');
           }),
-          catchError((error) => of(loginFailure({ error })))
+          catchError((error) => of(loginFailure({ error: error.message })))
         )
       })
     )

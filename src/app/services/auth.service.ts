@@ -1,48 +1,266 @@
-import { Injectable } from '@angular/core'
-import { HttpClient } from '@angular/common/http'
-import { map } from 'rxjs/operators'
+import { isPlatformBrowser } from "@angular/common";
+import { HttpClient, HttpHeaders } from "@angular/common/http";
+import { Inject, Injectable, PLATFORM_ID } from "@angular/core";
+import { Router } from "@angular/router";
+import { NzMessageService } from "ng-zorro-antd/message";
+import { BehaviorSubject, from, Observable, switchMap, tap } from "rxjs";
+import { LoginAdminDto } from "../interfaces/login-admin-dto";
+import { LoginAdminVo } from "../interfaces/login-admin-vo";
+import { RegistryCustomerDto } from "../interfaces/registry-customer-dto";
+import { RegistryCustomerVo } from "../interfaces/registry-customer-vo";
+import { ResendValidateEmailDto } from "../interfaces/resend-validate-email-dto";
+import { Result } from "../interfaces/result";
+import { ForgetPasswordDto } from "../interfaces/forget-password-dto";
+import { ValidateEmailDto } from "../interfaces/validate-email-dto";
+import { ValidateForgetPasswordDto } from "../interfaces/validate-forget-password-dto";
 
-import { CookieService } from 'ngx-cookie-service'
-import type { Observable } from 'rxjs'
-import type { User } from '../helper/fake-backend'
-
-@Injectable({ providedIn: 'root' })
-export class AuthenticationService {
-  user: User | null = null
-
-  public readonly authSessionKey = '_WEBAI_AUTH_SESSION_KEY_'
+@Injectable({
+  providedIn: "root",
+})
+export class AuthService {
+  apiUrl = '/security-service';
+  headers = new HttpHeaders({
+    "Content-Type": "application/json",
+    Accept: "application/json",
+  });
+  private tokenKey = "auth_token";
+  private isAuthenticatedSubject = new BehaviorSubject<boolean>(false);
+  private userEmailSubject = new BehaviorSubject<string>("User");
+  private userIdSubject = new BehaviorSubject<string>("");
+  private isRefreshing = false;
+  private restrictedRoutes = ["/chat", "/activate", "/profile/change-password"];
+  private userRoleIdSubject = new BehaviorSubject<string>("");
 
   constructor(
+    private router: Router,
     private http: HttpClient,
-    private cookieService: CookieService
-  ) {}
+    private message: NzMessageService,
+    @Inject(PLATFORM_ID) private platformId: Object
+  ) {
+    if (isPlatformBrowser(this.platformId)) {
+      this.isAuthenticatedSubject = new BehaviorSubject<boolean>(
+        this.hasValidToken()
+      );
+    }
+  }
 
-  login(email: string, password: string): Observable<User> {
-    return this.http.post<User>(`/api/login`, { email, password }).pipe(
-      map((user) => {
-        if (user && user.token) {
-          this.user = user
-          this.saveSession(user.token)
-        }
-        return user
+  login(data: LoginAdminDto): Observable<Result<LoginAdminVo>> {
+    return this.http
+      .post<Result<LoginAdminVo>>(
+        this.apiUrl + "/anon/auth/login-customer",
+        data
+      )
+      .pipe(
+        tap((result) => {
+          if (result.code === 1) {
+            this.setToken("true");
+            this.isAuthenticatedSubject.next(true);
+            if (result.data?.email) {
+              this.userEmailSubject.next(result.data.email);
+            }
+            if (result.data?.id) {
+              this.userIdSubject.next(result.data.id);
+            }
+          } else if (result.code === -7) {
+            this.message.error("This account not user account");
+          } else if (result.code === -5) {
+            this.message.error("Username or password wrong");
+          } else if (result.code === -9) {
+            this.message.error("The user has already been logged in.");
+          } else if (result.code === -6) {
+            this.router.navigate(["/auth/signup"], {
+              queryParams: { showVerification: true, username: data.username },
+            });
+          } else if (result.code === -100) {
+            this.message.error("Verify code incorrect, please try again.");
+          } else {
+            this.message.error("Login failed");
+          }
+        })
+      );
+  }
+
+  logout(): Observable<Result<any>> {
+    const nsParam = "";
+    const logoutUrl = this.apiUrl + "/anon/auth/logout" + nsParam;
+    return this.http
+      .get<Result<any>>(logoutUrl, {
+        headers: this.headers,
       })
-    )
+      .pipe(
+        switchMap((result) => {
+          if (result.code !== 1) {
+            this.message.error("Unable to logout");
+            return from(Promise.resolve(result));
+          }
+
+          this.completeLogout();
+          return from(Promise.resolve(result));
+        })
+      );
   }
 
-  logout(): void {
-    this.removeSession()
-    this.user = null
+  private completeLogout(): void {
+    this.removeToken();
+    this.isAuthenticatedSubject.next(false);
+    this.userEmailSubject.next("User");
+    this.userIdSubject.next("");
+    this.userRoleIdSubject.next("");
+    this.router.navigate(["/auth/login"]);
   }
 
-  get session(): string {
-    return this.cookieService.get(this.authSessionKey)
+  reLogIn(): Observable<Result<LoginAdminVo>> {
+    this.isRefreshing = true;
+    return this.http
+      .get<Result<LoginAdminVo>>(this.apiUrl + "/anon/auth/re-login", {
+        headers: this.headers,
+      })
+      .pipe(
+        tap((result) => {
+          this.isRefreshing = false;
+          if (result.code === 1 && result.data?.status !== 0) {
+            this.setToken("true");
+            this.isAuthenticatedSubject.next(true);
+            if (result.data?.email) {
+              this.userEmailSubject.next(result.data.email);
+            }
+            if (result.data?.id) {
+              this.userIdSubject.next(result.data.id);
+            }
+
+            // Store the user's role ID
+            if (result.data?.roles && result.data.roles.length > 0) {
+              this.userRoleIdSubject.next(result.data.roles[0].id);
+            }
+
+            // Check if user has role ID "1" and restrict access to specific routes
+            const hasRestrictedRole = result.data?.roles?.[0]?.id === "1";
+            const currentUrl = this.router.url;
+            const isRestrictedRoute = this.restrictedRoutes.some((route) =>
+              currentUrl.startsWith(route)
+            );
+
+            // Redirect to login if user has role ID "1" and is trying to access a restricted route
+            if (hasRestrictedRole && isRestrictedRoute) {
+              this.router.navigate(["/auth/login"]);
+              return;
+            }
+
+            if (this.router.url === "/auth/login") {
+              this.router.navigate(["/dashboard"]);
+            }
+          } else {
+            this.removeToken();
+            this.isAuthenticatedSubject.next(false);
+            this.userEmailSubject.next("User");
+            this.userIdSubject.next("");
+          }
+        })
+      );
   }
 
-  saveSession(token: string): void {
-    this.cookieService.set(this.authSessionKey, token)
+  isAuthenticated(): boolean {
+    if (this.isRefreshing) {
+      return true;
+    }
+    return this.hasValidToken();
   }
 
-  removeSession(): void {
-    this.cookieService.delete(this.authSessionKey)
+  private hasValidToken(): boolean {
+    if (!isPlatformBrowser(this.platformId)) {
+      return false;
+    }
+    return localStorage.getItem(this.tokenKey) === "true";
+  }
+
+  private setToken(value: string) {
+    if (isPlatformBrowser(this.platformId)) {
+      localStorage.setItem(this.tokenKey, value);
+    }
+  }
+
+  getUserEmail(): Observable<string> {
+    return this.userEmailSubject.asObservable();
+  }
+
+  private removeToken() {
+    if (isPlatformBrowser(this.platformId)) {
+      localStorage.removeItem(this.tokenKey);
+    }
+  }
+
+  signup(data: RegistryCustomerDto): Observable<Result<RegistryCustomerVo>> {
+    return this.http
+      .post<Result<RegistryCustomerVo>>(
+        this.apiUrl + "/anon/auth/registry-user",
+        data,
+        { headers: this.headers }
+      )
+      .pipe(
+        tap((result) => {
+          if (result.code === 1) {
+            this.message.success("Registration successful");
+          } else if (result.code === -4) {
+            this.message.error("The invitation code is invalid");
+          } else {
+            this.message.error("Registration error");
+          }
+        })
+      );
+  }
+
+  validateEmail(data: ValidateEmailDto): Observable<Result<any>> {
+    return this.http.post<Result<any>>(
+      `${this.apiUrl}/anon/auth/validate-email`,
+      data,
+      { headers: this.headers }
+    );
+  }
+
+  resendValidateEmail(data: ResendValidateEmailDto): Observable<Result<any>> {
+    return this.http.post<Result<any>>(
+      `${this.apiUrl}/anon/auth/resend-validate-email`,
+      data,
+      { headers: this.headers }
+    );
+  }
+
+  forgetPassword(data: ForgetPasswordDto): Observable<Result<any>> {
+    return this.http.post<Result<any>>(
+      `${this.apiUrl}/anon/auth/forget-password`,
+      data,
+      { headers: this.headers }
+    );
+  }
+
+  validateForgetPassword(
+    data: ValidateForgetPasswordDto
+  ): Observable<Result<any>> {
+    return this.http.post<Result<any>>(
+      `${this.apiUrl}/anon/auth/validate-forget-password`,
+      data,
+      { headers: this.headers }
+    );
+  }
+
+  getUserId(): Observable<string> {
+    return this.userIdSubject.asObservable();
+  }
+
+  canAccessRoute(route: string): boolean {
+    // Check if the user is an admin (has role ID "1")
+    // If so, they should not access certain routes
+    const roleId = this.userRoleIdSubject.getValue();
+    const isAdmin = roleId === "1";
+
+    if (isAdmin) {
+      return !this.restrictedRoutes.some((r) => route.startsWith(r));
+    }
+
+    return true;
+  }
+
+  getUserRoleId(): Observable<string> {
+    return this.userRoleIdSubject.asObservable();
   }
 }
