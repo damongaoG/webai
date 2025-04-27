@@ -13,12 +13,13 @@ import { Result } from "../interfaces/result";
 import { ForgetPasswordDto } from "../interfaces/forget-password-dto";
 import { ValidateEmailDto } from "../interfaces/validate-email-dto";
 import { ValidateForgetPasswordDto } from "../interfaces/validate-forget-password-dto";
+import { environment } from "@environment/environment";
 
 @Injectable({
   providedIn: "root",
 })
 export class AuthService {
-  apiUrl = '/security-service';
+  apiUrl = environment.securityServiceUrl;
   headers = new HttpHeaders({
     "Content-Type": "application/json",
     Accept: "application/json",
@@ -46,10 +47,9 @@ export class AuthService {
 
   login(data: LoginAdminDto): Observable<Result<LoginAdminVo>> {
     return this.http
-      .post<Result<LoginAdminVo>>(
-        this.apiUrl + "/anon/auth/login-customer",
-        data
-      )
+      .post<
+        Result<LoginAdminVo>
+      >(this.apiUrl + "/anon/auth/login-customer", data)
       .pipe(
         tap((result) => {
           if (result.code === 1) {
@@ -191,11 +191,9 @@ export class AuthService {
 
   signup(data: RegistryCustomerDto): Observable<Result<RegistryCustomerVo>> {
     return this.http
-      .post<Result<RegistryCustomerVo>>(
-        this.apiUrl + "/anon/auth/registry-user",
-        data,
-        { headers: this.headers }
-      )
+      .post<
+        Result<RegistryCustomerVo>
+      >(this.apiUrl + "/anon/auth/registry-user", data, { headers: this.headers })
       .pipe(
         tap((result) => {
           if (result.code === 1) {
