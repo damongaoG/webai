@@ -2,22 +2,24 @@ import {
   ApplicationConfig,
   importProvidersFrom,
   provideZoneChangeDetection,
-} from '@angular/core'
-import { provideRouter } from '@angular/router'
+} from "@angular/core";
+import { provideRouter } from "@angular/router";
 
-import { routes } from './app.routes'
-import { FakeBackendProvider } from './helper/fake-backend'
-import { provideEffects } from '@ngrx/effects'
-import { AuthenticationEffects } from '@store/authentication/authentication.effects'
+import { routes } from "./app.routes";
+import { FakeBackendProvider } from "./helper/fake-backend";
+import { provideEffects } from "@ngrx/effects";
+import { AuthenticationEffects } from "@store/authentication/authentication.effects";
 import {
   provideHttpClient,
   withFetch,
   withInterceptorsFromDi,
-} from '@angular/common/http'
-import { BrowserModule } from '@angular/platform-browser'
-import { provideStore } from '@ngrx/store'
-import { rootReducer } from './store'
-import { NzMessageModule } from 'ng-zorro-antd/message'
+  withInterceptors,
+} from "@angular/common/http";
+import { BrowserModule } from "@angular/platform-browser";
+import { provideStore } from "@ngrx/store";
+import { rootReducer } from "./store";
+import { NzMessageModule } from "ng-zorro-antd/message";
+import { authInterceptor } from "./interceptors/auth.interceptor";
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -26,10 +28,11 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes),
     provideStore(rootReducer),
     provideEffects(AuthenticationEffects),
-    provideHttpClient(withFetch(), withInterceptorsFromDi()),
-    importProvidersFrom(
-      BrowserModule,
-      NzMessageModule
+    provideHttpClient(
+      withFetch(),
+      withInterceptors([authInterceptor]),
+      withInterceptorsFromDi(),
     ),
+    importProvidersFrom(BrowserModule, NzMessageModule),
   ],
-}
+};

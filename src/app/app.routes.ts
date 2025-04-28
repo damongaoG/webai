@@ -1,33 +1,24 @@
-import { Routes } from '@angular/router'
-import { inject } from '@angular/core'
-import { Router } from '@angular/router'
-import { AuthService } from './services/auth.service'
+import { Routes } from "@angular/router";
+import { inject } from "@angular/core";
+import { Router } from "@angular/router";
+import { AuthService } from "./services/auth.service";
+import { authGuard } from "./guards/auth.guard";
+import { ServerErrorComponent } from "./pages/error/server-error.component";
 
 export const routes: Routes = [
   {
-    path: '',
+    path: "",
     loadComponent: () =>
-      import('./views/home/home.component').then((mod) => mod.HomeComponent),
+      import("./views/home/home.component").then((mod) => mod.HomeComponent),
     data: {
-      title: 'WebAI- AI Startup & Technology Landing Page Angular Template',
+      title: "WebAI- AI Startup & Technology Landing Page Angular Template",
     },
   },
   {
-    path: 'pages',
+    path: "pages",
     loadChildren: () =>
-      import('./views/demos/demos.route').then((mod) => mod.DEMO_PAGES_ROUTES),
-    canActivate: [
-      (url: any) => {
-        const router = inject(Router)
-        const authService = inject(AuthService)
-        if (!authService.isAuthenticated()) {
-          return router.createUrlTree(['/auth/login'], {
-            queryParams: { returnUrl: url._routerState.url },
-          })
-        }
-        return true
-      },
-    ],
+      import("./views/demos/demos.route").then((mod) => mod.DEMO_PAGES_ROUTES),
+    canActivate: [authGuard],
   },
   {
     path: "auth",
@@ -36,13 +27,17 @@ export const routes: Routes = [
         path: "login",
         loadComponent: () =>
           import("./pages/auth/login/login.component").then(
-            (m) => m.LoginComponent
+            (m) => m.LoginComponent,
           ),
       },
     ],
   },
   {
+    path: "server-error",
+    component: ServerErrorComponent,
+  },
+  {
     path: "**",
     redirectTo: "",
   },
-]
+];
