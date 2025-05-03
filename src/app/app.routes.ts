@@ -22,15 +22,8 @@ export const routes: Routes = [
   },
   {
     path: "auth",
-    children: [
-      {
-        path: "login",
-        loadComponent: () =>
-          import("./pages/auth/login/login.component").then(
-            (m) => m.LoginComponent,
-          ),
-      },
-    ],
+    loadChildren: () =>
+      import("./views/auth/auth.module").then((m) => m.AuthModule),
   },
   {
     path: "server-error",
