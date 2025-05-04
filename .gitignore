@@ -2,3 +2,4 @@ node_modules/
 .idea/
 .angular/
 guide.md
+.cursor/rules/my-rule.mdc
