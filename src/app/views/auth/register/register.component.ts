@@ -1,9 +1,13 @@
 import { ResendValidateEmailDto } from "./../../../interfaces/resend-validate-email-dto";
 import { Component, OnDestroy, OnInit } from "@angular/core";
 import { ActivatedRoute, Router, RouterLink } from "@angular/router";
-import { ThirdPartyLoginComponent } from "@components/third-party-login/third-party-login.component";
 import { AuthImageComponent } from "@components/auth-image/auth-image.component";
-import { Form, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from "@angular/forms";
+import {
+  FormBuilder,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
+} from "@angular/forms";
 import { Subscription } from "rxjs";
 import { RegistrationService } from "@/app/services/registration.service";
 import { NzMessageService } from "ng-zorro-antd/message";
@@ -16,7 +20,13 @@ import { CenteredLayoutComponent } from "@/app/shared/components";
 @Component({
   selector: "app-register",
   standalone: true,
-  imports: [RouterLink, ThirdPartyLoginComponent, AuthImageComponent, ReactiveFormsModule, NgIf, CenteredLayoutComponent],
+  imports: [
+    RouterLink,
+    AuthImageComponent,
+    ReactiveFormsModule,
+    NgIf,
+    CenteredLayoutComponent,
+  ],
   templateUrl: "./register.component.html",
   styles: ``,
 })
