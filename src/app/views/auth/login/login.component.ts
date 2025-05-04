@@ -1,7 +1,6 @@
 import { Component, inject, OnInit } from "@angular/core";
 import { ActivatedRoute, Router, RouterLink } from "@angular/router";
 import { AuthImageComponent } from "@components/auth-image/auth-image.component";
-import { ThirdPartyLoginComponent } from "@components/third-party-login/third-party-login.component";
 import { CenteredLayoutComponent } from "@/app/shared/components/centered-layout";
 import {
   FormsModule,
@@ -25,7 +24,6 @@ import { finalize } from "rxjs";
   imports: [
     RouterLink,
     AuthImageComponent,
-    ThirdPartyLoginComponent,
     FormsModule,
     ReactiveFormsModule,
     NgClass,
