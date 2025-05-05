@@ -50,7 +50,7 @@ export class ResetPasswordComponent implements OnInit {
 
   private initForm(): void {
     this.resetPasswordForm = this.fb.group({
-      username: ["", [Validators.required]],
+      username: ["", [Validators.required, Validators.email]],
       verifyCode: ["", [Validators.required]],
     });
   }
@@ -75,7 +75,13 @@ export class ResetPasswordComponent implements OnInit {
   submitForm(): void {
     if (this.resetPasswordForm.valid) {
       this.isLoading = true;
-      const data: ForgetPasswordDto = this.resetPasswordForm.value;
+
+      const formValue = this.resetPasswordForm.value;
+
+      const data: ForgetPasswordDto = {
+        username: formValue.username.trim(),
+        verifyCode: formValue.verifyCode.trim(),
+      };
 
       this.authService.forgetPassword(data).subscribe({
         next: (result) => {
@@ -92,7 +98,8 @@ export class ResetPasswordComponent implements OnInit {
           this.refreshKaptcha();
           this.isLoading = false;
         },
-        error: () => {
+        error: (err) => {
+          console.error("Reset password error:", err);
           this.message.error("An error occurred. Please try again.");
           this.isLoading = false;
           this.refreshKaptcha();

@@ -16,9 +16,11 @@ import {
   withInterceptors,
 } from "@angular/common/http";
 import { BrowserModule } from "@angular/platform-browser";
+import { provideAnimations } from "@angular/platform-browser/animations";
 import { provideStore } from "@ngrx/store";
 import { rootReducer } from "./store";
 import { NzMessageModule } from "ng-zorro-antd/message";
+import { NzModalModule } from "ng-zorro-antd/modal";
 import { authInterceptor } from "./interceptors/auth.interceptor";
 
 export const appConfig: ApplicationConfig = {
@@ -31,8 +33,9 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(
       withFetch(),
       withInterceptors([authInterceptor]),
-      withInterceptorsFromDi(),
+      withInterceptorsFromDi()
     ),
-    importProvidersFrom(BrowserModule, NzMessageModule),
+    importProvidersFrom(BrowserModule, NzMessageModule, NzModalModule),
+    provideAnimations(),
   ],
 };
