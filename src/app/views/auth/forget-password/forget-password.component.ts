@@ -231,8 +231,10 @@ export class ForgetPasswordComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.source = this.route.snapshot.queryParamMap.get("source");
-    this.key = this.route.snapshot.queryParamMap.get("key");
+    this.route.queryParams.subscribe((params) => {
+      this.source = params["source"];
+      this.key = params["key"];
+    });
 
     if (!this.source || !this.key) {
       this.isValidLink = false;
