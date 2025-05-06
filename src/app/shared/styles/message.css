@@ -1,0 +1,36 @@
+/* Global styling for NG-ZORRO messages compatible with Tailwind */
+
+/* Position the messages at the top right */
+.ant-message {
+  @apply fixed right-4 top-4 left-auto;
+}
+
+/* Base styling for all message types */
+.ant-message-notice-content {
+  @apply px-4 py-3 rounded-md shadow-md font-medium flex items-center;
+}
+
+/* Success message styling */
+.ant-message-success .ant-message-notice-content {
+  @apply bg-green-50 border border-green-200 text-green-600;
+}
+
+/* Error message styling */
+.ant-message-error .ant-message-notice-content {
+  @apply bg-red-50 border border-red-200 text-red-600;
+}
+
+/* Warning message styling */
+.ant-message-warning .ant-message-notice-content {
+  @apply bg-yellow-50 border border-yellow-200 text-yellow-600;
+}
+
+/* Info message styling */
+.ant-message-info .ant-message-notice-content {
+  @apply bg-blue-50 border border-blue-200 text-blue-600;
+}
+
+/* Message icon styling */
+.ant-message-notice-content .anticon {
+  @apply mr-2 text-base;
+}

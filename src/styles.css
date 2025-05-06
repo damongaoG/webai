@@ -1,5 +1,6 @@
 /* You can add global styles to this file, and also import other style files */
-@import '../public/assets/css/style.css';
-@import '../public/assets/css/icons.css';
-@import 'lightgallery/css/lightgallery.css';
-@import 'lightgallery/css/lg-video.css';
+@import "../public/assets/css/style.css";
+@import "../public/assets/css/icons.css";
+@import "lightgallery/css/lightgallery.css";
+@import "lightgallery/css/lg-video.css";
+@import "./app/shared/styles/message.css";

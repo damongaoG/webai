@@ -12,7 +12,7 @@ import {
 import { Router, RouterLink } from "@angular/router";
 import { AuthImageComponent } from "@components/auth-image/auth-image.component";
 import { environment } from "@environment/environment";
-import { NzMessageService } from "ng-zorro-antd/message";
+import { MessageService } from "@/app/shared";
 import { CenteredLayoutComponent } from "../../../shared/components/centered-layout/centered-layout.component";
 
 @Component({
@@ -26,7 +26,27 @@ import { CenteredLayoutComponent } from "../../../shared/components/centered-lay
     CenteredLayoutComponent,
   ],
   templateUrl: "./reset-password.component.html",
-  styles: ``,
+  styles: `
+    :host ::ng-deep {
+      .ant-message-notice-content {
+        padding: 12px 16px;
+        border-radius: 4px;
+        box-shadow:
+          0 3px 6px -4px rgba(0, 0, 0, 0.12),
+          0 6px 16px 0 rgba(0, 0, 0, 0.08);
+      }
+
+      .ant-message-success .ant-message-notice-content {
+        background-color: #f6ffed;
+        border: 1px solid #b7eb8f;
+      }
+
+      .ant-message-error .ant-message-notice-content {
+        background-color: #fff2f0;
+        border: 1px solid #ffccc7;
+      }
+    }
+  `,
 })
 export class ResetPasswordComponent implements OnInit {
   resetPasswordForm!: FormGroup;
@@ -40,7 +60,7 @@ export class ResetPasswordComponent implements OnInit {
     private authService: AuthService,
     private router: Router,
     private http: HttpClient,
-    private message: NzMessageService
+    private messageService: MessageService
   ) {}
 
   ngOnInit(): void {
@@ -86,12 +106,12 @@ export class ResetPasswordComponent implements OnInit {
       this.authService.forgetPassword(data).subscribe({
         next: (result) => {
           if (result.code === 1) {
-            this.message.success(
+            this.messageService.success(
               "Reset password email has been sent. Please check your email."
             );
             this.startCountdown();
           } else {
-            this.message.error(
+            this.messageService.error(
               result.error?.message || "Failed to process request"
             );
           }
@@ -100,7 +120,7 @@ export class ResetPasswordComponent implements OnInit {
         },
         error: (err) => {
           console.error("Reset password error:", err);
-          this.message.error("An error occurred. Please try again.");
+          this.messageService.error("An error occurred. Please try again.");
           this.isLoading = false;
           this.refreshKaptcha();
         },
