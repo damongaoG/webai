@@ -16,7 +16,6 @@ import { AuthImageComponent } from "@components/auth-image/auth-image.component"
 import { NzButtonModule } from "ng-zorro-antd/button";
 import { NzFormModule } from "ng-zorro-antd/form";
 import { NzInputModule } from "ng-zorro-antd/input";
-import { NzMessageService } from "ng-zorro-antd/message";
 
 @Component({
   selector: "app-forget-password",

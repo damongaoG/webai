@@ -1,9 +1,7 @@
 import { Routes } from "@angular/router";
-import { inject } from "@angular/core";
-import { Router } from "@angular/router";
-import { AuthService } from "./services/auth.service";
 import { authGuard } from "./guards/auth.guard";
 import { ServerErrorComponent } from "./pages/error/server-error.component";
+import { ForgetPasswordComponent } from "./views/auth/forget-password/forget-password.component";
 
 export const routes: Routes = [
   {
@@ -13,6 +11,11 @@ export const routes: Routes = [
     data: {
       title: "WebAI- AI Startup & Technology Landing Page Angular Template",
     },
+  },
+  {
+    path: "forget-password",
+    component: ForgetPasswordComponent,
+    data: { title: "Forget Password" },
   },
   {
     path: "pages",
