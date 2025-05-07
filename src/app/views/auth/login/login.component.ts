@@ -18,6 +18,7 @@ import { NzMessageService } from "ng-zorro-antd/message";
 import { AuthService } from "@/app/services/auth.service";
 import { finalize } from "rxjs";
 import { ToastService } from "@/app/shared";
+import { environment } from "@environment/environment";
 
 @Component({
   selector: "app-login",
@@ -142,19 +143,17 @@ export class LoginComponent implements OnInit {
   refreshKaptcha() {
     const headers = new HttpHeaders({
       "Content-Type": "image/jpeg",
-
       Accept:
         "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
     });
 
     this.http
-
-      .get(`/security-service/anon/kaptcha/login-code?t=${Date.now()}`, {
-        headers: headers,
-
-        responseType: "blob",
-      })
-
+      .get(
+        `${
+          environment.securityServiceUrl
+        }/anon/kaptcha/login-code?t=${Date.now()}`,
+        { headers: headers, responseType: "blob" }
+      )
       .subscribe((response) => {
         this.kaptchaUrl = URL.createObjectURL(response);
       });
