@@ -1,5 +1,6 @@
 import { AuthService } from "@/app/services/auth.service";
 import { CenteredLayoutComponent } from "@/app/shared/components";
+import { ToastService } from "@/app/shared/services/toast.service";
 import { CommonModule } from "@angular/common";
 import { Component, OnInit } from "@angular/core";
 import {
@@ -204,7 +205,7 @@ export class ForgetPasswordComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private authService: AuthService,
-    private message: NzMessageService
+    private toastService: ToastService
   ) {
     this.resetForm = this.fb.group(
       {
@@ -234,6 +235,8 @@ export class ForgetPasswordComponent implements OnInit {
     this.route.queryParams.subscribe((params) => {
       this.source = params["source"];
       this.key = params["key"];
+      console.log(this.source, this.key);
+      this.isValidLink = true;
     });
 
     if (!this.source || !this.key) {
@@ -257,17 +260,17 @@ export class ForgetPasswordComponent implements OnInit {
         next: (result) => {
           this.isSubmitting = false;
           if (result.code === 1) {
-            this.message.success("Password reset successfully");
+            this.toastService.success("Password reset successfully");
             this.router.navigate(["/auth/login"]);
           } else if (result.code === -4) {
-            this.message.error("The code is invalid or expired");
+            this.toastService.error("The code is invalid or expired");
           } else {
-            this.message.error("Failed to reset password");
+            this.toastService.error("Failed to reset password");
           }
         },
         error: (error) => {
           this.isSubmitting = false;
-          this.message.error(error || "Failed to reset password");
+          this.toastService.error(error || "Failed to reset password");
         },
       });
     }
