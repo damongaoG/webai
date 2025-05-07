@@ -10,12 +10,12 @@ import {
 } from "@angular/forms";
 import { Subscription } from "rxjs";
 import { RegistrationService } from "@/app/services/registration.service";
-import { NzMessageService } from "ng-zorro-antd/message";
 import { RegistryCustomerDto } from "@/app/interfaces/registry-customer-dto";
 import { EmailValidators } from "@/app/shared/validators/email.validator";
 import { PasswordValidators } from "@/app/shared/validators/password.validator";
 import { NgIf } from "@angular/common";
 import { CenteredLayoutComponent } from "@/app/shared/components";
+import { ToastService } from "@/app/shared";
 
 @Component({
   selector: "app-register",
@@ -45,8 +45,8 @@ export class RegisterComponent implements OnInit, OnDestroy {
     private fb: FormBuilder,
     private registrationService: RegistrationService,
     private router: Router,
-    private message: NzMessageService,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private toastService: ToastService
   ) {
     this.initForm();
   }
@@ -94,11 +94,15 @@ export class RegisterComponent implements OnInit, OnDestroy {
               this.showVerification = true;
               this.initVerificationForm();
               this.refreshKaptcha();
+            } else {
+              this.toastService.error(
+                result.error?.message || "Registration failed"
+              );
             }
             this.isLoading = false;
           },
           error: (error: any) => {
-            this.message.error(error.message || "Registration failed");
+            this.toastService.error(error.message || "Registration failed");
             this.isLoading = false;
           },
         });
@@ -152,17 +156,17 @@ export class RegisterComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (result) => {
           if (result.code === 1) {
-            this.message.success("Verification email sent successfully");
+            this.toastService.success("Verification email sent successfully");
             this.startCountdown();
           } else if (result.code === -100) {
-            this.message.error("The verification code is invalid");
+            this.toastService.error("The verification code is invalid");
           } else {
-            this.message.error("Failed to send verification email");
+            this.toastService.error("Failed to send verification email");
           }
           this.refreshKaptcha();
         },
         error: (error) => {
-          this.message.error(
+          this.toastService.error(
             error.message || "Failed to send verification email"
           );
           this.refreshKaptcha();
