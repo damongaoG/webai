@@ -17,6 +17,7 @@ import { HttpClient, HttpHeaders } from "@angular/common/http";
 import { NzMessageService } from "ng-zorro-antd/message";
 import { AuthService } from "@/app/services/auth.service";
 import { finalize } from "rxjs";
+import { ToastService } from "@/app/shared";
 
 @Component({
   selector: "app-login",
@@ -52,7 +53,7 @@ export class LoginComponent implements OnInit {
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   private http = inject(HttpClient);
-  private message = inject(NzMessageService);
+  private toastService = inject(ToastService);
 
   ngOnInit(): void {
     this.signInForm = this.fb.group({
@@ -85,19 +86,19 @@ export class LoginComponent implements OnInit {
         verifyCode: this.formValues["verifyCode"]?.value || "",
       };
 
-      // Login Api
-      this.store.dispatch(login({ email: email, password: password }));
+      // // Login Api
+      // this.store.dispatch(login({ email: email, password: password }));
 
-      this.store.select(getError).subscribe((data) => {
-        if (data) {
-          this.errorMessage = data.error.message;
-          this.isLoading = false;
+      // this.store.select(getError).subscribe((data) => {
+      //   if (data) {
+      //     this.errorMessage = data.error.message;
+      //     this.isLoading = false;
 
-          setTimeout(() => {
-            this.errorMessage = "";
-          }, 3000);
-        }
-      });
+      //     setTimeout(() => {
+      //       this.errorMessage = "";
+      //     }, 3000);
+      //   }
+      // });
 
       this.authService
         .login(loginData)
@@ -126,7 +127,7 @@ export class LoginComponent implements OnInit {
             }
           },
           error: (error) => {
-            this.message.error(error || "Login Failed!");
+            this.toastService.error(error || "Login Failed!");
           },
         });
     } else {

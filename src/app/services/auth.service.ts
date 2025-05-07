@@ -14,6 +14,7 @@ import { ForgetPasswordDto } from "../interfaces/forget-password-dto";
 import { ValidateEmailDto } from "../interfaces/validate-email-dto";
 import { ValidateForgetPasswordDto } from "../interfaces/validate-forget-password-dto";
 import { environment } from "@environment/environment";
+import { ToastService } from "../shared";
 
 @Injectable({
   providedIn: "root",
@@ -35,8 +36,8 @@ export class AuthService {
   constructor(
     private router: Router,
     private http: HttpClient,
-    private message: NzMessageService,
-    @Inject(PLATFORM_ID) private platformId: Object
+    @Inject(PLATFORM_ID) private platformId: Object,
+    private toastService: ToastService
   ) {
     if (isPlatformBrowser(this.platformId)) {
       this.isAuthenticatedSubject = new BehaviorSubject<boolean>(
@@ -62,19 +63,19 @@ export class AuthService {
               this.userIdSubject.next(result.data.id);
             }
           } else if (result.code === -7) {
-            this.message.error("This account not user account");
+            this.toastService.error("This account not user account");
           } else if (result.code === -5) {
-            this.message.error("Username or password wrong");
+            this.toastService.error("Username or password wrong");
           } else if (result.code === -9) {
-            this.message.error("The user has already been logged in.");
+            this.toastService.error("The user has already been logged in.");
           } else if (result.code === -6) {
             this.router.navigate(["/auth/signup"], {
               queryParams: { showVerification: true, username: data.username },
             });
           } else if (result.code === -100) {
-            this.message.error("Verify code incorrect, please try again.");
+            this.toastService.error("Verify code incorrect, please try again.");
           } else {
-            this.message.error("Login failed");
+            this.toastService.error("Login failed");
           }
         })
       );
@@ -90,7 +91,7 @@ export class AuthService {
       .pipe(
         switchMap((result) => {
           if (result.code !== 1) {
-            this.message.error("Unable to logout");
+            this.toastService.error("Unable to logout");
             return from(Promise.resolve(result));
           }
 
@@ -197,11 +198,11 @@ export class AuthService {
       .pipe(
         tap((result) => {
           if (result.code === 1) {
-            this.message.success("Registration successful");
+            this.toastService.success("Registration successful");
           } else if (result.code === -4) {
-            this.message.error("The invitation code is invalid");
+            this.toastService.error("The invitation code is invalid");
           } else {
-            this.message.error("Registration error");
+            this.toastService.error("Registration error");
           }
         })
       );
