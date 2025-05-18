@@ -1,21 +1,37 @@
 import { Component } from "@angular/core";
+import { DashboardSidebarComponent } from "./components/sidebar/sidebar.component";
+import { DashboardHeaderComponent } from "./components/header/dashboard-header.component";
+import { DashboardContentComponent } from "./components/content/dashboard-content.component";
 
 @Component({
   selector: "app-dashboard",
   standalone: true,
-  imports: [],
+  imports: [
+    DashboardSidebarComponent,
+    DashboardHeaderComponent,
+    DashboardContentComponent,
+  ],
   template: `
-    <div class="dashboard-container">
-      <h1>Dashboard</h1>
-      <p>Welcome to your dashboard!</p>
+    <div class="dashboard-container h-screen flex overflow-hidden bg-black">
+      <!-- Sidebar -->
+      <app-dashboard-sidebar></app-dashboard-sidebar>
+
+      <!-- Main Content Area -->
+      <div class="flex-1 flex flex-col overflow-hidden">
+        <!-- Header -->
+        <app-dashboard-header></app-dashboard-header>
+
+        <!-- Content -->
+        <div class="flex-1 overflow-auto">
+          <app-dashboard-content></app-dashboard-content>
+        </div>
+      </div>
     </div>
   `,
   styles: [
     `
       .dashboard-container {
-        padding: 20px;
-        max-width: 1200px;
-        margin: 0 auto;
+        background-color: #0c0c0c;
       }
     `,
   ],
