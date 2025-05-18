@@ -1,0 +1,30 @@
+<svg width="21" height="15" viewBox="0 0 21 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Group 1321318087">
+<g id="Polygon 2">
+<path d="M20.25 7.06699C20.5833 7.25944 20.5833 7.74056 20.25 7.93301L10.5 13.5622C10.1667 13.7546 9.75 13.5141 9.75 13.1292L9.75 1.87083C9.75 1.48593 10.1667 1.24537 10.5 1.43782L20.25 7.06699Z" fill="url(#paint0_linear_1_600)"/>
+<path d="M20.125 7.2832C20.2707 7.36735 20.2888 7.56197 20.1797 7.67383L20.125 7.7168L10.375 13.3457C10.2083 13.4419 10 13.3214 10 13.1289L10 1.87109C10 1.70289 10.1592 1.5895 10.3105 1.62793L10.375 1.6543L20.125 7.2832Z" stroke="url(#paint1_linear_1_600)" stroke-opacity="0.3" stroke-width="0.5"/>
+</g>
+<g id="Polygon 1">
+<path d="M14.25 7.06699C14.5833 7.25944 14.5833 7.74056 14.25 7.93301L4.5 13.5622C4.16667 13.7546 3.75 13.5141 3.75 13.1292L3.75 1.87083C3.75 1.48593 4.16667 1.24537 4.5 1.43782L14.25 7.06699Z" fill="url(#paint2_linear_1_600)"/>
+<path d="M14.125 7.2832C14.2707 7.36735 14.2888 7.56197 14.1797 7.67383L14.125 7.7168L4.375 13.3457C4.20834 13.4419 4 13.3214 4 13.1289L4 1.87109C4 1.70289 4.15917 1.5895 4.31055 1.62793L4.375 1.6543L14.125 7.2832Z" stroke="url(#paint3_linear_1_600)" stroke-opacity="0.3" stroke-width="0.5"/>
+</g>
+</g>
+<defs>
+<linearGradient id="paint0_linear_1_600" x1="18.6025" y1="6.48566" x2="9" y2="7" gradientUnits="userSpaceOnUse">
+<stop stop-color="#08AF76"/>
+<stop offset="1" stop-color="#ADFFE3" stop-opacity="0"/>
+</linearGradient>
+<linearGradient id="paint1_linear_1_600" x1="21" y1="7.5" x2="7.5" y2="7" gradientUnits="userSpaceOnUse">
+<stop stop-color="white"/>
+<stop offset="1" stop-color="white" stop-opacity="0"/>
+</linearGradient>
+<linearGradient id="paint2_linear_1_600" x1="12.6025" y1="6.48566" x2="3" y2="7" gradientUnits="userSpaceOnUse">
+<stop stop-color="#08AF76"/>
+<stop offset="1" stop-color="#ADFFE3" stop-opacity="0"/>
+</linearGradient>
+<linearGradient id="paint3_linear_1_600" x1="15" y1="7.5" x2="1.5" y2="7" gradientUnits="userSpaceOnUse">
+<stop stop-color="white"/>
+<stop offset="1" stop-color="white" stop-opacity="0"/>
+</linearGradient>
+</defs>
+</svg>

@@ -19,95 +19,40 @@ import { LucideAngularModule } from "lucide-angular";
             class="h-6 w-6 text-white"
           ></lucide-angular>
         </div>
-        <div class="ml-2 text-white/70">xxxx</div>
+        <div class="ml-2 text-white/70">Tudor AI</div>
       </div>
 
       <!-- Navigation -->
       <nav class="mt-6">
         <!-- Project section -->
-        <div class="px-4 py-2">
+        <div class="px-4 py-4">
           <div class="flex items-center">
-            <lucide-angular
-              name="folder"
-              class="h-5 w-5 text-white/70"
-            ></lucide-angular>
-            <span class="ml-2 text-sm text-white/70">项目</span>
-          </div>
-        </div>
-
-        <!-- Tasks section -->
-        <div class="mt-4 px-4 py-2 bg-green-500/20">
-          <div class="flex items-center">
-            <lucide-angular
-              name="circle"
-              class="h-5 w-5 text-green-500"
-            ></lucide-angular>
-            <span class="ml-2 text-sm text-white">随机任务</span>
-            <lucide-angular
-              name="chevron-right"
-              class="h-5 w-5 ml-auto text-white"
-            ></lucide-angular>
-          </div>
-        </div>
-
-        <!-- Sections with icons -->
-        <div class="mt-2 px-4 py-2">
-          <div class="flex items-center">
-            <lucide-angular
-              name="settings"
-              class="h-5 w-5 text-white/70"
-            ></lucide-angular>
-            <span class="ml-2 text-sm text-white/70">使用记录</span>
-          </div>
-        </div>
-
-        <div class="mt-2 px-4 py-2">
-          <div class="flex items-center">
-            <lucide-angular
-              name="book"
-              class="h-5 w-5 text-white/70"
-            ></lucide-angular>
-            <span class="ml-2 text-sm text-white/70">学术Review</span>
-          </div>
-        </div>
-
-        <div class="mt-2 px-4 py-2">
-          <div class="flex items-center">
-            <lucide-angular
-              name="image"
-              class="h-5 w-5 text-white/70"
-            ></lucide-angular>
-            <span class="ml-2 text-sm text-white/70">相关案例</span>
+            <img src="/assets/images/icon/data.svg" alt="" />
+            <span class="ml-2 text-sm text-white/70">Projects</span>
           </div>
         </div>
 
         <!-- Documents List -->
-        <div class="mt-6">
-          <div class="px-4 py-2 border-l-2 border-l-transparent">
+        <div class="mt-1">
+          <div class="px-4 py-4 border-l-2 border-l-transparent">
             <div class="flex items-center">
-              <lucide-angular
-                name="file-text"
-                class="h-5 w-5 text-white/70"
-              ></lucide-angular>
+              <img src="/assets/images/icon/notes.svg" alt="" />
               <span class="ml-2 text-sm text-white/70">Essay01</span>
             </div>
           </div>
-          <div class="px-4 py-2 border-l-2 border-l-green-500 bg-green-500/10">
-            <div class="flex items-center">
-              <lucide-angular
-                name="file-text"
-                class="h-5 w-5 text-green-500"
-              ></lucide-angular>
-              <span class="ml-2 text-sm text-white">Essay02</span>
-            </div>
-          </div>
-          <div class="px-4 py-2 border-l-2 border-l-transparent">
-            <div class="flex items-center">
-              <lucide-angular
-                name="file-text"
-                class="h-5 w-5 text-white/70"
-              ></lucide-angular>
-              <span class="ml-2 text-sm text-white/70">Example Essay</span>
+          <div class="px-4 py-4 border-l-2 border-l-green-500 bg-green-500/10">
+            <div
+              class="flex items-center"
+              style="justify-content: space-between"
+            >
+              <div class="flex items-center">
+                <div class="activate-note">
+                  <img src="/assets/images/icon/note-unactivate.svg" alt="" />
+                </div>
+                <span class="ml-2 text-sm text-white">Essay02</span>
+              </div>
+
+              <img src="/assets/images/icon/dark-arrow.svg" alt="" />
             </div>
           </div>
         </div>
@@ -118,6 +63,19 @@ import { LucideAngularModule } from "lucide-angular";
     `
       .sidebar {
         border-right: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .activate-note {
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        background: #05a76f;
+        border-radius: 5px;
+        stroke: rgba(255, 255, 255, 0.3);
+        filter: drop-shadow(0px 5px 8px rgba(0, 8, 26, 0.4));
       }
     `,
   ],
