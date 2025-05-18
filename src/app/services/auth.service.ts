@@ -246,4 +246,8 @@ export class AuthService {
   getUserRoleId(): Observable<string> {
     return this.userRoleIdSubject.asObservable();
   }
+
+  getUserEmail(): Observable<string> {
+    return this.userEmailSubject.asObservable();
+  }
 }
