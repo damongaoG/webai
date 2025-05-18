@@ -13,6 +13,15 @@ export const routes: Routes = [
     },
   },
   {
+    path: "dashboard",
+    loadComponent: () =>
+      import("./views/dashboard/dashboard.component").then(
+        (mod) => mod.DashboardComponent,
+      ),
+    canActivate: [authGuard],
+    data: { title: "Dashboard" },
+  },
+  {
     path: "forget-password",
     component: ForgetPasswordComponent,
     data: { title: "Forget Password" },
