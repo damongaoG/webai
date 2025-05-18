@@ -2,7 +2,6 @@ import { isPlatformBrowser } from "@angular/common";
 import { HttpClient, HttpHeaders } from "@angular/common/http";
 import { Inject, Injectable, PLATFORM_ID } from "@angular/core";
 import { Router } from "@angular/router";
-import { NzMessageService } from "ng-zorro-antd/message";
 import { BehaviorSubject, from, Observable, switchMap, tap } from "rxjs";
 import { LoginAdminDto } from "../interfaces/login-admin-dto";
 import { LoginAdminVo } from "../interfaces/login-admin-vo";
@@ -11,7 +10,6 @@ import { RegistryCustomerVo } from "../interfaces/registry-customer-vo";
 import { ResendValidateEmailDto } from "../interfaces/resend-validate-email-dto";
 import { Result } from "../interfaces/result";
 import { ForgetPasswordDto } from "../interfaces/forget-password-dto";
-import { ValidateEmailDto } from "../interfaces/validate-email-dto";
 import { ValidateForgetPasswordDto } from "../interfaces/validate-forget-password-dto";
 import { environment } from "@environment/environment";
 import { ToastService } from "../shared";
@@ -37,11 +35,11 @@ export class AuthService {
     private router: Router,
     private http: HttpClient,
     @Inject(PLATFORM_ID) private platformId: Object,
-    private toastService: ToastService
+    private toastService: ToastService,
   ) {
     if (isPlatformBrowser(this.platformId)) {
       this.isAuthenticatedSubject = new BehaviorSubject<boolean>(
-        this.hasValidToken()
+        this.hasValidToken(),
       );
     }
   }
@@ -77,7 +75,7 @@ export class AuthService {
           } else {
             this.toastService.error("Login failed");
           }
-        })
+        }),
       );
   }
 
@@ -97,7 +95,7 @@ export class AuthService {
 
           this.completeLogout();
           return from(Promise.resolve(result));
-        })
+        }),
       );
   }
 
@@ -138,7 +136,7 @@ export class AuthService {
             const hasRestrictedRole = result.data?.roles?.[0]?.id === "1";
             const currentUrl = this.router.url;
             const isRestrictedRoute = this.restrictedRoutes.some((route) =>
-              currentUrl.startsWith(route)
+              currentUrl.startsWith(route),
             );
 
             // Redirect to login if user has role ID "1" and is trying to access a restricted route
@@ -156,7 +154,7 @@ export class AuthService {
             this.userEmailSubject.next("User");
             this.userIdSubject.next("");
           }
-        })
+        }),
       );
   }
 
@@ -164,7 +162,7 @@ export class AuthService {
     if (this.isRefreshing) {
       return true;
     }
-    return this.hasValidToken();
+    return this.isAuthenticatedSubject.getValue();
   }
 
   private hasValidToken(): boolean {
@@ -179,11 +177,6 @@ export class AuthService {
       localStorage.setItem(this.tokenKey, value);
     }
   }
-
-  getUserEmail(): Observable<string> {
-    return this.userEmailSubject.asObservable();
-  }
-
   private removeToken() {
     if (isPlatformBrowser(this.platformId)) {
       localStorage.removeItem(this.tokenKey);
@@ -204,23 +197,14 @@ export class AuthService {
           } else {
             this.toastService.error("Registration error");
           }
-        })
+        }),
       );
   }
-
-  validateEmail(data: ValidateEmailDto): Observable<Result<any>> {
-    return this.http.post<Result<any>>(
-      `${this.apiUrl}/anon/auth/validate-email`,
-      data,
-      { headers: this.headers }
-    );
-  }
-
   resendValidateEmail(data: ResendValidateEmailDto): Observable<Result<any>> {
     return this.http.post<Result<any>>(
       `${this.apiUrl}/anon/auth/resend-validate-email`,
       data,
-      { headers: this.headers }
+      { headers: this.headers },
     );
   }
 
@@ -228,17 +212,17 @@ export class AuthService {
     return this.http.post<Result<any>>(
       `${this.apiUrl}/anon/auth/forget-password`,
       data,
-      { headers: this.headers }
+      { headers: this.headers },
     );
   }
 
   validateForgetPassword(
-    data: ValidateForgetPasswordDto
+    data: ValidateForgetPasswordDto,
   ): Observable<Result<any>> {
     return this.http.post<Result<any>>(
       `${this.apiUrl}/anon/auth/validate-forget-password`,
       data,
-      { headers: this.headers }
+      { headers: this.headers },
     );
   }
 
