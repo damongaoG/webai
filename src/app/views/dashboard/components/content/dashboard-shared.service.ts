@@ -15,12 +15,12 @@ export interface EssayContent {
 export class DashboardSharedService {
   // Available task items
   private taskItems = signal<TaskItem[]>([
-    { id: "keywords", name: "关键词", isSelected: false },
-    { id: "topic", name: "题目任务", isSelected: false },
-    { id: "arguments", name: "使用论点", isSelected: false },
-    { id: "review", name: "学术review", isSelected: false },
-    { id: "cases", name: "相关案例", isSelected: false },
-    { id: "examples", name: "example essay", isSelected: false },
+    { id: "keywords", name: "Keywords", isSelected: false },
+    { id: "topic", name: "Assignment task", isSelected: false },
+    { id: "arguments", name: "Use arguments", isSelected: false },
+    { id: "review", name: "Academic review", isSelected: false },
+    { id: "cases", name: "Relevant case studies", isSelected: false },
+    { id: "examples", name: "Example essay", isSelected: false },
   ]);
 
   // Current selected task

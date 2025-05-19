@@ -1,0 +1,23 @@
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<foreignObject x="-6" y="-10" width="44" height="44"><div xmlns="http://www.w3.org/1999/xhtml" style="backdrop-filter:blur(5px);clip-path:url(#bgblur_0_1_2542_clip_path);height:100%;width:100%"></div></foreignObject><g filter="url(#filter0_d_1_2542)" data-figma-bg-blur-radius="10">
+<path fill-rule="evenodd" clip-rule="evenodd" d="M4 8C4 3.58172 7.58172 0 12 0H20C24.4183 0 28 3.58172 28 8V16C28 20.4183 24.4183 24 20 24H12C7.58172 24 4 20.4183 4 16V8Z" fill="white" fill-opacity="0.4" shape-rendering="crispEdges"/>
+<path d="M12 0.25H20C24.2802 0.25 27.75 3.71979 27.75 8V16C27.75 20.2802 24.2802 23.75 20 23.75H12C7.71979 23.75 4.25 20.2802 4.25 16V8C4.25 3.71979 7.71979 0.25 12 0.25Z" stroke="white" stroke-width="0.5" shape-rendering="crispEdges"/>
+</g>
+<path d="M10.25 13.375L11.8125 5.875H21.1875L22.75 13.375" stroke="#05A76F" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M10.25 13.375H13.6591L14.2273 15.25H18.7727L19.3409 13.375H22.75V17.4375H10.25V13.375Z" fill="#05A76F" stroke="#05A76F" stroke-linejoin="round"/>
+<path d="M14.9375 8.375H18.0625" stroke="#05A76F" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M14 10.875H19" stroke="#05A76F" stroke-linecap="round" stroke-linejoin="round"/>
+<defs>
+<filter id="filter0_d_1_2542" x="-6" y="-10" width="44" height="44" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="4"/>
+<feGaussianBlur stdDeviation="2"/>
+<feComposite in2="hardAlpha" operator="out"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.05 0"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_1_2542"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_1_2542" result="shape"/>
+</filter>
+<clipPath id="bgblur_0_1_2542_clip_path" transform="translate(6 10)"><path fill-rule="evenodd" clip-rule="evenodd" d="M4 8C4 3.58172 7.58172 0 12 0H20C24.4183 0 28 3.58172 28 8V16C28 20.4183 24.4183 24 20 24H12C7.58172 24 4 20.4183 4 16V8Z"/>
+</clipPath></defs>
+</svg>
