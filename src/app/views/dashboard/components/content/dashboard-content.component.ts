@@ -18,15 +18,15 @@ import { DashboardSharedService } from "./dashboard-shared.service";
   ],
   providers: [DashboardSharedService],
   template: `
-    <div class="content-container h-full p-6 bg-[#121212] flex flex-row">
+    <div class="content-container h-full bg-[#121212] flex flex-row">
       <!-- Left Sidebar -->
-      <app-sidebar class="w-1/4 mr-4"></app-sidebar>
+      <app-sidebar class="w-1/6 mr-4"></app-sidebar>
 
       <!-- Main Content Area -->
-      <app-main-content class="w-2/4 mx-4"></app-main-content>
+      <app-main-content class="w-3/6 mx-4"></app-main-content>
 
       <!-- Right Sample Essay Area -->
-      <app-sample-essay class="w-1/4 ml-4"></app-sample-essay>
+      <app-sample-essay class="w-2/6 ml-4"></app-sample-essay>
     </div>
   `,
   styles: [

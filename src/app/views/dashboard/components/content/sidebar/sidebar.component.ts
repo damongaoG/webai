@@ -42,6 +42,11 @@ import { DashboardSharedService } from "../dashboard-shared.service";
     `
       .sidebar {
         min-width: 250px;
+        background-color: #fff;
+        stroke-width: 2px;
+        stroke: rgba(255, 255, 255, 0.23);
+        filter: drop-shadow(2px 0px 4px rgba(0, 0, 0, 0.05));
+        backdrop-filter: blur(5px);
       }
     `,
   ],
