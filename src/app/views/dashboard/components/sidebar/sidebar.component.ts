@@ -27,7 +27,7 @@ import { LucideAngularModule } from "lucide-angular";
         <!-- Project section -->
         <div class="px-4 py-4">
           <div class="flex items-center">
-            <img src="/assets/images/icon/data.svg" alt="" />
+            <img class="w-8" src="/assets/images/icon/data.svg" alt="" />
             <span class="ml-2 text-sm text-white/70">Projects</span>
           </div>
         </div>
@@ -36,7 +36,7 @@ import { LucideAngularModule } from "lucide-angular";
         <div class="mt-1">
           <div class="px-4 py-4 border-l-2 border-l-transparent">
             <div class="flex items-center">
-              <img src="/assets/images/icon/notes.svg" alt="" />
+              <img class="w-8" src="/assets/images/icon/notes.svg" alt="" />
               <span class="ml-2 text-sm text-white/70">Essay01</span>
             </div>
           </div>
@@ -47,7 +47,7 @@ import { LucideAngularModule } from "lucide-angular";
             >
               <div class="flex items-center">
                 <div class="activate-note">
-                  <img src="/assets/images/icon/note-unactivate.svg" alt="" />
+                  <img class="w-5" src="/assets/images/icon/note-unactivate.svg" alt="" />
                 </div>
                 <span class="ml-2 text-sm text-white">Essay02</span>
               </div>
@@ -66,14 +66,14 @@ import { LucideAngularModule } from "lucide-angular";
       }
 
       .activate-note {
-        width: 24px;
-        height: 24px;
+        width: 32px;
+        height: 32px;
         display: flex;
         align-items: center;
         justify-content: center;
 
         background: #05a76f;
-        border-radius: 5px;
+        border-radius: 8px;
         stroke: rgba(255, 255, 255, 0.3);
         filter: drop-shadow(0px 5px 8px rgba(0, 8, 26, 0.4));
       }

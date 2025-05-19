@@ -1,22 +1,7 @@
-<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-<foreignObject x="-6" y="-10" width="44" height="44"><div xmlns="http://www.w3.org/1999/xhtml" style="backdrop-filter:blur(5px);clip-path:url(#bgblur_0_1_2539_clip_path);height:100%;width:100%"></div></foreignObject><g filter="url(#filter0_d_1_2539)" data-figma-bg-blur-radius="10">
-<path fill-rule="evenodd" clip-rule="evenodd" d="M4 8C4 3.58172 7.58172 0 12 0H20C24.4183 0 28 3.58172 28 8V16C28 20.4183 24.4183 24 20 24H12C7.58172 24 4 20.4183 4 16V8Z" fill="white" fill-opacity="0.4" shape-rendering="crispEdges"/>
-<path d="M12 0.25H20C24.2802 0.25 27.75 3.71979 27.75 8V16C27.75 20.2802 24.2802 23.75 20 23.75H12C7.71979 23.75 4.25 20.2802 4.25 16V8C4.25 3.71979 7.71979 0.25 12 0.25Z" stroke="white" stroke-width="0.5" shape-rendering="crispEdges"/>
+<svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Book-one (&#228;&#185;&#166;&#231;&#177;&#141;1)">
+<path id="Vector" d="M2.04175 10.7917C2.04175 8.54491 2.04175 3.20837 2.04175 3.20837C2.04175 2.24188 2.82525 1.45837 3.79175 1.45837H10.2084V9.04171C10.2084 9.04171 5.31792 9.04171 3.79175 9.04171C2.82925 9.04171 2.04175 9.8246 2.04175 10.7917Z" fill="#05A76F" stroke="#05A76F" stroke-linejoin="round"/>
+<path id="Vector_2" d="M10.2084 9.04163C10.2084 9.04163 4.12824 9.04163 3.79175 9.04163C2.82525 9.04163 2.04175 9.82513 2.04175 10.7916C2.04175 11.7581 2.82525 12.5416 3.79175 12.5416C4.43607 12.5416 7.54719 12.5416 11.9584 12.5416V2.04163" stroke="#05A76F" stroke-linecap="round" stroke-linejoin="round"/>
+<path id="Vector_3" d="M4.08325 10.7916H9.91659" stroke="#05A76F" stroke-linecap="round" stroke-linejoin="round"/>
 </g>
-<path d="M11.0417 15.7917C11.0417 13.5449 11.0417 8.20837 11.0417 8.20837C11.0417 7.24188 11.8252 6.45837 12.7917 6.45837H19.2084V14.0417C19.2084 14.0417 14.3179 14.0417 12.7917 14.0417C11.8292 14.0417 11.0417 14.8246 11.0417 15.7917Z" fill="#05A76F" stroke="#05A76F" stroke-linejoin="round"/>
-<path d="M19.2084 14.0416C19.2084 14.0416 13.1282 14.0416 12.7917 14.0416C11.8252 14.0416 11.0417 14.8251 11.0417 15.7916C11.0417 16.7581 11.8252 17.5416 12.7917 17.5416C13.4361 17.5416 16.5472 17.5416 20.9584 17.5416V7.04163" stroke="#05A76F" stroke-linecap="round" stroke-linejoin="round"/>
-<path d="M13.0833 15.7916H18.9166" stroke="#05A76F" stroke-linecap="round" stroke-linejoin="round"/>
-<defs>
-<filter id="filter0_d_1_2539" x="-6" y="-10" width="44" height="44" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
-<feFlood flood-opacity="0" result="BackgroundImageFix"/>
-<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
-<feOffset dy="4"/>
-<feGaussianBlur stdDeviation="2"/>
-<feComposite in2="hardAlpha" operator="out"/>
-<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.05 0"/>
-<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_1_2539"/>
-<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_1_2539" result="shape"/>
-</filter>
-<clipPath id="bgblur_0_1_2539_clip_path" transform="translate(6 10)"><path fill-rule="evenodd" clip-rule="evenodd" d="M4 8C4 3.58172 7.58172 0 12 0H20C24.4183 0 28 3.58172 28 8V16C28 20.4183 24.4183 24 20 24H12C7.58172 24 4 20.4183 4 16V8Z"/>
-</clipPath></defs>
 </svg>
