@@ -4,6 +4,7 @@ export interface TaskItem {
   id: string;
   name: string;
   isSelected: boolean;
+  isHovered?: boolean;
 }
 
 export interface EssayContent {
@@ -60,6 +61,11 @@ export class DashboardSharedService {
     this.selectedTask.set(
       updatedTasks.find((task) => task.id === taskId) || null,
     );
+  }
+
+  // Update task items
+  updateTaskItems(tasks: TaskItem[]) {
+    this.taskItems.set(tasks);
   }
 
   generateContent() {
