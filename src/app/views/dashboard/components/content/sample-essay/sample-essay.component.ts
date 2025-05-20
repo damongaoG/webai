@@ -9,7 +9,7 @@ import { DashboardSharedService } from "../dashboard-shared.service";
   imports: [CommonModule, LucideAngularModule],
   template: `
     <div
-      class="sample-essay h-full rounded-lg border border-gray-700 bg-[#1A1A1A] flex flex-col overflow-hidden"
+      class="sample-essay h-full rounded-lg border bg-[#1A1A1A] flex flex-col overflow-hidden"
     >
       <!-- Header -->
       <div class="p-4 border-b border-gray-700">

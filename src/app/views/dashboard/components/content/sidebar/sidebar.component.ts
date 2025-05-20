@@ -8,7 +8,7 @@ import { DashboardSharedService } from "../dashboard-shared.service";
   imports: [CommonModule],
   template: `
     <div
-      class="sidebar h-full rounded-lg border border-gray-700 bg-[#1A1A1A] p-4 overflow-y-auto"
+      class="sidebar h-full rounded-lg border bg-[#1A1A1A] p-4 overflow-y-auto"
     >
       <div class="task-list space-y-2">
         @for (task of dashboardService.getTaskItems()(); track task.id) {

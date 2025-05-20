@@ -17,7 +17,7 @@ import { DashboardContentComponent } from "./components/content/dashboard-conten
       <app-dashboard-sidebar></app-dashboard-sidebar>
 
       <!-- Main Content Area -->
-      <div class="flex-1 flex flex-col overflow-hidden">
+      <div class="flex-1 flex flex-col overflow-hidden main-content-area">
         <!-- Header -->
         <app-dashboard-header></app-dashboard-header>
 
@@ -32,6 +32,13 @@ import { DashboardContentComponent } from "./components/content/dashboard-conten
     `
       .dashboard-container {
         background-color: #0c0c0c;
+      }
+
+      .main-content-area {
+        background-image: url("/assets/images/bg.png");
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
       }
     `,
   ],

@@ -10,7 +10,7 @@ import { AuthService } from "@/app/services/auth.service";
   imports: [CommonModule, LucideAngularModule],
   template: `
     <div
-      class="header-container flex items-center justify-between p-4 border-b border-gray-700"
+      class="header-container flex items-center justify-between p-4 border-b"
     >
       <!-- Title -->
       <div class="title">Essay02</div>
