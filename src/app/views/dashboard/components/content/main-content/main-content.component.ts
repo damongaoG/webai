@@ -9,89 +9,32 @@ import { DashboardSharedService } from "../dashboard-shared.service";
   imports: [CommonModule, LucideAngularModule],
   template: `
     <div class="main-content h-full flex flex-col">
-      <!-- AI Assistant section with essay title -->
-      <div class="flex items-center mb-8">
+      <!-- File upload success notification -->
+      <div class="file-upload-notification">
         <div
-          class="ai-avatar flex-shrink-0 h-12 w-12 rounded-full bg-green-500/20 flex items-center justify-center"
+          class="w-[520px] h-32 bg-gradient-to-l from-white/40 to-white/0 rounded-lg border-2 border-white backdrop-blur-[5px]"
+          style=" display: flex;
+        align-items: center;"
         >
-          <img
-            src="assets/images/ai/robot.png"
-            alt="AI Assistant"
-            class="h-8 w-8"
-          />
+          <div class="file-icon">
+            <img src="/assets/images/icon/document.svg" alt="Document" />
+          </div>
+          <div class="file-info">
+            <div class="file-name">XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX.doc</div>
+            <div class="upload-status">
+              <div class="status-icon">
+                <img src="/assets/images/icon/check-one.svg" alt="Success" />
+              </div>
+              <div class="status-text">Uploaded</div>
+              <div class="upload-time">2025-05-02 14:15:12</div>
+
+              <div class="delete-button">
+                <img src="/assets/images/icon/delete.svg" alt="Delete" />
+                <div class="upload-time" style="margin-left: 8px">Delete</div>
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="ml-4">
-          <h2 class="text-white text-xl font-medium">
-            Your Sample Essay
-            <span class="ml-2 text-green-500 text-sm">✨</span>
-          </h2>
-          <p class="text-white/50 text-sm">Select a task and generate essay</p>
-        </div>
-      </div>
-
-      <!-- Instructions or selected task info -->
-      <div class="mb-6 text-white/70 text-sm">
-        @if (!dashboardService.getSelectedTask()()) {
-          Please select an appropriate item on the left and click the "Generate"
-          button to view the article.
-        } @else {
-          Selected task:
-          <span class="text-green-500">{{
-            dashboardService.getSelectedTask()()?.name
-          }}</span>
-        }
-      </div>
-
-      <!-- Content area -->
-      <div
-        class="flex-1 flex flex-col items-center justify-center rounded-lg border border-gray-700 p-6"
-      >
-        @if (!dashboardService.getSelectedTask()()) {
-          <!-- Empty state -->
-          <p class="text-white/70 mb-4 text-center">
-            You don't have any tasks selected yet.
-          </p>
-          <p class="text-white/70 mb-6 text-center">
-            Start by selecting a task from the sidebar.
-          </p>
-        } @else if (!dashboardService.getIsGenerated()()) {
-          <!-- Task selected but not generated yet -->
-          <p class="text-white/70 mb-4 text-center">
-            Task selected: {{ dashboardService.getSelectedTask()()?.name }}
-          </p>
-          <p class="text-white/70 mb-6 text-center">
-            Click the Generate button to create a sample essay.
-          </p>
-        } @else {
-          <!-- Content generated -->
-          <p class="text-white/70 mb-4 text-center">
-            Your sample essay has been generated based on the selected task.
-          </p>
-          <p class="text-white/70 mb-6 text-center">
-            You can view it in the panel on the right.
-          </p>
-        }
-
-        <!-- Generate button -->
-        <button
-          class="flex items-center bg-green-500/20 text-green-500 py-3 px-6 rounded-full hover:bg-green-500/30 transition-colors"
-          [disabled]="!dashboardService.getSelectedTask()()"
-          [class.opacity-50]="!dashboardService.getSelectedTask()()"
-          (click)="generateEssay()"
-        >
-          <lucide-angular
-            [name]="
-              dashboardService.getIsGenerated()() ? 'refresh-cw' : 'download'
-            "
-            class="h-5 w-5 mr-2"
-          >
-          </lucide-angular>
-          {{ dashboardService.getIsGenerated()() ? "Regenerate" : "Generate" }}
-          <lucide-angular
-            name="arrow-right"
-            class="h-5 w-5 ml-2"
-          ></lucide-angular>
-        </button>
       </div>
     </div>
   `,
@@ -99,6 +42,112 @@ import { DashboardSharedService } from "../dashboard-shared.service";
     `
       .main-content {
         min-width: 400px;
+        background-image: url("/assets/images/bg.png");
+        background-size: cover;
+        background-repeat: no-repeat;
+        position: relative;
+      }
+
+      /* File upload notification styles */
+      .file-upload-notification {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        z-index: 10;
+      }
+
+      .file-container {
+        display: flex;
+        align-items: center;
+        background-color: white;
+        border-radius: 8px;
+        padding: 12px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        max-width: 520px;
+        height: 128px;
+
+        fill: linear-gradient(
+          0deg,
+          rgba(255, 255, 255, 0.43) 0%,
+          rgba(255, 255, 255, 0) 100%
+        );
+        stroke-width: 2px;
+        stroke: #fff;
+        backdrop-filter: blur(5px);
+      }
+
+      .file-icon {
+        margin-right: 12px;
+      }
+
+      .file-icon img {
+        width: 79px;
+        height: 69px;
+      }
+
+      .file-info {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        height: 54%;
+      }
+
+      .file-name {
+        color: #333;
+        font-family: "Source Han Sans CN", sans-serif;
+        font-size: 16px;
+        font-style: normal;
+        font-weight: 500;
+        line-height: normal;
+      }
+
+      .upload-status {
+        display: flex;
+        align-items: center;
+        color: #05a76f;
+        font-size: 14px;
+      }
+
+      .status-icon {
+        margin-right: 4px;
+      }
+
+      .status-icon img {
+        width: 18px;
+        height: 18px;
+      }
+
+      .status-text {
+        margin-right: 8px;
+      }
+
+      .upload-time {
+        color: #666;
+        font-family: "Source Han Sans CN", sans-serif;
+        font-size: 16px;
+        font-style: normal;
+        font-weight: 400;
+        line-height: normal;
+        margin-left: 12px;
+
+        opacity: 0.8;
+      }
+
+      .delete-button {
+        cursor: pointer;
+        padding: 4px;
+
+        display: flex;
+        align-items: center;
+        flex-direction: row;
+
+        margin-left: 60px;
+      }
+
+      .delete-button img {
+        width: 20px;
+        height: 20px;
       }
     `,
   ],

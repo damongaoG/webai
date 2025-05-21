@@ -18,7 +18,10 @@ import { DashboardSharedService } from "./dashboard-shared.service";
   ],
   providers: [DashboardSharedService],
   template: `
-    <div class="content-container h-full bg-[#121212] flex flex-row">
+    <div
+      class="content-container h-full flex flex-row"
+      style="background: #F3F6F8;"
+    >
       <!-- Left Sidebar -->
       <app-sidebar class="w-1/6 mr-4"></app-sidebar>
 

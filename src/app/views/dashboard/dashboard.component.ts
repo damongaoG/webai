@@ -34,12 +34,6 @@ import { DashboardContentComponent } from "./components/content/dashboard-conten
         background-color: #0c0c0c;
       }
 
-      .main-content-area {
-        background-image: url("/assets/images/bg.png");
-        background-size: cover;
-        background-position: center;
-        background-repeat: no-repeat;
-      }
     `,
   ],
 })

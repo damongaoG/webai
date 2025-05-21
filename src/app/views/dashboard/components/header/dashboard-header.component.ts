@@ -10,7 +10,7 @@ import { AuthService } from "@/app/services/auth.service";
   imports: [CommonModule, LucideAngularModule],
   template: `
     <div
-      class="header-container flex items-center justify-between p-4 border-b"
+      class="h-20 bg-white/40 shadow-[0px_2px_4px_0px_rgba(0,0,0,0.05)] border-2 border-white backdrop-blur-[5px] flex items-center justify-between p-4 border-b header-container"
     >
       <!-- Title -->
       <div class="title">Essay02</div>
@@ -41,12 +41,6 @@ import { AuthService } from "@/app/services/auth.service";
 
       .header-container {
         background-color: #fff;
-
-        fill: rgba(255, 255, 255, 0.4);
-        stroke-width: 2px;
-        stroke: #fff;
-        filter: drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.05));
-        backdrop-filter: blur(5px);
       }
     `,
   ],
