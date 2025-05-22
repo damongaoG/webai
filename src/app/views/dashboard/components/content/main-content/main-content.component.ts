@@ -36,6 +36,15 @@ import { DashboardSharedService } from "../dashboard-shared.service";
           </div>
         </div>
       </div>
+
+      <div
+        class="h-20 bg-white/40 shadow-[0px_4px_4px_0px_rgba(0,0,0,0.05)] border-2 border-white backdrop-blur-[5px]"
+        style="margin-top: 2rem;"
+      ></div>
+
+      <!-- <div
+        class="h-80 bg-white/40 shadow-[0px_4px_4px_0px_rgba(0,0,0,0.05)] border-2 border-white backdrop-blur-[5px]"
+      ></div> -->
     </div>
   `,
   styles: [
@@ -50,30 +59,8 @@ import { DashboardSharedService } from "../dashboard-shared.service";
 
       /* File upload notification styles */
       .file-upload-notification {
-        position: absolute;
-        top: 20px;
-        left: 20px;
+        margin-top: 2rem;
         z-index: 10;
-      }
-
-      .file-container {
-        display: flex;
-        align-items: center;
-        background-color: white;
-        border-radius: 8px;
-        padding: 12px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        max-width: 520px;
-        height: 128px;
-
-        fill: linear-gradient(
-          0deg,
-          rgba(255, 255, 255, 0.43) 0%,
-          rgba(255, 255, 255, 0) 100%
-        );
-        stroke-width: 2px;
-        stroke: #fff;
-        backdrop-filter: blur(5px);
       }
 
       .file-icon {
