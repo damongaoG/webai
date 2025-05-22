@@ -66,6 +66,7 @@ import { DashboardSharedService, TaskItem } from "../dashboard-shared.service";
         font-style: normal;
         font-weight: 400;
         line-height: normal;
+        font-family: "Source Han Sans CN", sans-serif;
       }
 
       .icon-container {

@@ -37,6 +37,7 @@ import { AuthService } from "@/app/services/auth.service";
         font-style: normal;
         font-weight: 700;
         line-height: normal;
+        font-family: "Source Han Sans CN", sans-serif;
       }
 
       .header-container {

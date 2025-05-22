@@ -1,12 +1,11 @@
 import { Component } from "@angular/core";
 import { CommonModule } from "@angular/common";
-import { RouterLink, RouterLinkActive } from "@angular/router";
 import { LucideAngularModule } from "lucide-angular";
 
 @Component({
   selector: "app-dashboard-sidebar",
   standalone: true,
-  imports: [CommonModule, RouterLink, RouterLinkActive, LucideAngularModule],
+  imports: [CommonModule, LucideAngularModule],
   template: `
     <div class="sidebar h-screen w-64 bg-black text-white">
       <!-- Logo section -->
@@ -28,7 +27,7 @@ import { LucideAngularModule } from "lucide-angular";
         <div class="px-4 py-4">
           <div class="flex items-center">
             <img class="w-8" src="/assets/images/icon/data.svg" alt="" />
-            <span class="ml-2 text-sm text-white/70">Projects</span>
+            <span class="ml-2 text-sm text-white/70 title">Projects</span>
           </div>
         </div>
 
@@ -37,7 +36,7 @@ import { LucideAngularModule } from "lucide-angular";
           <div class="px-4 py-4 border-l-2 border-l-transparent">
             <div class="flex items-center">
               <img class="w-8" src="/assets/images/icon/notes.svg" alt="" />
-              <span class="ml-2 text-sm text-white/70">Essay01</span>
+              <span class="ml-2 text-sm text-white/70 title">Essay01</span>
             </div>
           </div>
           <div class="px-4 py-4 border-l-2 border-l-green-500 bg-green-500/10">
@@ -47,9 +46,13 @@ import { LucideAngularModule } from "lucide-angular";
             >
               <div class="flex items-center">
                 <div class="activate-note">
-                  <img class="w-5" src="/assets/images/icon/note-unactivate.svg" alt="" />
+                  <img
+                    class="w-5"
+                    src="/assets/images/icon/note-unactivate.svg"
+                    alt=""
+                  />
                 </div>
-                <span class="ml-2 text-sm text-white">Essay02</span>
+                <span class="ml-2 text-sm text-white title">Essay02</span>
               </div>
 
               <img src="/assets/images/icon/dark-arrow.svg" alt="" />
@@ -76,6 +79,10 @@ import { LucideAngularModule } from "lucide-angular";
         border-radius: 8px;
         stroke: rgba(255, 255, 255, 0.3);
         filter: drop-shadow(0px 5px 8px rgba(0, 8, 26, 0.4));
+      }
+
+      .title {
+        font-family: "Source Han Sans CN", sans-serif;
       }
     `,
   ],

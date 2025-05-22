@@ -80,6 +80,178 @@ import { DashboardSharedService } from "../dashboard-shared.service";
         </div>
       </div>
 
+      <!-- Assignment task group with star and expand icons -->
+      <div
+        class="h-20 bg-white/40 shadow-[0px_4px_4px_0px_rgba(0,0,0,0.05)] border-2 border-white backdrop-blur-[5px] flex items-center justify-between px-6"
+        style="margin-top: 2rem;"
+      >
+        <div class="flex items-center">
+          <div class="icon-container mr-3">
+            <div class="task-container mr-3">
+              <img
+                src="/assets/images/icon/dark-task.svg"
+                class="w-5"
+                alt="task icon"
+              />
+            </div>
+            <div
+              class="justify-start text-zinc-800 text-xl font-bold keywords-title"
+            >
+              Assignment task
+            </div>
+            <img
+              src="/assets/images/icon/star.svg"
+              alt="Star"
+              class="w-6 h-6"
+            />
+          </div>
+        </div>
+        <div
+          class="cursor-pointer flex items-center  w-24 h-10 bg-[radial-gradient(ellipse_50.00%_50.00%_at_50.00%_50.00%,_#64E9A7_0%,_rgba(147,_238,_196,_0.50)_100%)] blur-[5px]"
+        ></div>
+        <div class="expand expand-icon">
+          <img
+            src="/assets/images/icon/expand-one.svg"
+            alt="Expand"
+            class="w-6 h-6"
+          />
+          <div
+            class="justify-start text-stone-500 text-sm font-normal keywords-title"
+          >
+            Expand
+          </div>
+        </div>
+      </div>
+
+      <!-- Use argument group with star and expand icons -->
+      <div
+        class="h-20 bg-white/40 shadow-[0px_4px_4px_0px_rgba(0,0,0,0.05)] border-2 border-white backdrop-blur-[5px] flex items-center justify-between px-6"
+        style="margin-top: 2rem;"
+      >
+        <div class="flex items-center">
+          <div class="icon-container mr-3">
+            <div class="task-container mr-3">
+              <img
+                src="/assets/images/icon/dark-argument-point.svg"
+                class="w-5"
+                alt="task icon"
+              />
+            </div>
+            <div
+              class="justify-start text-zinc-800 text-xl font-bold keywords-title"
+            >
+              Use arguments
+            </div>
+            <img
+              src="/assets/images/icon/star.svg"
+              alt="Star"
+              class="w-6 h-6"
+            />
+          </div>
+        </div>
+        <div
+          class="cursor-pointer flex items-center  w-24 h-10 bg-[radial-gradient(ellipse_50.00%_50.00%_at_50.00%_50.00%,_#64E9A7_0%,_rgba(147,_238,_196,_0.50)_100%)] blur-[5px]"
+        ></div>
+        <div class="expand expand-icon">
+          <img
+            src="/assets/images/icon/expand-one.svg"
+            alt="Expand"
+            class="w-6 h-6"
+          />
+          <div
+            class="justify-start text-stone-500 text-sm font-normal keywords-title"
+          >
+            Expand
+          </div>
+        </div>
+      </div>
+
+      <!-- Academic review group with star and expand icons -->
+      <div
+        class="h-20 bg-white/40 shadow-[0px_4px_4px_0px_rgba(0,0,0,0.05)] border-2 border-white backdrop-blur-[5px] flex items-center justify-between px-6"
+        style="margin-top: 2rem;"
+      >
+        <div class="flex items-center">
+          <div class="icon-container mr-3">
+            <div class="task-container mr-3">
+              <img
+                src="/assets/images/icon/dark-review.svg"
+                class="w-5"
+                alt="task icon"
+              />
+            </div>
+            <div
+              class="justify-start text-zinc-800 text-xl font-bold keywords-title"
+            >
+              Academic review
+            </div>
+            <img
+              src="/assets/images/icon/star.svg"
+              alt="Star"
+              class="w-6 h-6"
+            />
+          </div>
+        </div>
+        <div
+          class="cursor-pointer flex items-center  w-24 h-10 bg-[radial-gradient(ellipse_50.00%_50.00%_at_50.00%_50.00%,_#64E9A7_0%,_rgba(147,_238,_196,_0.50)_100%)] blur-[5px]"
+        ></div>
+        <div class="expand expand-icon">
+          <img
+            src="/assets/images/icon/expand-one.svg"
+            alt="Expand"
+            class="w-6 h-6"
+          />
+          <div
+            class="justify-start text-stone-500 text-sm font-normal keywords-title"
+          >
+            Expand
+          </div>
+        </div>
+      </div>
+
+      <!-- Relevant case studies group with star and expand icons -->
+      <div
+        class="h-20 bg-white/40 shadow-[0px_4px_4px_0px_rgba(0,0,0,0.05)] border-2 border-white backdrop-blur-[5px] flex items-center justify-between px-6"
+        style="margin-top: 2rem;"
+      >
+        <div class="flex items-center">
+          <div class="icon-container mr-3">
+            <div class="task-container mr-3">
+              <img
+                src="/assets/images/icon/dark-case.svg"
+                class="w-5"
+                alt="task icon"
+              />
+            </div>
+            <div
+              class="justify-start text-zinc-800 text-xl font-bold keywords-title"
+            >
+              Relevant case studies
+            </div>
+            <img
+              src="/assets/images/icon/star.svg"
+              alt="Star"
+              class="w-6 h-6"
+            />
+          </div>
+        </div>
+        <div
+          class="cursor-pointer flex items-center  w-24 h-10 bg-[radial-gradient(ellipse_50.00%_50.00%_at_50.00%_50.00%,_#64E9A7_0%,_rgba(147,_238,_196,_0.50)_100%)] blur-[5px]"
+        ></div>
+        <div class="expand expand-icon">
+          <img
+            src="/assets/images/icon/expand-one.svg"
+            alt="Expand"
+            class="w-6 h-6"
+          />
+          <div
+            class="justify-start text-stone-500 text-sm font-normal keywords-title"
+          >
+            Expand
+          </div>
+        </div>
+      </div>
+
       <!-- <div
         class="h-80 bg-white/40 shadow-[0px_4px_4px_0px_rgba(0,0,0,0.05)] border-2 border-white backdrop-blur-[5px]"
       ></div> -->
