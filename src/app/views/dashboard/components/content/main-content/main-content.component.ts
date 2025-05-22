@@ -9,7 +9,7 @@ import { DashboardSharedService } from "../dashboard-shared.service";
   imports: [CommonModule, LucideAngularModule],
   template: `
     <div class="main-content h-full flex flex-col">
-      <!-- File upload success notification -->
+      <!-- File upload notification -->
       <div class="file-upload-notification">
         <div
           class="w-[520px] h-32 bg-gradient-to-l from-white/40 to-white/0 rounded-lg border-2 border-white backdrop-blur-[5px]"
@@ -37,10 +37,48 @@ import { DashboardSharedService } from "../dashboard-shared.service";
         </div>
       </div>
 
+      <!-- Keywords group with star and expand icons -->
       <div
-        class="h-20 bg-white/40 shadow-[0px_4px_4px_0px_rgba(0,0,0,0.05)] border-2 border-white backdrop-blur-[5px]"
+        class="h-20 bg-white/40 shadow-[0px_4px_4px_0px_rgba(0,0,0,0.05)] border-2 border-white backdrop-blur-[5px] flex items-center justify-between px-6"
         style="margin-top: 2rem;"
-      ></div>
+      >
+        <div class="flex items-center">
+          <div class="icon-container mr-3">
+            <div class="task-container mr-3">
+              <img
+                src="/assets/images/icon/dark-keyword.svg"
+                class="w-5"
+                alt="task icon"
+              />
+            </div>
+            <div
+              class="justify-start text-zinc-800 text-xl font-bold keywords-title"
+            >
+              Keywords
+            </div>
+            <img
+              src="/assets/images/icon/star.svg"
+              alt="Star"
+              class="w-6 h-6"
+            />
+          </div>
+        </div>
+        <div
+          class="cursor-pointer flex items-center  w-24 h-10 bg-[radial-gradient(ellipse_50.00%_50.00%_at_50.00%_50.00%,_#64E9A7_0%,_rgba(147,_238,_196,_0.50)_100%)] blur-[5px]"
+        ></div>
+        <div class="expand expand-icon">
+          <img
+            src="/assets/images/icon/expand-one.svg"
+            alt="Expand"
+            class="w-6 h-6"
+          />
+          <div
+            class="justify-start text-stone-500 text-sm font-normal keywords-title"
+          >
+            Expand
+          </div>
+        </div>
+      </div>
 
       <!-- <div
         class="h-80 bg-white/40 shadow-[0px_4px_4px_0px_rgba(0,0,0,0.05)] border-2 border-white backdrop-blur-[5px]"
@@ -135,6 +173,51 @@ import { DashboardSharedService } from "../dashboard-shared.service";
       .delete-button img {
         width: 20px;
         height: 20px;
+      }
+
+      /* Keywords container styles */
+
+      .keywords-title {
+        font-family: "Source Han Sans CN", sans-serif;
+      }
+
+      .expand {
+        cursor: pointer;
+        gap: 6px;
+        display: flex;
+        flex-direction: row;
+        position: absolute;
+        right: 32px;
+      }
+
+      .icon-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .expand-icon {
+        transition: transform 0.2s ease;
+      }
+
+      .expand-icon:hover {
+        transform: scale(1.1);
+      }
+
+      .task-container {
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+        background-color: #05a76f;
+
+        fill: rgba(255, 255, 255, 0.4);
+        stroke-width: 0.5px;
+        stroke: #fff;
+        filter: drop-shadow(0px 4px 4px rgba(0, 0, 0, 0.05));
+        backdrop-filter: blur(5px);
       }
     `,
   ],
