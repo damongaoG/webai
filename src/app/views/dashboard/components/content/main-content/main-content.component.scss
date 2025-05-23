@@ -1,0 +1,87 @@
+// Main content container styles
+.main-content {
+  min-width: 400px;
+  background-image: url("/assets/images/bg.png");
+  background-size: cover;
+  background-repeat: no-repeat;
+  position: relative;
+}
+
+// File upload notification styles
+.file-upload-notification {
+  margin-top: 2rem;
+  z-index: 10;
+}
+
+.file-icon {
+  margin-right: 12px;
+
+  img {
+    width: 79px;
+    height: 69px;
+  }
+}
+
+.file-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 54%;
+}
+
+.file-name {
+  color: #333;
+  font-family: "Source Han Sans CN", sans-serif;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: normal;
+}
+
+.upload-status {
+  display: flex;
+  align-items: center;
+  color: #05a76f;
+  font-size: 14px;
+}
+
+.status-icon {
+  margin-right: 4px;
+
+  img {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+.status-text {
+  margin-right: 8px;
+}
+
+.upload-time {
+  color: #666;
+  font-family: "Source Han Sans CN", sans-serif;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: normal;
+  margin-left: 12px;
+  opacity: 0.8;
+}
+
+.delete-button {
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  flex-direction: row;
+  margin-left: 60px;
+
+  img {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+// Note: Feature card styles are now in feature-card.component.scss
