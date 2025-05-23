@@ -10,32 +10,32 @@ import { DashboardSharedService } from "../dashboard-shared.service";
   template: `
     <div class="main-content h-full flex flex-col">
       <!-- File upload notification -->
-      <div class="file-upload-notification">
-        <div
-          class="w-[520px] h-32 bg-gradient-to-l from-white/40 to-white/0 rounded-lg border-2 border-white backdrop-blur-[5px]"
-          style=" display: flex;
-        align-items: center;"
-        >
-          <div class="file-icon">
-            <img src="/assets/images/icon/document.svg" alt="Document" />
-          </div>
-          <div class="file-info">
-            <div class="file-name">XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX.doc</div>
-            <div class="upload-status">
-              <div class="status-icon">
-                <img src="/assets/images/icon/check-one.svg" alt="Success" />
-              </div>
-              <div class="status-text">Uploaded</div>
-              <div class="upload-time">2025-05-02 14:15:12</div>
+      <!--      <div class="file-upload-notification">-->
+      <!--        <div-->
+      <!--          class="w-[520px] h-32 bg-gradient-to-l from-white/40 to-white/0 rounded-lg border-2 border-white backdrop-blur-[5px]"-->
+      <!--          style=" display: flex;-->
+      <!--        align-items: center;"-->
+      <!--        >-->
+      <!--          <div class="file-icon">-->
+      <!--            <img src="/assets/images/icon/document.svg" alt="Document" />-->
+      <!--          </div>-->
+      <!--          <div class="file-info">-->
+      <!--            <div class="file-name">XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX.doc</div>-->
+      <!--            <div class="upload-status">-->
+      <!--              <div class="status-icon">-->
+      <!--                <img src="/assets/images/icon/check-one.svg" alt="Success" />-->
+      <!--              </div>-->
+      <!--              <div class="status-text">Uploaded</div>-->
+      <!--              <div class="upload-time">2025-05-02 14:15:12</div>-->
 
-              <div class="delete-button">
-                <img src="/assets/images/icon/delete.svg" alt="Delete" />
-                <div class="upload-time" style="margin-left: 8px">Delete</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <!--              <div class="delete-button">-->
+      <!--                <img src="/assets/images/icon/delete.svg" alt="Delete" />-->
+      <!--                <div class="upload-time" style="margin-left: 8px">Delete</div>-->
+      <!--              </div>-->
+      <!--            </div>-->
+      <!--          </div>-->
+      <!--        </div>-->
+      <!--      </div>-->
 
       <!-- Keywords group with star and expand icons -->
       <div
@@ -183,7 +183,7 @@ import { DashboardSharedService } from "../dashboard-shared.service";
             <div
               class="justify-start text-zinc-800 text-xl font-bold keywords-title"
             >
-              Academic review
+              References
             </div>
             <img
               src="/assets/images/icon/star.svg"

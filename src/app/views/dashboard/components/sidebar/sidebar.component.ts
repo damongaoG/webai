@@ -35,7 +35,6 @@ import { LucideAngularModule } from "lucide-angular";
         <div class="mt-1">
           <div class="px-4 py-4 border-l-2 border-l-transparent">
             <div class="flex items-center">
-              <img class="w-8" src="/assets/images/icon/notes.svg" alt="" />
               <span class="ml-2 text-sm text-white/70 title">Essay01</span>
             </div>
           </div>
@@ -45,13 +44,6 @@ import { LucideAngularModule } from "lucide-angular";
               style="justify-content: space-between"
             >
               <div class="flex items-center">
-                <div class="activate-note">
-                  <img
-                    class="w-5"
-                    src="/assets/images/icon/note-unactivate.svg"
-                    alt=""
-                  />
-                </div>
                 <span class="ml-2 text-sm text-white title">Essay02</span>
               </div>
 

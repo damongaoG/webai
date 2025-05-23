@@ -19,9 +19,9 @@ export class DashboardSharedService {
     { id: "keywords", name: "Keywords", isSelected: false },
     { id: "topic", name: "Assignment task", isSelected: false },
     { id: "arguments", name: "Use arguments", isSelected: false },
-    { id: "review", name: "Academic review", isSelected: false },
+    { id: "review", name: "References", isSelected: false },
     { id: "cases", name: "Relevant case studies", isSelected: false },
-    { id: "examples", name: "Example essay", isSelected: false },
+    { id: "examples", name: "Summary", isSelected: false },
   ]);
 
   // Current selected task
