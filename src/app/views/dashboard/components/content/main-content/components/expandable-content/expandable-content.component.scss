@@ -1,0 +1,46 @@
+// Expandable content container styles
+.expandable-container {
+  width: 100%;
+  overflow: hidden;
+}
+
+.expandable-content {
+  width: 100%;
+}
+
+// Placeholder content styles for other content types
+.placeholder-content {
+  padding: 40px 24px;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(5px);
+  border: 2px solid white;
+  border-radius: 20px;
+  box-shadow: 0 4px 4px rgba(0, 0, 0, 0.05);
+  margin-top: 16px;
+
+  p {
+    font-family: "Source Han Sans CN", sans-serif;
+    font-size: 16px;
+    color: #666;
+    font-style: italic;
+    margin: 0;
+  }
+}
+
+// Animation improvements
+.expandable-container {
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .placeholder-content {
+    padding: 24px 16px;
+    margin-top: 12px;
+
+    p {
+      font-size: 14px;
+    }
+  }
+}

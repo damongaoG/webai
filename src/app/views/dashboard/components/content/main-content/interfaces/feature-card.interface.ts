@@ -1,3 +1,5 @@
+import { ExpandableState } from "./keyword.interface";
+
 export interface FeatureCard {
   id: string;
   title: string;
@@ -9,6 +11,7 @@ export interface FeatureCard {
 export interface CardState {
   showGradient: boolean;
   isPersistent: boolean;
+  expandable: ExpandableState;
 }
 
 export type CardId =

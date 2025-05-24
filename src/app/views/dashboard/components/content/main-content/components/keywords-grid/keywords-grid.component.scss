@@ -1,0 +1,99 @@
+// Keywords grid container styles - mimicking group.svg layout
+.keywords-grid-container {
+  width: 100%;
+  padding: 24px;
+  background: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(5px);
+  border: 2px solid white;
+  border-radius: 20px;
+  box-shadow: 0 4px 4px rgba(0, 0, 0, 0.05);
+  margin-top: 16px;
+}
+
+.keywords-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--grid-columns, 5), 1fr);
+  gap: var(--grid-gap, 16px);
+  align-items: start;
+  justify-items: center;
+
+  // Animation for grid items
+  & > * {
+    animation: slideInUp 0.3s ease-out forwards;
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  // Staggered animation delay for each item
+  @for $i from 1 through 20 {
+    & > *:nth-child(#{$i}) {
+      animation-delay: #{($i - 1) * 0.05}s;
+    }
+  }
+}
+
+// Slide in animation
+@keyframes slideInUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Responsive grid adjustments
+@media (max-width: 1200px) {
+  .keywords-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (max-width: 992px) {
+  .keywords-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .keywords-grid-container {
+    padding: 20px;
+  }
+}
+
+@media (max-width: 768px) {
+  .keywords-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  .keywords-grid-container {
+    padding: 16px;
+    margin-top: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .keywords-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .keywords-grid-container {
+    padding: 12px;
+  }
+}
+
+// Loading state
+.keywords-grid.loading {
+  & > * {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+}
+
+// Empty state
+.keywords-grid:empty::after {
+  content: "No keywords available";
+  grid-column: 1 / -1;
+  text-align: center;
+  color: #666;
+  font-style: italic;
+  padding: 40px;
+}

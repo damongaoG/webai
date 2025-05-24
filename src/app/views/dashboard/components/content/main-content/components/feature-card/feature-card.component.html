@@ -1,47 +1,61 @@
-<div
-  class="feature-card h-20 bg-white/40 shadow-[0px_4px_4px_0px_rgba(0,0,0,0.05)] border-2 border-white backdrop-blur-[5px] flex items-center justify-between px-6"
-  style="margin-top: 2rem"
-  [ngClass]="featureCard.additionalClasses"
->
-  <!-- Left side: Icon, title, and star -->
-  <div class="flex items-center">
-    <div class="icon-container mr-3">
-      <div class="task-container mr-3">
-        <img
-          [src]="featureCard.iconPath"
-          class="w-5"
-          [alt]="featureCard.iconAlt"
-        />
-      </div>
-      <div class="justify-start text-zinc-800 text-xl font-bold keywords-title">
-        {{ featureCard.title }}
-      </div>
-      <img src="/assets/images/icon/star.svg" alt="Star" class="w-6 h-6" />
-    </div>
-  </div>
-
-  <!-- Center: Green gradient indicator - initially hidden -->
+<div class="feature-card-wrapper">
   <div
-    class="gradient-indicator cursor-pointer flex items-center w-24 h-10 bg-[radial-gradient(ellipse_50.00%_50.00%_at_50.00%_50.00%,_#64E9A7_0%,_rgba(147,_238,_196,_0.50)_100%)]"
-    [class.visible]="cardState.showGradient"
-  ></div>
-
-  <!-- Right side: Expand button -->
-  <div
-    class="expand expand-icon"
-    (click)="onExpandClick()"
-    (mouseenter)="onExpandHoverStart()"
-    (mouseleave)="onExpandHoverEnd()"
+    class="feature-card h-20 bg-white/40 shadow-[0px_4px_4px_0px_rgba(0,0,0,0.05)] border-2 border-white backdrop-blur-[5px] flex items-center justify-between px-6"
+    style="margin-top: 2rem"
+    [ngClass]="featureCard.additionalClasses"
   >
-    <img
-      src="/assets/images/icon/expand-one.svg"
-      alt="Expand"
-      class="w-6 h-6"
-    />
+    <!-- Left side: Icon, title, and star -->
+    <div class="flex items-center">
+      <div class="icon-container mr-3">
+        <div class="task-container mr-3">
+          <img
+            [src]="featureCard.iconPath"
+            class="w-5"
+            [alt]="featureCard.iconAlt"
+          />
+        </div>
+        <div class="justify-start text-zinc-800 text-xl font-bold keywords-title">
+          {{ featureCard.title }}
+        </div>
+        <img src="/assets/images/icon/star.svg" alt="Star" class="w-6 h-6" />
+      </div>
+    </div>
+
+    <!-- Center: Green gradient indicator - initially hidden -->
     <div
-      class="justify-start text-stone-500 text-sm font-normal keywords-title"
+      class="gradient-indicator cursor-pointer flex items-center w-24 h-10 bg-[radial-gradient(ellipse_50.00%_50.00%_at_50.00%_50.00%,_#64E9A7_0%,_rgba(147,_238,_196,_0.50)_100%)]"
+      [class.visible]="cardState.showGradient"
+    ></div>
+
+    <!-- Right side: Expand button -->
+    <div
+      class="expand expand-icon"
+      [class.expanded]="shouldShowExpandableContent"
+      (click)="onExpandClick()"
+      (mouseenter)="onExpandHoverStart()"
+      (mouseleave)="onExpandHoverEnd()"
     >
-      Expand
+      <img
+        src="/assets/images/icon/expand-one.svg"
+        alt="Expand"
+        class="w-6 h-6 transition-transform duration-200"
+        [class.rotate-180]="shouldShowExpandableContent"
+      />
+      <div
+        class="justify-start text-stone-500 text-sm font-normal keywords-title"
+      >
+        {{ shouldShowExpandableContent ? 'Collapse' : 'Expand' }}
+      </div>
     </div>
   </div>
+
+  <!-- Expandable Content Section -->
+  @if (shouldShowExpandableContent) {
+    <app-expandable-content
+      [expandableState]="cardState.expandable"
+      [keywordsData]="keywordsData"
+      (keywordSelected)="onKeywordSelected($event)"
+      (keywordDeselected)="onKeywordDeselected($event)"
+    />
+  }
 </div>

@@ -8,6 +8,7 @@ import {
   CardState,
   FeatureCard,
 } from "./interfaces/feature-card.interface";
+import { KeywordData } from "./interfaces/keyword.interface";
 
 @Component({
   selector: "app-main-content",
@@ -55,49 +56,122 @@ export class MainContentComponent {
 
   // State management for each card's gradient visibility
   cardStates: Record<CardId, CardState> = {
-    keywords: { showGradient: false, isPersistent: false },
-    assignment: { showGradient: false, isPersistent: false },
-    arguments: { showGradient: false, isPersistent: false },
-    references: { showGradient: false, isPersistent: false },
-    casestudies: { showGradient: false, isPersistent: false },
+    keywords: {
+      showGradient: false,
+      isPersistent: false,
+      expandable: {
+        isExpanded: false,
+        contentType: null,
+        animating: false,
+      },
+    },
+    assignment: {
+      showGradient: false,
+      isPersistent: false,
+      expandable: {
+        isExpanded: false,
+        contentType: null,
+        animating: false,
+      },
+    },
+    arguments: {
+      showGradient: false,
+      isPersistent: false,
+      expandable: {
+        isExpanded: false,
+        contentType: null,
+        animating: false,
+      },
+    },
+    references: {
+      showGradient: false,
+      isPersistent: false,
+      expandable: {
+        isExpanded: false,
+        contentType: null,
+        animating: false,
+      },
+    },
+    casestudies: {
+      showGradient: false,
+      isPersistent: false,
+      expandable: {
+        isExpanded: false,
+        contentType: null,
+        animating: false,
+      },
+    },
   };
 
   toggleGradient(cardId: string): void {
     const typedCardId = cardId as CardId;
     const currentState = this.cardStates[typedCardId];
 
-    // If the current card is already active, turn it off
-    if (currentState.isPersistent) {
-      this.resetAllCardStates();
+    // If the current card is already expanded, collapse it
+    if (currentState.expandable.isExpanded) {
+      this.collapseCard(typedCardId);
     } else {
-      // Reset all cards first, then activate only the clicked card
-      this.resetAllCardStates();
-      this.activateCard(typedCardId);
+      // Collapse all other cards first, then expand the clicked card
+      this.collapseAllCards();
+      this.expandCard(typedCardId);
     }
   }
 
-  private resetAllCardStates(): void {
+  private expandCard(cardId: CardId): void {
+    this.cardStates[cardId] = {
+      ...this.cardStates[cardId],
+      showGradient: true,
+      isPersistent: true,
+      expandable: {
+        isExpanded: true,
+        contentType: cardId,
+        animating: true,
+      },
+    };
+  }
+
+  private collapseCard(cardId: CardId): void {
+    this.cardStates[cardId] = {
+      ...this.cardStates[cardId],
+      showGradient: false,
+      isPersistent: false,
+      expandable: {
+        isExpanded: false,
+        contentType: null,
+        animating: true,
+      },
+    };
+  }
+
+  private collapseAllCards(): void {
     Object.keys(this.cardStates).forEach((cardId) => {
       this.cardStates[cardId as CardId] = {
+        ...this.cardStates[cardId as CardId],
         showGradient: false,
         isPersistent: false,
+        expandable: {
+          isExpanded: false,
+          contentType: null,
+          animating: false,
+        },
       };
     });
   }
 
-  private activateCard(cardId: CardId): void {
-    this.cardStates[cardId] = {
-      showGradient: true,
-      isPersistent: true,
-    };
+  onKeywordSelected(keyword: KeywordData): void {
+    console.log("Keyword selected:", keyword);
+  }
+
+  onKeywordDeselected(keyword: KeywordData): void {
+    console.log("Keyword deselected:", keyword);
   }
 
   showGradientOnHover(cardId: string): void {
     const typedCardId = cardId as CardId;
     const currentState = this.cardStates[typedCardId];
 
-    // Only respond to hover
-    if (!currentState.isPersistent) {
+    // Only respond to hover if not expanded
+    if (!currentState.expandable.isExpanded && !currentState.isPersistent) {
       this.cardStates[typedCardId] = {
         ...currentState,
         showGradient: true,
@@ -109,8 +183,8 @@ export class MainContentComponent {
     const typedCardId = cardId as CardId;
     const currentState = this.cardStates[typedCardId];
 
-    // Only respond to hover
-    if (!currentState.isPersistent) {
+    // Only respond to hover if not expanded
+    if (!currentState.expandable.isExpanded && !currentState.isPersistent) {
       this.cardStates[typedCardId] = {
         ...currentState,
         showGradient: false,

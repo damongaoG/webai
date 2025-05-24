@@ -1,0 +1,67 @@
+// Keyword tag styles inspired by group.svg design
+.keyword-tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 16px;
+  border-radius: 20px;
+  border: 0.5px solid rgba(51, 51, 51, 0.3);
+  background: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(2px);
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  user-select: none;
+  min-height: 40px;
+
+  // Text styles
+  .keyword-text {
+    font-family: "Source Han Sans CN", sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    color: #333333;
+    line-height: 1.2;
+    white-space: nowrap;
+  }
+
+  // Hover state
+  &.hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border-color: rgba(51, 51, 51, 0.5);
+  }
+
+  // Selected state - green background like group.svg
+  &.selected {
+    background: #05a76f;
+    border-color: white;
+    box-shadow: 0 2px 4px rgba(5, 167, 111, 0.3);
+
+    .keyword-text {
+      color: white;
+      font-weight: 600;
+    }
+
+    &.hover {
+      background: #048a5f;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(5, 167, 111, 0.4);
+    }
+  }
+
+  // Active state
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .keyword-tag {
+    padding: 6px 12px;
+    min-height: 36px;
+
+    .keyword-text {
+      font-size: 13px;
+    }
+  }
+}
