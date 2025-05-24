@@ -65,11 +65,30 @@ export class MainContentComponent {
   toggleGradient(cardId: string): void {
     const typedCardId = cardId as CardId;
     const currentState = this.cardStates[typedCardId];
-    const newPersistentState = !currentState.isPersistent;
 
-    this.cardStates[typedCardId] = {
-      showGradient: newPersistentState,
-      isPersistent: newPersistentState,
+    // If the current card is already active, turn it off
+    if (currentState.isPersistent) {
+      this.resetAllCardStates();
+    } else {
+      // Reset all cards first, then activate only the clicked card
+      this.resetAllCardStates();
+      this.activateCard(typedCardId);
+    }
+  }
+
+  private resetAllCardStates(): void {
+    Object.keys(this.cardStates).forEach((cardId) => {
+      this.cardStates[cardId as CardId] = {
+        showGradient: false,
+        isPersistent: false,
+      };
+    });
+  }
+
+  private activateCard(cardId: CardId): void {
+    this.cardStates[cardId] = {
+      showGradient: true,
+      isPersistent: true,
     };
   }
 
