@@ -29,6 +29,8 @@
   }
 
   .header-right {
+    position: relative;
+
     .document-icon {
       @apply flex-shrink-0;
 

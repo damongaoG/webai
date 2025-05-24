@@ -14,10 +14,17 @@
             [alt]="featureCard.iconAlt"
           />
         </div>
-        <div class="justify-start text-zinc-800 text-xl font-bold keywords-title">
+        <div
+          class="justify-start text-zinc-800 text-xl font-bold keywords-title"
+        >
           {{ featureCard.title }}
         </div>
-        <img src="/assets/images/icon/star.svg" alt="Star" class="w-6 h-6" />
+        <img
+          src="/assets/images/icon/star.svg"
+          alt="Star"
+          class="w-6 h-6"
+          style="margin-bottom: 18px"
+        />
       </div>
     </div>
 
@@ -44,7 +51,7 @@
       <div
         class="justify-start text-stone-500 text-sm font-normal keywords-title"
       >
-        {{ shouldShowExpandableContent ? 'Collapse' : 'Expand' }}
+        {{ shouldShowExpandableContent ? "Collapse" : "Expand" }}
       </div>
     </div>
   </div>
