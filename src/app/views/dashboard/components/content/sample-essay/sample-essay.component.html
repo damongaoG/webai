@@ -1,0 +1,121 @@
+<!-- Sample Essay Component Template -->
+<div class="sample-essay-container">
+  <!-- Header Section -->
+  <header class="essay-header">
+    <div class="header-left">
+      <!-- AI Bot Icon -->
+      <div class="ai-bot-icon">
+        <img src="/assets/images/icon/ai-bot.svg" alt="AI Bot" />
+      </div>
+      <!-- Title -->
+      <h2 class="essay-title">Your Sample Essay</h2>
+    </div>
+
+    <!-- Document Icon -->
+    <div class="header-right">
+      <div class="document-icon">
+        <img src="/assets/images/icon/assignment.svg" alt="Assignment" />
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Area -->
+  <main class="essay-content-area">
+    @if (!dashboardService.getIsGenerated()()) {
+      <!-- Empty State -->
+      <div class="empty-state">
+        <div class="empty-state-icon">
+          <lucide-angular
+            name="file-text"
+            class="h-12 w-12 text-gray-400"
+          ></lucide-angular>
+        </div>
+        <h3 class="empty-state-title">No content generated yet</h3>
+        <p class="empty-state-description">
+          Select a task and click the Generate button to view a sample essay
+        </p>
+      </div>
+    } @else {
+      <!-- Essay Content -->
+      <article class="essay-article">
+        <!-- Essay Title -->
+        <div class="essay-title-section">
+          <h1 class="main-essay-title">
+            {{ displayTitle }}
+          </h1>
+        </div>
+
+        <!-- Abstract Section -->
+        <section class="essay-section">
+          <h2 class="section-title">Abstract</h2>
+          <div class="section-content">
+            <p class="abstract-text">
+              This paper investigates the role and effectiveness of fiscal
+              policy in stimulating economic recovery in the aftermath of the
+              COVID-19 pandemic. Drawing upon post-Keynesian and modern
+              macroeconomic theory, we examine government spending, taxation,
+              and transfer programs as tools to manage aggregate demand and
+              mitigate recessionary effects. Through analysis of data from major
+              economies between 2020 and 2024, the paper finds that expansive
+              fiscal policy had short-term positive effects on GDP growth and
+              employment, but also contributed to inflationary pressures and
+              rising public debt.
+            </p>
+          </div>
+        </section>
+
+        <!-- Content Sections -->
+        <section class="essay-section">
+          <h2 class="section-title">1. Introduction</h2>
+          <div class="section-content">
+            <div class="content-paragraphs">
+              @for (paragraph of getContentParagraphs(); track $index) {
+                <p class="content-paragraph">{{ paragraph }}</p>
+              }
+            </div>
+          </div>
+        </section>
+
+        <!-- Additional Section -->
+        <section class="essay-section">
+          <h2 class="section-title">2. Theoretical Background</h2>
+          <div class="section-content">
+            <p class="content-paragraph">
+              According to Keynesian economics, during periods of reduced
+              private sector spending, government intervention through increased
+              expenditure or tax reductions...
+            </p>
+          </div>
+        </section>
+      </article>
+    }
+  </main>
+
+  <!-- Footer Actions -->
+  @if (dashboardService.getIsGenerated()()) {
+    <footer class="essay-footer">
+      <div class="action-button-container">
+        <button
+          class="action-button"
+          type="button"
+          (click)="onEditAndExport()"
+          [disabled]="isContentGenerating"
+        >
+          <!-- Edit Icon -->
+          <img
+            src="/assets/images/icon/file-edit.svg"
+            alt="Edit"
+            class="action-icon"
+          />
+          <span class="action-text">编辑&导出</span>
+          <!-- Arrow Right Icon -->
+          <img
+            src="/assets/images/icon/arrow-right.svg"
+            alt="Arrow Right"
+            class="arrow-icon"
+          />
+        </button>
+      </div>
+    </footer>
+  }
+</div>

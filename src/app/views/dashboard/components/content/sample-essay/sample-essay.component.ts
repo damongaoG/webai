@@ -1,120 +1,74 @@
-import { Component, inject } from "@angular/core";
+import { Component, inject, OnDestroy, OnInit } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { LucideAngularModule } from "lucide-angular";
 import { DashboardSharedService } from "../dashboard-shared.service";
+import { Subject } from "rxjs";
 
 @Component({
   selector: "app-sample-essay",
   standalone: true,
   imports: [CommonModule, LucideAngularModule],
-  template: `
-    <div
-      class="sample-essay h-full rounded-lg border bg-[#1A1A1A] flex flex-col overflow-hidden"
-    >
-      <!-- Header -->
-      <div class="p-4 border-b border-gray-700">
-        <h2 class="text-white text-lg font-medium">Sample Essay</h2>
-        <p class="text-white/50 text-sm">
-          @if (!dashboardService.getIsGenerated()()) {
-            Generate content to view sample essay
-          } @else {
-            {{ dashboardService.getEssayContent()()?.title }}
-          }
-        </p>
-      </div>
-
-      <!-- Essay Content -->
-      <div class="flex-1 p-4 overflow-y-auto">
-        @if (!dashboardService.getIsGenerated()()) {
-          <!-- Empty state -->
-          <div
-            class="h-full flex flex-col items-center justify-center text-center"
-          >
-            <lucide-angular
-              name="file-text"
-              class="h-12 w-12 text-gray-600 mb-4"
-            ></lucide-angular>
-            <p class="text-white/70 mb-2">No content generated yet</p>
-            <p class="text-white/50 text-sm">
-              Select a task and click the Generate button to view a sample essay
-            </p>
-          </div>
-        } @else {
-          <!-- Sample essay content -->
-          <div class="essay-content text-white/90">
-            <p class="mb-4 text-lg font-medium">
-              {{ dashboardService.getEssayContent()()?.title }}
-            </p>
-            <div class="space-y-4">
-              @for (paragraph of getContentParagraphs(); track $index) {
-                <p>{{ paragraph }}</p>
-              }
-            </div>
-          </div>
-        }
-      </div>
-
-      <!-- Actions -->
-      @if (dashboardService.getIsGenerated()()) {
-        <div class="p-4 border-t border-gray-700 flex justify-end">
-          <button
-            class="flex items-center text-white/70 hover:text-white transition-colors"
-          >
-            <lucide-angular name="copy" class="h-4 w-4 mr-2"></lucide-angular>
-            Copy
-          </button>
-          <button
-            class="flex items-center text-white/70 hover:text-white transition-colors ml-4"
-          >
-            <lucide-angular
-              name="download"
-              class="h-4 w-4 mr-2"
-            ></lucide-angular>
-            Download
-          </button>
-        </div>
-      }
-    </div>
-  `,
-  styles: [
-    `
-      .sample-essay {
-        min-width: 300px;
-      }
-
-      .essay-content {
-        line-height: 1.6;
-      }
-    `,
-  ],
+  templateUrl: "./sample-essay.component.html",
+  styleUrls: ["./sample-essay.component.scss"],
 })
-export class SampleEssayComponent {
+export class SampleEssayComponent implements OnInit, OnDestroy {
   dashboardService = inject(DashboardSharedService);
+
+  private destroy$ = new Subject<void>();
+
+  isLoading = false;
+
+  ngOnInit(): void {}
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
 
   getContentParagraphs(): string[] {
     const content = this.dashboardService.getEssayContent()()?.content || "";
 
-    // Split content into paragraphs for better presentation
-    // For demo purposes, we'll artificially create multiple paragraphs
+    // Return empty array if no content
     if (!content) return [];
 
+    // Split content into sentences and group them into paragraphs
     const sentences = content.split(". ");
     const paragraphs: string[] = [];
 
+    // Group sentences into paragraphs (2 sentences per paragraph)
     for (let i = 0; i < sentences.length; i += 2) {
       const paragraph = sentences.slice(i, i + 2).join(". ");
-      paragraphs.push(paragraph);
+      if (paragraph.trim()) {
+        paragraphs.push(paragraph);
+      }
     }
 
-    // Add some longer paragraphs for realism
-    paragraphs.push(
-      "This is an additional paragraph to demonstrate the flow of an academic essay. It provides further context and explanation of the concepts introduced earlier. Academic writing typically follows a structured format with clear introduction, body paragraphs, and conclusion.",
-    );
+    // Add additional paragraphs for demonstration purposes
+    if (paragraphs.length > 0) {
+      paragraphs.push(
+        "The COVID-19 pandemic created an unprecedented economic shock, prompting governments across the world to adopt large-scale fiscal stimulus programs. These policies were aimed at supporting household income, preserving business operations, and maintaining aggregate demand. While monetary policy remained accommodative, fiscal actions were central to stabilizing the economy. This paper explores the extent to which fiscal policy has been effective in driving recovery and whether its consequences—particularly inflation and public debt—pose long-term risks."
+      );
 
-    paragraphs.push(
-      "The conclusion summarizes the key points discussed and may provide recommendations or implications based on the analysis. Effective academic writing is clear, concise, and well-supported with evidence.",
-    );
+      paragraphs.push(
+        "This paper contributes to the growing literature on post-pandemic fiscal policy effectiveness by providing a comprehensive analysis of multiple economic indicators across different countries and time periods. The findings have important implications for future policy design and implementation."
+      );
+    }
 
     return paragraphs;
+  }
+
+  onEditAndExport(): void {
+    console.log("Edit and export action triggered");
+  }
+
+  get isContentGenerating(): boolean {
+    return this.isLoading || false;
+  }
+
+  get displayTitle(): string {
+    return (
+      this.dashboardService.getEssayContent()()?.title ||
+      "Fiscal Policy Effectiveness in a Post-Pandemic Economy: A Macroeconomic Analysis"
+    );
   }
 }
