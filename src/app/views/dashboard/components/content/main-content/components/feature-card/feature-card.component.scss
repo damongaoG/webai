@@ -8,15 +8,14 @@
   }
 }
 
-// Gradient indicator styles with show/hide animation
+// Gradient indicator styles with simplified show/hide animation
 .gradient-indicator {
   opacity: 0;
-  transform: scale(0.8);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: opacity 0.2s ease-in-out;
 
   &.visible {
     opacity: 1;
-    transform: scale(1);
+    border-radius: 8px;
   }
 }
 
