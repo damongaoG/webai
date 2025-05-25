@@ -18,8 +18,26 @@ export const routes: Routes = [
       import("./views/dashboard/dashboard.component").then(
         (mod) => mod.DashboardComponent,
       ),
-    canActivate: [authGuard],
+    // canActivate: [authGuard],
     data: { title: "Dashboard" },
+  },
+  {
+    path: "rewrite",
+    loadComponent: () =>
+      import("./components/rewrite-model/rewrite-model.component").then(
+        (mod) => mod.RewriteModelComponent,
+      ),
+    // canActivate: [authGuard],
+    data: { title: "Rewrite Model" },
+    children: [
+      {
+        path: "",
+        loadComponent: () =>
+          import("./components/rewrite-model/components/chat-bot/chat-bot.component").then(
+            (mod) => mod.ChatBotComponent,
+          ),
+      },
+    ],
   },
   {
     path: "forget-password",

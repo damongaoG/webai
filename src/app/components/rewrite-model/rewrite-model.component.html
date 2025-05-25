@@ -1,0 +1,145 @@
+<nz-layout class="app-layout">
+  <nz-sider
+    [(nzCollapsed)]="isCollapsed"
+    [nzTrigger]="null"
+    [nzCollapsedWidth]="0"
+    class="menu-sidebar"
+    nzBreakpoint="md"
+    nzCollapsible
+    nzWidth="256px"
+  >
+    <div class="sidebar-logo">
+      <div
+        style="
+          display: flex;
+          flex-direction: row;
+          align-items: center;
+          gap: 6px;
+        "
+      >
+        <span
+          (click)="toggleCollapsed()"
+          *ngIf="isMobile"
+          [nzType]="isCollapsed ? 'menu-unfold' : 'menu-fold'"
+          class="trigger mobile-trigger"
+          nz-icon
+        >
+        </span>
+        <a routerLink="/rewrite">
+          <img alt="logo" src="/assets/images/logo/logo.png" />
+        </a>
+        <a [nzDropdownMenu]="menu" class="profile-dropdown" nz-dropdown>
+          <span class="username">{{ truncateEmail(userEmail) }}</span>
+        </a>
+        <nz-dropdown-menu #menu="nzDropdownMenu">
+          <ul nz-menu>
+            <li (click)="jumpToProfile()" nz-menu-item>
+              <span nz-icon nzTheme="outline" nzType="user"> </span>
+              Profile
+            </li>
+            <li nz-menu-divider></li>
+            <li (click)="showLogoutConfirm()" nz-menu-item>
+              <span nz-icon nzTheme="outline" nzType="logout"></span>
+              Logout
+            </li>
+          </ul>
+        </nz-dropdown-menu>
+      </div>
+    </div>
+
+    <ul
+      [nzInlineCollapsed]="isCollapsed"
+      nz-menu
+      nzMode="inline"
+      nzTheme="dark"
+    >
+      <ng-container *ngIf="!isProfileSection()">
+        <!-- Default menu items-->
+        <li nz-menu-item nzMatchRouter (click)="clearChat()">
+          <span nz-icon nzTheme="outline" nzType="edit"></span>
+          <a routerLink="/rewrite">New Rewrite</a>
+        </li>
+      </ng-container>
+
+      <ng-container *ngIf="isProfileSection()">
+        <!-- Profile menu items-->
+        <li nz-menu-item nzMatchRouter (click)="onMenuItemClick()">
+          <span nz-icon nzTheme="outline" nzType="lock"></span>
+          <a routerLink="/profile/change-password">Change Password</a>
+        </li>
+        <li nz-menu-item nzMatchRouter (click)="onMenuItemClick()">
+          <span nz-icon nzTheme="outline" nzType="key"></span>
+          <a routerLink="/activate">Activation Code</a>
+        </li>
+      </ng-container>
+    </ul>
+
+    <!-- Chat History Section -->
+    <div
+      *ngIf="isOnChatPage()"
+      class="chat-history"
+      (scroll)="onHistoryScroll($event)"
+    >
+      <div class="history-title">Recently</div>
+      <div
+        (click)="loadChat(history)"
+        *ngFor="let history of chatHistory"
+        class="history-item"
+        [class.active]="history.sessionId === activeHistoryId"
+        nz-tooltip
+      >
+        {{ truncateContent(history.content) }}
+      </div>
+    </div>
+  </nz-sider>
+  <nz-layout>
+    <nz-header *ngIf="isMobile">
+      <div class="app-header">
+        <span (click)="toggleCollapsed()" class="header-trigger">
+          <span
+            [nzType]="isCollapsed ? 'menu-unfold' : 'menu-fold'"
+            nz-icon
+          ></span>
+        </span>
+        <div *ngIf="isOnChatPage()" class="select-container">
+          <nz-select
+            (ngModelChange)="onTabChange($event)"
+            [(ngModel)]="selectedTabIndex"
+            [nzCustomTemplate]="defaultTemplate"
+          >
+            <nz-option
+              *ngFor="let option of options"
+              [nzLabel]="option.label"
+              [nzValue]="option.value"
+              [nzCustomContent]="true"
+            >
+              <div style="text-align: center; width: 100%">
+                {{ option.label }}
+              </div>
+            </nz-option>
+          </nz-select>
+          <ng-template #defaultTemplate let-selected>
+            <div style="text-align: center; width: 100%">
+              {{ selected.nzLabel }}
+            </div>
+          </ng-template>
+        </div>
+        <img
+          *ngIf="isOnChatPage()"
+          (click)="clearChat()"
+          src="/assets/images/icon/new-chat.svg"
+          alt="New Rewrite"
+          nz-tooltip
+          nzTooltipPlacement="bottom"
+          nzTooltipTitle="New Rewrite"
+          style="cursor: pointer; padding: 0 24px; height: 24px"
+        />
+      </div>
+    </nz-header>
+    <nz-content>
+      <div class="inner-content" (click)="onContentClick()">
+        <router-outlet></router-outlet>
+      </div>
+    </nz-content>
+  </nz-layout>
+</nz-layout>

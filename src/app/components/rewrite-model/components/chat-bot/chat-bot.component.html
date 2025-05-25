@@ -1,0 +1,65 @@
+<div class="chat-container">
+  <!-- Chat Messages Area -->
+  <div class="messages-container">
+    <div
+      class="message"
+      *ngFor="let message of messages"
+      [class.user-message]="message.isUser"
+      [class.ai-message]="!message.isUser"
+    >
+      <div class="message-content">
+        <div class="message-text">{{ message.content }}</div>
+        <div class="message-role">
+          {{ message.isUser ? "You" : "AI Assistant" }}
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading indicator -->
+    <div class="message ai-message" *ngIf="isLoading">
+      <div class="message-content">
+        <nz-spin nzSimple></nz-spin>
+        <div class="message-role">AI Assistant</div>
+      </div>
+    </div>
+
+    <!-- Empty state -->
+    <div class="empty-state" *ngIf="messages.length === 0 && !isLoading">
+      <div class="empty-icon">
+        <span nz-icon nzType="edit" nzTheme="outline"></span>
+      </div>
+      <h3>Start Rewriting</h3>
+      <p>
+        Enter your text below and I'll help you rewrite it in different styles.
+      </p>
+    </div>
+  </div>
+
+  <!-- Input Area -->
+  <div class="input-container">
+    <div class="input-wrapper">
+      <nz-input-group [nzSuffix]="suffixTemplate">
+        <textarea
+          nz-input
+          [(ngModel)]="currentMessage"
+          (keydown)="onEnterPress($event)"
+          placeholder="Enter text to rewrite..."
+          rows="3"
+          [disabled]="isLoading"
+        >
+        </textarea>
+      </nz-input-group>
+      <ng-template #suffixTemplate>
+        <button
+          nz-button
+          nzType="primary"
+          nzShape="circle"
+          (click)="sendMessage()"
+          [disabled]="!currentMessage.trim() || isLoading"
+        >
+          <span nz-icon nzType="send" nzTheme="outline"></span>
+        </button>
+      </ng-template>
+    </div>
+  </div>
+</div>
