@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit, ViewChild } from "@angular/core";
+import { Component, OnDestroy, OnInit } from "@angular/core";
 import { Router, RouterModule } from "@angular/router";
 import { NzLayoutModule } from "ng-zorro-antd/layout";
 import { NzMenuModule } from "ng-zorro-antd/menu";
@@ -12,7 +12,6 @@ import { NzToolTipModule } from "ng-zorro-antd/tooltip";
 import { NzSelectModule } from "ng-zorro-antd/select";
 import { FormsModule } from "@angular/forms";
 import { Subscription } from "rxjs";
-import { DomSanitizer } from "@angular/platform-browser";
 
 // Import services from webai project
 import { AuthService } from "../../services/auth.service";
@@ -23,8 +22,8 @@ import { ListChatHistoryDto } from "../../interfaces/list-chat-history-dto";
 import { ListChatSessionVo } from "../../interfaces/list-chat-session-vo";
 
 // Import services that we'll create
-import { ChatService } from "./services/chat.service";
-import { ChatBotService } from "./services/chat-bot.service";
+import { ChatService } from "@/app/components/rewrite-model/services/chat.service";
+import { ChatBotService } from "@/app/components/rewrite-model/services/chat-bot.service";
 
 @Component({
   selector: "app-rewrite-model",
@@ -78,7 +77,6 @@ export class RewriteModelComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     public chatEventsService: ChatEventsService,
     private chatBotService: ChatBotService,
-    private sanitizer: DomSanitizer,
   ) {
     // Subscribe to user email changes
     this.emailSubscription = this.authService
