@@ -1,4 +1,5 @@
 import { ExpandableState } from "./keyword.interface";
+import { ExpandableState as SharedExpandableState } from "../../dashboard-shared.service";
 
 export interface FeatureCard {
   id: string;

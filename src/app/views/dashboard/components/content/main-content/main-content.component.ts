@@ -1,4 +1,4 @@
-import { Component, inject } from "@angular/core";
+import { Component, effect, inject, OnInit } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { LucideAngularModule } from "lucide-angular";
 import { DashboardSharedService } from "../dashboard-shared.service";
@@ -17,8 +17,22 @@ import { KeywordData } from "./interfaces/keyword.interface";
   templateUrl: "./main-content.component.html",
   styleUrl: "./main-content.component.scss",
 })
-export class MainContentComponent {
+export class MainContentComponent implements OnInit {
   dashboardService = inject(DashboardSharedService);
+
+  constructor() {
+    // Listen to shared service expandable state changes
+    effect(() => {
+      const sharedState = this.dashboardService.getExpandableState()();
+      this.syncWithSharedState(sharedState);
+    });
+  }
+
+  ngOnInit(): void {
+    // Initial sync with shared service state
+    const sharedState = this.dashboardService.getExpandableState()();
+    this.syncWithSharedState(sharedState);
+  }
 
   // Configuration for all feature cards
   featureCards: FeatureCard[] = [
@@ -107,13 +121,23 @@ export class MainContentComponent {
     const typedCardId = cardId as CardId;
     const currentState = this.cardStates[typedCardId];
 
+    // Map local card IDs to shared service task IDs
+    const cardToTaskMap: Record<CardId, string> = {
+      keywords: "keywords",
+      assignment: "topic",
+      arguments: "arguments",
+      references: "review",
+      casestudies: "cases",
+    };
+
+    const taskId = cardToTaskMap[typedCardId];
+
     // If the current card is already expanded, collapse it
     if (currentState.expandable.isExpanded) {
-      this.collapseCard(typedCardId);
+      this.dashboardService.collapseFeatureCard();
     } else {
       // Collapse all other cards first, then expand the clicked card
-      this.collapseAllCards();
-      this.expandCard(typedCardId);
+      this.dashboardService.expandFeatureCard(taskId);
     }
   }
 
@@ -129,20 +153,6 @@ export class MainContentComponent {
       },
     };
   }
-
-  private collapseCard(cardId: CardId): void {
-    this.cardStates[cardId] = {
-      ...this.cardStates[cardId],
-      showGradient: false,
-      isPersistent: false,
-      expandable: {
-        isExpanded: false,
-        contentType: null,
-        animating: true,
-      },
-    };
-  }
-
   private collapseAllCards(): void {
     Object.keys(this.cardStates).forEach((cardId) => {
       this.cardStates[cardId as CardId] = {
@@ -199,8 +209,31 @@ export class MainContentComponent {
   trackByCardId(index: number, card: FeatureCard): string {
     return card.id;
   }
+  private syncWithSharedState(sharedState: {
+    isExpanded: boolean;
+    contentType: string;
+  }): void {
+    if (sharedState.isExpanded && sharedState.contentType) {
+      // Map shared service task IDs to local card IDs
+      const taskToCardMap: Record<string, CardId> = {
+        keywords: "keywords",
+        topic: "assignment",
+        arguments: "arguments",
+        review: "references",
+        cases: "casestudies",
+        examples: "casestudies", // Fallback mapping
+      };
 
-  generateEssay() {
-    this.dashboardService.generateContent();
+      const cardId = taskToCardMap[sharedState.contentType];
+      if (cardId) {
+        // Collapse all cards first
+        this.collapseAllCards();
+        // Expand the corresponding card
+        this.expandCard(cardId);
+      }
+    } else {
+      // Collapse all cards if nothing is expanded
+      this.collapseAllCards();
+    }
   }
 }

@@ -7,6 +7,11 @@ export interface TaskItem {
   isHovered?: boolean;
 }
 
+export interface ExpandableState {
+  isExpanded: boolean;
+  contentType: string;
+}
+
 export interface EssayContent {
   title: string;
   content: string;
@@ -33,21 +38,26 @@ export class DashboardSharedService {
   // Generated status
   private isGenerated = signal<boolean>(false);
 
+  // Expandable state for feature cards
+  private expandableState = signal<ExpandableState>({
+    isExpanded: false,
+    contentType: "",
+  });
+
   // Getters
   getTaskItems() {
     return this.taskItems;
   }
-
-  getSelectedTask() {
-    return this.selectedTask;
-  }
-
   getEssayContent() {
     return this.essayContent;
   }
 
   getIsGenerated() {
     return this.isGenerated;
+  }
+
+  getExpandableState() {
+    return this.expandableState;
   }
 
   // Setters
@@ -61,6 +71,9 @@ export class DashboardSharedService {
     this.selectedTask.set(
       updatedTasks.find((task) => task.id === taskId) || null,
     );
+
+    // Auto-expand the corresponding feature card
+    this.expandFeatureCard(taskId);
   }
 
   // Update task items
@@ -68,51 +81,27 @@ export class DashboardSharedService {
     this.taskItems.set(tasks);
   }
 
-  generateContent() {
-    if (!this.selectedTask()) return;
-
-    // In a real application, this would likely be an API call
-    // For demo purposes, we'll just set some sample content
-    const sampleContent: Record<string, EssayContent> = {
-      keywords: {
-        title: "Keywords Sample Essay",
-        content:
-          "This is a sample essay based on the selected keywords. It demonstrates how keywords can be effectively incorporated into an academic essay.",
-      },
-      topic: {
-        title: "Topic Discussion Sample",
-        content:
-          "This sample essay addresses the selected topic. It provides a structured approach to analyzing and discussing the given topic.",
-      },
-      arguments: {
-        title: "Argumentative Sample Essay",
-        content:
-          "This sample demonstrates how to construct effective arguments in an academic essay. It shows the logical flow of presenting claims and supporting evidence.",
-      },
-      review: {
-        title: "Academic Review Sample",
-        content:
-          "This is a sample academic review that critically evaluates relevant literature. It demonstrates the format and approach for writing academic reviews.",
-      },
-      cases: {
-        title: "Case Study Analysis Sample",
-        content:
-          "This sample essay shows how to effectively analyze case studies. It demonstrates the structure and methodology for case analysis in academic writing.",
-      },
-      examples: {
-        title: "Example Essay",
-        content:
-          "This is a comprehensive example essay that showcases proper academic writing style, structure, and formatting.",
-      },
-    };
-
-    const selectedId = this.selectedTask()?.id || "";
-    this.essayContent.set(sampleContent[selectedId]);
-    this.isGenerated.set(true);
+  // Expandable state management
+  expandFeatureCard(taskId: string) {
+    this.expandableState.set({
+      isExpanded: true,
+      contentType: taskId,
+    });
   }
 
-  reset() {
-    this.isGenerated.set(false);
-    this.essayContent.set(null);
+  collapseFeatureCard() {
+    this.expandableState.set({
+      isExpanded: false,
+      contentType: "",
+    });
+  }
+
+  toggleFeatureCard(taskId: string) {
+    const currentState = this.expandableState();
+    if (currentState.isExpanded && currentState.contentType === taskId) {
+      this.collapseFeatureCard();
+    } else {
+      this.expandFeatureCard(taskId);
+    }
   }
 }
