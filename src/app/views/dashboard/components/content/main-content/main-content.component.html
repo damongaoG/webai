@@ -4,6 +4,7 @@
     *ngFor="let card of featureCards; trackBy: trackByCardId"
     [featureCard]="card"
     [cardState]="getCardState(card.id)"
+    [taskType]="card.taskType"
     (expandClicked)="toggleGradient($event)"
     (expandHoverStart)="showGradientOnHover($event)"
     (expandHoverEnd)="hideGradientOnHover($event)"

@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter } from "@angular/core";
+import { Component, Input, Output, EventEmitter, inject } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import {
   FeatureCard,
@@ -6,6 +6,8 @@ import {
 } from "../../interfaces/feature-card.interface";
 import { ExpandableContentComponent } from "../expandable-content/expandable-content.component";
 import { KeywordData } from "../../interfaces/keyword.interface";
+import { TaskType } from "@/app/interfaces/task.interface";
+import { TaskSelectionService } from "@/app/services/task-selection.service";
 
 @Component({
   selector: "app-feature-card",
@@ -18,6 +20,7 @@ export class FeatureCardComponent {
   @Input() featureCard!: FeatureCard;
 
   @Input() cardState!: CardState;
+  @Input() taskType!: TaskType;
 
   @Output() expandClicked = new EventEmitter<string>();
 
@@ -26,6 +29,8 @@ export class FeatureCardComponent {
   @Output() expandHoverEnd = new EventEmitter<string>();
   @Output() keywordSelected = new EventEmitter<KeywordData>();
   @Output() keywordDeselected = new EventEmitter<KeywordData>();
+
+  private taskSelectionService = inject(TaskSelectionService);
 
   sampleKeywords: KeywordData[] = [
     { id: "1", text: "keywords01", isSelected: true },
@@ -44,6 +49,15 @@ export class FeatureCardComponent {
 
   onExpandClick(): void {
     this.expandClicked.emit(this.featureCard.id);
+
+    if (this.taskType) {
+      const isExpanded = !this.shouldShowExpandableContent;
+      this.taskSelectionService.selectTask(
+        this.taskType,
+        isExpanded,
+        this.featureCard.id,
+      );
+    }
   }
 
   onExpandHoverStart(): void {

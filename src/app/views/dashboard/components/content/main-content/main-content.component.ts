@@ -9,6 +9,7 @@ import {
   FeatureCard,
 } from "./interfaces/feature-card.interface";
 import { KeywordData } from "./interfaces/keyword.interface";
+import { TaskType } from "@/app/interfaces/task.interface";
 
 @Component({
   selector: "app-main-content",
@@ -34,37 +35,42 @@ export class MainContentComponent implements OnInit {
     this.syncWithSharedState(sharedState);
   }
 
-  // Configuration for all feature cards
-  featureCards: FeatureCard[] = [
+  // Configuration for all feature cards with task types
+  featureCards: (FeatureCard & { taskType: TaskType })[] = [
     {
       id: "keywords",
       title: "Keywords",
       iconPath: "/assets/images/icon/dark-keyword.svg",
       iconAlt: "Keywords icon",
+      taskType: TaskType.KEYWORD,
     },
     {
       id: "assignment",
       title: "Assignment task",
       iconPath: "/assets/images/icon/dark-task.svg",
       iconAlt: "Assignment task icon",
+      taskType: TaskType.CONTENT,
     },
     {
       id: "arguments",
       title: "Use arguments",
       iconPath: "/assets/images/icon/dark-argument-point.svg",
       iconAlt: "Use arguments icon",
+      taskType: TaskType.STYLE,
     },
     {
       id: "references",
       title: "References",
       iconPath: "/assets/images/icon/dark-review.svg",
       iconAlt: "References icon",
+      taskType: TaskType.GRAMMAR,
     },
     {
       id: "casestudies",
       title: "Relevant case studies",
       iconPath: "/assets/images/icon/dark-case.svg",
       iconAlt: "Case studies icon",
+      taskType: TaskType.TONE,
     },
   ];
 

@@ -1,6 +1,8 @@
-import { Component, inject } from "@angular/core";
+import { Component, inject, OnDestroy, OnInit } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { DashboardSharedService, TaskItem } from "../dashboard-shared.service";
+import { TaskSelectionService } from "@/app/services/task-selection.service";
+import { Subject, takeUntil } from "rxjs";
 
 @Component({
   selector: "app-sidebar",
@@ -9,8 +11,31 @@ import { DashboardSharedService, TaskItem } from "../dashboard-shared.service";
   templateUrl: "./sidebar.component.html",
   styleUrl: "./sidebar.component.scss",
 })
-export class SidebarComponent {
+export class SidebarComponent implements OnInit, OnDestroy {
   dashboardService = inject(DashboardSharedService);
+  private taskSelectionService = inject(TaskSelectionService);
+  private destroy$ = new Subject<void>();
+
+  ngOnInit(): void {
+    // Subscribe to task selection events
+    this.taskSelectionService.taskSelection$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((event) => {
+        if (event) {
+          // Select the task by type when an expand event occurs
+          if (event.isExpanded) {
+            this.dashboardService.selectTaskByType(event.taskType);
+          } else {
+            this.dashboardService.clearTaskSelection();
+          }
+        }
+      });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
 
   selectTask(taskId: string) {
     this.dashboardService.selectTask(taskId);

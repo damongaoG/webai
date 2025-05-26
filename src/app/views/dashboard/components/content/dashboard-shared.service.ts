@@ -1,8 +1,10 @@
+import { TaskType } from "@/app/interfaces/task.interface";
 import { Injectable, signal } from "@angular/core";
 
 export interface TaskItem {
   id: string;
   name: string;
+  type: TaskType;
   isSelected: boolean;
   isHovered?: boolean;
 }
@@ -21,12 +23,42 @@ export interface EssayContent {
 export class DashboardSharedService {
   // Available task items
   private taskItems = signal<TaskItem[]>([
-    { id: "keywords", name: "Keywords", isSelected: false },
-    { id: "topic", name: "Assignment task", isSelected: false },
-    { id: "arguments", name: "Use arguments", isSelected: false },
-    { id: "review", name: "References", isSelected: false },
-    { id: "cases", name: "Relevant case studies", isSelected: false },
-    { id: "examples", name: "Summary", isSelected: false },
+    {
+      id: "keywords",
+      name: "Keywords",
+      type: TaskType.KEYWORD,
+      isSelected: false,
+    },
+    {
+      id: "topic",
+      name: "Assignment task",
+      type: TaskType.CONTENT,
+      isSelected: false,
+    },
+    {
+      id: "arguments",
+      name: "Use arguments",
+      type: TaskType.STYLE,
+      isSelected: false,
+    },
+    {
+      id: "review",
+      name: "References",
+      type: TaskType.GRAMMAR,
+      isSelected: false,
+    },
+    {
+      id: "cases",
+      name: "Relevant case studies",
+      type: TaskType.TONE,
+      isSelected: false,
+    },
+    {
+      id: "examples",
+      name: "Summary",
+      type: TaskType.LENGTH,
+      isSelected: false,
+    },
   ]);
 
   // Current selected task
@@ -103,5 +135,32 @@ export class DashboardSharedService {
     } else {
       this.expandFeatureCard(taskId);
     }
+  }
+
+  // Select task by type
+  selectTaskByType(taskType: TaskType) {
+    const updatedTasks = this.taskItems().map((task) => ({
+      ...task,
+      isSelected: task.type === taskType,
+    }));
+
+    this.taskItems.set(updatedTasks);
+    const selectedTask = updatedTasks.find((task) => task.type === taskType);
+    this.selectedTask.set(selectedTask || null);
+
+    // Auto-expand the corresponding feature card
+    if (selectedTask) {
+      this.expandFeatureCard(selectedTask.id);
+    }
+  }
+
+  // Clear task selection
+  clearTaskSelection() {
+    const updatedTasks = this.taskItems().map((task) => ({
+      ...task,
+      isSelected: false,
+    }));
+    this.taskItems.set(updatedTasks);
+    this.selectedTask.set(null);
   }
 }
