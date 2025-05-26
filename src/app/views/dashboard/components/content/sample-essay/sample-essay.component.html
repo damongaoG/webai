@@ -32,6 +32,23 @@
     </div>
   </header>
 
+  <!-- Loading State -->
+  <div style="padding-left: 2rem; padding-right: 2rem; position: relative">
+    <div
+      class="h-0 outline outline-1 outline-offset-[-0.50px] outline-gray-400/30"
+    ></div>
+    <img
+      src="/assets/images/icon/arrow-right-01.svg"
+      alt=""
+      style="position: absolute; top: -7px; left: 17px"
+    />
+    <img
+      src="/assets/images/icon/arrow-left.svg"
+      alt=""
+      style="position: absolute; top: -7px; right: 17px"
+    />
+  </div>
+
   <!-- Main Content Area -->
   <main class="essay-content-area">
     @if (!dashboardService.getIsGenerated()()) {

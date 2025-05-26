@@ -21,7 +21,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
           window.location.href = "/auth/login";
         }
       } else if (error.status === 500) {
-        router.navigate(["/server-error"]);
+        // router.navigate(["/server-error"]);
       }
       return throwError(() => error);
     }),
