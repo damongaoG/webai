@@ -29,6 +29,7 @@ export class AuthService {
   private userIdSubject = new BehaviorSubject<string>("");
   private isRefreshing = false;
   private restrictedRoutes = ["/chat", "/activate", "/profile/change-password"];
+  private protectedRoutes = ["/dashboard", "/rewrite"];
   private userRoleIdSubject = new BehaviorSubject<string>("");
 
   constructor(
@@ -108,6 +109,17 @@ export class AuthService {
     this.router.navigate(["/auth/login"]);
   }
 
+  private handleUnauthorizedRedirect(): void {
+    const currentUrl = this.router.url;
+    const isOnProtectedRoute = this.protectedRoutes.some((route) =>
+      currentUrl.startsWith(route),
+    );
+
+    if (isOnProtectedRoute && !currentUrl.startsWith("/auth/login")) {
+      this.router.navigate(["/auth/login"]);
+    }
+  }
+
   reLogIn(): Observable<Result<LoginAdminVo>> {
     this.isRefreshing = true;
     return this.http
@@ -149,6 +161,9 @@ export class AuthService {
               this.router.navigate(["/dashboard"]);
             }
           } else {
+            // Handle unauthorized access
+            this.handleUnauthorizedRedirect();
+
             this.removeToken();
             this.isAuthenticatedSubject.next(false);
             this.userEmailSubject.next("User");
@@ -242,11 +257,6 @@ export class AuthService {
 
     return true;
   }
-
-  getUserRoleId(): Observable<string> {
-    return this.userRoleIdSubject.asObservable();
-  }
-
   getUserEmail(): Observable<string> {
     return this.userEmailSubject.asObservable();
   }

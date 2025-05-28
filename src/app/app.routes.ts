@@ -18,7 +18,7 @@ export const routes: Routes = [
       import("./views/dashboard/dashboard.component").then(
         (mod) => mod.DashboardComponent,
       ),
-    // canActivate: [authGuard],
+    canActivate: [authGuard],
     data: { title: "Dashboard" },
   },
   {
