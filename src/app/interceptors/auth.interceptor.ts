@@ -4,8 +4,6 @@ import { Router } from "@angular/router";
 import { NzModalService } from "ng-zorro-antd/modal";
 import { catchError, throwError } from "rxjs";
 
-let isSessionExpiredModalShown = false;
-
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const router = inject(Router);
   const modal = inject(NzModalService);
@@ -21,7 +19,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
           window.location.href = "/auth/login";
         }
       } else if (error.status === 500) {
-        // router.navigate(["/server-error"]);
+        router.navigate(["/server-error"]);
       }
       return throwError(() => error);
     }),
