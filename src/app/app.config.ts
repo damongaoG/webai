@@ -22,6 +22,8 @@ import { rootReducer } from "./store";
 import { NzMessageModule } from "ng-zorro-antd/message";
 import { NzModalModule } from "ng-zorro-antd/modal";
 import { authInterceptor } from "./interceptors/auth.interceptor";
+import { provideNzIcons } from "ng-zorro-antd/icon";
+import { icons } from "./icons-provider";
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -37,5 +39,6 @@ export const appConfig: ApplicationConfig = {
     ),
     importProvidersFrom(BrowserModule, NzMessageModule, NzModalModule),
     provideAnimations(),
+    provideNzIcons(icons),
   ],
 };
