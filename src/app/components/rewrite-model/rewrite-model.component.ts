@@ -12,18 +12,31 @@ import { NzToolTipModule } from "ng-zorro-antd/tooltip";
 import { NzSelectModule } from "ng-zorro-antd/select";
 import { FormsModule } from "@angular/forms";
 import { Subscription } from "rxjs";
+import { HttpClientModule } from '@angular/common/http';
+import { NzTabsModule } from 'ng-zorro-antd/tabs';
+import { NzGridModule } from 'ng-zorro-antd/grid';
+import { NzMessageModule, NzMessageService } from 'ng-zorro-antd/message';
+import { NzSpinModule } from 'ng-zorro-antd/spin';
+import { Subject, takeUntil } from 'rxjs';
 
 // Import services from webai project
 import { AuthService } from "../../services/auth.service";
-import { ChatEventsService } from "../../services/chat-events.service";
+import { ChatEventsService } from "./services/chat-events.service";
 
 // Import interfaces that exist in webai project
 import { ListChatHistoryDto } from "../../interfaces/list-chat-history-dto";
 import { ListChatSessionVo } from "../../interfaces/list-chat-session-vo";
+import { ModelMessageDTO } from "../../interfaces/model-message-dto";
+import { ChatMessage } from "../../interfaces/chat-dto";
 
 // Import services that we'll create
-import { ChatService } from "@/app/components/rewrite-model/services/chat.service";
-import { ChatBotService } from "@/app/components/rewrite-model/services/chat-bot.service";
+import { ChatService } from "./services/chat.service";
+import { ChatBotService } from "./services/chat-bot.service";
+import { KatexService } from './services/katex.service';
+import { VisibilityService } from './services/visibility.service';
+
+// Import components
+import { ChatBotComponent } from './components/chat-bot/chat-bot.component';
 
 @Component({
   selector: "app-rewrite-model",
@@ -43,7 +56,20 @@ import { ChatBotService } from "@/app/components/rewrite-model/services/chat-bot
     NzToolTipModule,
     NzSelectModule,
     FormsModule,
+    HttpClientModule,
+    NzTabsModule,
+    NzGridModule,
+    NzMessageModule,
+    NzSpinModule,
+    ChatBotComponent
   ],
+  providers: [
+    ChatService,
+    ChatBotService,
+    KatexService,
+    ChatEventsService,
+    VisibilityService
+  ]
 })
 export class RewriteModelComponent implements OnInit, OnDestroy {
   // Layout state
@@ -70,6 +96,15 @@ export class RewriteModelComponent implements OnInit, OnDestroy {
   private hasMoreData = true;
   private isLoadingSpecificChat = false;
 
+  // UI state
+  showChatHistory = true;
+
+  // Chat state
+  currentSessionId: string | null = null;
+  
+  // Cleanup subject for subscription management
+  private destroy$ = new Subject<void>();
+
   constructor(
     private router: Router,
     private modal: NzModalService,
@@ -77,6 +112,7 @@ export class RewriteModelComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     public chatEventsService: ChatEventsService,
     private chatBotService: ChatBotService,
+    private messageService: NzMessageService
   ) {
     // Subscribe to user email changes
     this.emailSubscription = this.authService
@@ -101,6 +137,26 @@ export class RewriteModelComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.checkMobile();
     window.addEventListener("resize", () => this.checkMobile());
+    
+    // Subscribe to chat history toggle event
+    this.chatEventsService.showChatHistory$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(show => {
+        this.showChatHistory = show;
+      });
+    
+    // Check chat status to ensure user has access
+    this.chatBotService.checkChatStatus().subscribe({
+      next: (result) => {
+        if (result.code !== 1) {
+          this.messageService.error('Chat service unavailable');
+        }
+      },
+      error: (error) => {
+        console.error('Error checking chat status:', error);
+        this.messageService.error('Failed to check chat status');
+      }
+    });
   }
 
   ngOnDestroy(): void {
@@ -111,6 +167,10 @@ export class RewriteModelComponent implements OnInit, OnDestroy {
       this.chatHistorySubscription.unsubscribe();
     }
     window.removeEventListener("resize", () => this.checkMobile());
+    
+    // Clean up subscriptions
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   // Layout methods
@@ -124,6 +184,11 @@ export class RewriteModelComponent implements OnInit, OnDestroy {
       this.isCollapsed = true;
     }
     this.chatService.setIsMobile(this.isMobile);
+    
+    // Auto-hide chat history on mobile
+    if (this.isMobile && this.showChatHistory) {
+      this.chatEventsService.setShowChatHistory(false);
+    }
   }
 
   // Navigation methods
@@ -181,15 +246,20 @@ export class RewriteModelComponent implements OnInit, OnDestroy {
           );
 
           // Convert the response data to ChatMessage format for display
-          const chatMessages = filteredMessages.map(
-            (item: ListChatSessionVo) => ({
-              role: item.role,
-              content: item.content,
-              isUser: item.role === "user",
-              tag: item.tag,
-              parsedContent: undefined, // Let the ChatBotComponent handle the parsing
-            }),
-          );
+          const chatMessages: ChatMessage[] = [];
+          
+          filteredMessages.forEach((item: ListChatSessionVo) => {
+            // Process each message in the item's messages array
+            item.messages.forEach((message: ModelMessageDTO) => {
+              chatMessages.push({
+                role: message.role,
+                content: message.content,
+                isUser: message.role === "user",
+                tag: item.tag,
+                parsedContent: undefined, // Let the ChatBotComponent handle the parsing
+              });
+            });
+          });
 
           // Update the chat messages in the chat service
           this.chatService.updateChatMessages(
@@ -295,5 +365,24 @@ export class RewriteModelComponent implements OnInit, OnDestroy {
 
   truncateContent(content: string): string {
     return content;
+  }
+
+  // Toggle chat history visibility
+  toggleChatHistory() {
+    this.chatEventsService.setShowChatHistory(!this.showChatHistory);
+  }
+
+  // Start a new chat
+  startNewChat() {
+    this.chatEventsService.triggerClearChat();
+    this.chatService.updateSessionId(null);
+    this.currentSessionId = null;
+    this.messageService.success('Started a new conversation');
+  }
+  
+  // Save current chat
+  saveChat() {
+    this.chatEventsService.triggerSaveHistory();
+    this.messageService.success('Chat saved successfully');
   }
 }

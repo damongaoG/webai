@@ -1,65 +1,69 @@
 <div class="chat-container">
-  <!-- Chat Messages Area -->
-  <div class="messages-container">
-    <div
-      class="message"
-      *ngFor="let message of messages"
-      [class.user-message]="message.isUser"
-      [class.ai-message]="!message.isUser"
-    >
+  <!-- Messages Container -->
+  <div #scrollMe class="messages-container">
+    <div *ngFor="let message of messages; let i = index" [ngClass]="{'user-message': message.isUser, 'assistant-message': !message.isUser, 'error-message': message.isError}" class="message">
+      <div class="message-avatar">
+        <nz-avatar [nzIcon]="message.isUser ? 'user' : 'robot'" [nzSize]="36"></nz-avatar>
+      </div>
       <div class="message-content">
-        <div class="message-text">{{ message.content }}</div>
         <div class="message-role">
-          {{ message.isUser ? "You" : "AI Assistant" }}
+          {{ message.isUser ? 'You' : 'Tudor AI' }}
+        </div>
+        <div *ngIf="message.parsedContent" [innerHTML]="message.parsedContent" class="message-text"></div>
+        <div *ngIf="!message.parsedContent" class="message-text">
+          {{ message.content }}
         </div>
       </div>
     </div>
 
-    <!-- Loading indicator -->
-    <div class="message ai-message" *ngIf="isLoading">
-      <div class="message-content">
-        <nz-spin nzSimple></nz-spin>
-        <div class="message-role">AI Assistant</div>
-      </div>
+    <!-- Typing indicator when streaming -->
+    <div *ngIf="isStreaming" class="typing-indicator">
+      <div class="dot"></div>
+      <div class="dot"></div>
+      <div class="dot"></div>
     </div>
-
-    <!-- Empty state -->
-    <div class="empty-state" *ngIf="messages.length === 0 && !isLoading">
-      <div class="empty-icon">
-        <span nz-icon nzType="edit" nzTheme="outline"></span>
-      </div>
-      <h3>Start Rewriting</h3>
-      <p>
-        Enter your text below and I'll help you rewrite it in different styles.
-      </p>
-    </div>
+    
+    <!-- Spacer to ensure scroll works correctly -->
+    <div class="scroll-spacer"></div>
   </div>
 
-  <!-- Input Area -->
+  <!-- Input Container -->
   <div class="input-container">
-    <div class="input-wrapper">
-      <nz-input-group [nzSuffix]="suffixTemplate">
-        <textarea
-          nz-input
-          [(ngModel)]="currentMessage"
-          (keydown)="onEnterPress($event)"
-          placeholder="Enter text to rewrite..."
-          rows="3"
-          [disabled]="isLoading"
-        >
-        </textarea>
-      </nz-input-group>
-      <ng-template #suffixTemplate>
-        <button
-          nz-button
-          nzType="primary"
-          nzShape="circle"
-          (click)="sendMessage()"
-          [disabled]="!currentMessage.trim() || isLoading"
-        >
-          <span nz-icon nzType="send" nzTheme="outline"></span>
-        </button>
-      </ng-template>
+    <div class="char-counter" [class.limit-reached]="isLimitReached">
+      {{ getCharacterCountDisplay() }}
+    </div>
+    
+    <div class="input-box">
+      <textarea
+        #messageInput
+        [(ngModel)]="currentMessage"
+        (keyup)="handleKeyUp($event)"
+        [disabled]="isStreaming"
+        class="message-input"
+        placeholder="Type a message..."
+        rows="1"
+      ></textarea>
+      
+      <button 
+        *ngIf="isStreaming"
+        (click)="stopStreaming()"
+        class="control-button stop-button"
+        nz-button
+        nzShape="circle"
+      >
+        <span nz-icon nzType="stop"></span>
+      </button>
+      
+      <button
+        (click)="sendMessage()"
+        [disabled]="isSendButtonDisabled()"
+        class="control-button send-button"
+        nz-button
+        nzShape="circle"
+        nzType="primary"
+      >
+        <span nz-icon nzType="send"></span>
+      </button>
     </div>
   </div>
 </div>

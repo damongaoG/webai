@@ -1,145 +1,138 @@
-<nz-layout class="app-layout">
-  <nz-sider
-    [(nzCollapsed)]="isCollapsed"
-    [nzTrigger]="null"
-    [nzCollapsedWidth]="0"
-    class="menu-sidebar"
-    nzBreakpoint="md"
-    nzCollapsible
-    nzWidth="256px"
-  >
-    <div class="sidebar-logo">
-      <div
-        style="
-          display: flex;
-          flex-direction: row;
-          align-items: center;
-          gap: 6px;
-        "
-      >
-        <span
-          (click)="toggleCollapsed()"
-          *ngIf="isMobile"
-          [nzType]="isCollapsed ? 'menu-unfold' : 'menu-fold'"
-          class="trigger mobile-trigger"
-          nz-icon
-        >
-        </span>
-        <a routerLink="/rewrite">
-          <img alt="logo" src="/assets/images/logo/logo.png" />
-        </a>
-        <a [nzDropdownMenu]="menu" class="profile-dropdown" nz-dropdown>
-          <span class="username">{{ truncateEmail(userEmail) }}</span>
-        </a>
-        <nz-dropdown-menu #menu="nzDropdownMenu">
-          <ul nz-menu>
-            <li (click)="jumpToProfile()" nz-menu-item>
-              <span nz-icon nzTheme="outline" nzType="user"> </span>
-              Profile
-            </li>
-            <li nz-menu-divider></li>
-            <li (click)="showLogoutConfirm()" nz-menu-item>
-              <span nz-icon nzTheme="outline" nzType="logout"></span>
-              Logout
-            </li>
-          </ul>
-        </nz-dropdown-menu>
-      </div>
+<div class="rewrite-container">
+  <!-- Header -->
+  <header class="rewrite-header">
+    <div class="header-left">
+      <h1 class="title">Tudor AI</h1>
     </div>
-
-    <ul
-      [nzInlineCollapsed]="isCollapsed"
-      nz-menu
-      nzMode="inline"
-      nzTheme="dark"
-    >
-      <ng-container *ngIf="!isProfileSection()">
-        <!-- Default menu items-->
-        <li nz-menu-item nzMatchRouter (click)="clearChat()">
-          <span nz-icon nzTheme="outline" nzType="edit"></span>
-          <a routerLink="/rewrite">New Rewrite</a>
-        </li>
-      </ng-container>
-
-      <ng-container *ngIf="isProfileSection()">
-        <!-- Profile menu items-->
-        <li nz-menu-item nzMatchRouter (click)="onMenuItemClick()">
-          <span nz-icon nzTheme="outline" nzType="lock"></span>
-          <a routerLink="/profile/change-password">Change Password</a>
-        </li>
-        <li nz-menu-item nzMatchRouter (click)="onMenuItemClick()">
-          <span nz-icon nzTheme="outline" nzType="key"></span>
-          <a routerLink="/activate">Activation Code</a>
-        </li>
-      </ng-container>
-    </ul>
-
-    <!-- Chat History Section -->
-    <div
-      *ngIf="isOnChatPage()"
-      class="chat-history"
-      (scroll)="onHistoryScroll($event)"
-    >
-      <div class="history-title">Recently</div>
-      <div
-        (click)="loadChat(history)"
-        *ngFor="let history of chatHistory"
-        class="history-item"
-        [class.active]="history.sessionId === activeHistoryId"
-        nz-tooltip
+    <div class="header-actions">
+      <button 
+        nz-button 
+        nzType="default" 
+        nzShape="circle"
+        (click)="toggleChatHistory()"
+        [title]="showChatHistory ? 'Hide history' : 'Show history'"
+        class="header-btn"
       >
-        {{ truncateContent(history.content) }}
-      </div>
+        <span nz-icon nzType="history"></span>
+      </button>
+      <button 
+        nz-button 
+        nzType="default" 
+        nzShape="circle" 
+        (click)="startNewChat()"
+        title="New chat"
+        class="header-btn"
+      >
+        <span nz-icon nzType="plus"></span>
+      </button>
+      <button 
+        nz-button 
+        nzType="primary" 
+        nzShape="circle" 
+        (click)="saveChat()"
+        title="Save chat"
+        class="header-btn"
+      >
+        <span nz-icon nzType="save"></span>
+      </button>
     </div>
-  </nz-sider>
-  <nz-layout>
-    <nz-header *ngIf="isMobile">
-      <div class="app-header">
-        <span (click)="toggleCollapsed()" class="header-trigger">
-          <span
-            [nzType]="isCollapsed ? 'menu-unfold' : 'menu-fold'"
-            nz-icon
-          ></span>
-        </span>
-        <div *ngIf="isOnChatPage()" class="select-container">
-          <nz-select
-            (ngModelChange)="onTabChange($event)"
-            [(ngModel)]="selectedTabIndex"
-            [nzCustomTemplate]="defaultTemplate"
-          >
-            <nz-option
-              *ngFor="let option of options"
-              [nzLabel]="option.label"
-              [nzValue]="option.value"
-              [nzCustomContent]="true"
-            >
-              <div style="text-align: center; width: 100%">
-                {{ option.label }}
-              </div>
-            </nz-option>
-          </nz-select>
-          <ng-template #defaultTemplate let-selected>
-            <div style="text-align: center; width: 100%">
-              {{ selected.nzLabel }}
-            </div>
-          </ng-template>
+  </header>
+
+  <!-- Main Content -->
+  <div class="rewrite-content">
+    <!-- Chat History Sidebar -->
+    <aside class="chat-history-sidebar" *ngIf="showChatHistory && !isMobile">
+      <div class="sidebar-header">
+        <h3>Chat History</h3>
+      </div>
+      <div class="history-list" (scroll)="onHistoryScroll($event)">
+        <div *ngIf="chatHistory.length === 0" class="empty-history">
+          <p>No chat history yet.</p>
         </div>
-        <img
-          *ngIf="isOnChatPage()"
-          (click)="clearChat()"
-          src="/assets/images/icon/new-chat.svg"
-          alt="New Rewrite"
-          nz-tooltip
-          nzTooltipPlacement="bottom"
-          nzTooltipTitle="New Rewrite"
-          style="cursor: pointer; padding: 0 24px; height: 24px"
-        />
+        <div 
+          *ngFor="let history of chatHistory" 
+          class="history-item"
+          [class.active]="activeHistoryId === history.sessionId"
+          (click)="loadChat(history)"
+        >
+          <div class="history-title">
+            {{ truncateContent(history.messages[0]?.content || 'Untitled Chat') }}
+          </div>
+          <div class="history-time">
+            {{ history.updateTime | date:'short' }}
+          </div>
+        </div>
+        <div *ngIf="isLoading" class="loading-more">
+          <nz-spin nzSimple></nz-spin>
+          <span>Loading more...</span>
+        </div>
       </div>
-    </nz-header>
-    <nz-content>
-      <div class="inner-content" (click)="onContentClick()">
-        <router-outlet></router-outlet>
+    </aside>
+    
+    <!-- Main Chat Area -->
+    <main class="chat-main">
+      <app-chat-bot></app-chat-bot>
+    </main>
+  </div>
+
+  <!-- Mobile Menu (only shown on mobile) -->
+  <div class="mobile-menu" *ngIf="isMobile">
+    <button 
+      nz-button 
+      nzType="default" 
+      nzShape="circle"
+      (click)="toggleChatHistory()"
+      [title]="showChatHistory ? 'Hide history' : 'Show history'"
+    >
+      <span nz-icon nzType="history"></span>
+    </button>
+    <button 
+      nz-button 
+      nzType="default" 
+      nzShape="circle" 
+      (click)="startNewChat()"
+      title="New chat"
+    >
+      <span nz-icon nzType="plus"></span>
+    </button>
+    <button 
+      nz-button 
+      nzType="primary" 
+      nzShape="circle" 
+      (click)="saveChat()"
+      title="Save chat"
+    >
+      <span nz-icon nzType="save"></span>
+    </button>
+  </div>
+
+  <!-- Mobile History Overlay (when showing history on mobile) -->
+  <div class="mobile-history-overlay" *ngIf="showChatHistory && isMobile">
+    <div class="mobile-history-container">
+      <div class="mobile-history-header">
+        <h3>Chat History</h3>
+        <button nz-button nzType="text" (click)="toggleChatHistory()">
+          <span nz-icon nzType="close"></span>
+        </button>
       </div>
-    </nz-content>
-  </nz-layout>
-</nz-layout>
+      <div class="mobile-history-content">
+        <div *ngIf="chatHistory.length === 0" class="empty-history">
+          <p>No chat history yet.</p>
+        </div>
+        <div 
+          *ngFor="let history of chatHistory" 
+          class="history-item"
+          [class.active]="activeHistoryId === history.sessionId"
+          (click)="loadChat(history)"
+        >
+          <div class="history-title">
+            {{ truncateContent(history.messages?.[0]?.content || 'Untitled Chat') }}
+          </div>
+          <div class="history-time">
+            {{ history.updateTime | date:'short' }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,274 +1,149 @@
 import { Injectable } from "@angular/core";
 import { HttpClient, HttpHeaders } from "@angular/common/http";
-import {
-  EMPTY,
-  Observable,
-  of,
-  Subject,
-  switchMap,
-  timer,
-  catchError,
-} from "rxjs";
-import { environment } from "@environment/environment";
-import { ModelRequestDto } from "@/app/interfaces/model-request-dto";
-import { fetchEventSource } from "@microsoft/fetch-event-source";
+import { Observable, Subject, catchError, throwError } from "rxjs";
 import { Result } from "@/app/interfaces/result";
-import { StartChatVo } from "@/app/interfaces/start-chat-vo";
-import { ActivationCodeVo } from "@/app/interfaces/activation-code-vo";
-import { SaveChatHistoryDto } from "@/app/interfaces/save-chat-history-dto";
-import { PageListChatSessionVo } from "@/app/interfaces/page-list-chat-session-vo";
 import { PageListChatHistoryVo } from "@/app/interfaces/page-list-chat-history-vo";
-import { ChatWorkerService } from "@/app/services/chat-worker.service";
+import { PageListChatSessionVo } from "@/app/interfaces/page-list-chat-session-vo";
+import { ActivationCodeVo } from "@/app/interfaces/activation-code-vo";
+import { StartChatVo } from "@/app/interfaces/start-chat-vo";
+import { ModelRequestDto } from "@/app/interfaces/model-request-dto";
+import { SaveChatHistoryDto } from "@/app/interfaces/save-chat-history-dto";
 
 @Injectable({
-  providedIn: "root",
+  providedIn: 'root'
 })
 export class ChatBotService {
-  private apiUrl = environment.modelServiceUrl || "http://localhost:3000/api";
+  // API URL for the model service
+  private apiUrl = '/model-service';
+  
+  // HTTP headers
   headers = new HttpHeaders({
-    "Content-Type": "application/json",
-    Accept: "application/json",
+    'Content-Type': 'application/json',
+    'Accept': 'application/json'
   });
-
+  
+  // Subject for stopping output stream
   private stopStreamSubject = new Subject<void>();
-
-  constructor(
-    private http: HttpClient,
-    private chatWorkerService: ChatWorkerService,
-  ) {
-    // Log worker support status
-    console.log(
-      "Web Worker support:",
-      this.chatWorkerService.isSupported() ? "Available" : "Not available",
-    );
-  }
-
-  // Main method to get model results with worker fallback
+  
+  constructor(private http: HttpClient) {}
+  
+  // Get model result with streaming response
   public getModelResult(request: ModelRequestDto): Observable<any> {
-    // Try to use the worker if supported
-    if (this.chatWorkerService.isSupported()) {
-      try {
-        console.log("Using worker for model request");
-        return this.chatWorkerService.getModelResult(request).pipe(
-          catchError((error) => {
-            console.error(
-              "Worker request failed, falling back to direct implementation:",
-              error,
-            );
-            // Fall back to the direct implementation
-            return this.getModelResultDirect(request);
-          }),
-        );
-      } catch (error) {
-        console.error(
-          "Worker setup failed, falling back to direct implementation:",
-          error,
-        );
-        // Fall through to the direct implementation
-      }
-    }
-
-    // Fall back to the original implementation
-    console.log("Using direct implementation for model request");
-    return this.getModelResultDirect(request);
-  }
-
-  // Direct implementation without worker
-  private getModelResultDirect(request: ModelRequestDto): Observable<any> {
-    return new Observable((observer) => {
-      let controller: AbortController | null = null;
-      const messageReceived = new Subject<void>();
-      let lastMessageTime = Date.now();
-      let isDone = false;
-
-      try {
-        controller = new AbortController();
-
-        // Create timer to check for inactivity
-        const inactivityCheck = timer(0, 1000)
-          .pipe(
-            switchMap(() => {
-              // Only check if uncompleted
-              if (!isDone) {
-                const timeSinceLastMessage = Date.now() - lastMessageTime;
-                if (timeSinceLastMessage > 15000) {
-                  console.log(
-                    "No new messages for 15 seconds, closing connection",
-                  );
-                  observer.error("Over Time");
-                  observer.complete();
-                  controller?.abort();
-                  return EMPTY;
-                }
-              }
-              return of(null);
-            }),
-          )
-          .subscribe();
-
-        // Subscribe to the stop stream subject
-        const stopSubscription = this.stopStreamSubject.subscribe(() => {
-          isDone = true;
-          inactivityCheck.unsubscribe();
-          observer.complete();
-          controller?.abort();
-        });
-
-        fetchEventSource(`${this.apiUrl}/auth/model/action/completion`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(request),
-          signal: controller.signal,
-          onmessage(event) {
-            // If the stream is completed, set the flag and complete the observer
-            if (event.data === "[DONE]") {
-              console.log("Stream completed with [DONE]");
-              isDone = true;
-              inactivityCheck.unsubscribe();
-              observer.complete();
-              return;
-            }
-            // Update last message time
-            lastMessageTime = Date.now();
-
-            console.log("Received event data:", event.data);
-
-            try {
-              let data;
-              // Handle data: prefix if present
-              if (event.data.startsWith("data: ")) {
-                const jsonStr = event.data.substring(6).trim();
-                if (jsonStr) {
-                  data = JSON.parse(jsonStr);
-                  console.log("Parsed data with prefix:", data);
-                }
-              } else {
-                data = JSON.parse(event.data);
-                console.log("Parsed data without prefix:", data);
-              }
-
-              // Check for Connection reset error
-              if (data?.error) {
-                observer.error("Error");
-                observer.complete();
-                controller?.abort();
-                return;
-              }
-
-              if (data) {
-                observer.next(data);
-              }
-            } catch (error) {
-              console.error(
-                "Error parsing JSON:",
-                error,
-                "Raw data:",
-                event.data,
-              );
-              observer.error(new Error("Invalid JSON response"));
-            }
-          },
-          onclose() {
-            console.log("Stream connection closed");
-            inactivityCheck.unsubscribe();
+    // Create a unique tag for this request
+    const tag = `${request.tag}_${Date.now()}`;
+    
+    // Return an observable that handles the streaming response
+    return new Observable(observer => {
+      const eventSource = new EventSource(`${this.apiUrl}/auth/model/action/chat?tag=${tag}`);
+      
+      // Handle incoming messages
+      eventSource.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          observer.next(data);
+          
+          // If we get a complete response, close the connection
+          if (data.choices && data.choices.length > 0 && 
+              data.choices[0].delta && 
+              data.choices[0].delta.content === "[DONE]") {
+            eventSource.close();
             observer.complete();
-          },
-          onerror(error) {
-            console.error("Stream error:", error);
-            inactivityCheck.unsubscribe();
-            observer.error(error);
-          },
+          }
+        } catch (error) {
+          observer.error(error);
+        }
+      };
+      
+      // Handle connection open
+      eventSource.onopen = () => {
+        // Send the actual request
+        this.http.post(`${this.apiUrl}/auth/model/action/completion`, request, {
+          headers: this.headers
+        }).subscribe({
+          error: (err) => {
+            eventSource.close();
+            observer.error(err);
+          }
         });
-
-        return () => {
-          if (controller) {
-            console.log("Cleaning up stream connection");
-            inactivityCheck.unsubscribe();
-            stopSubscription.unsubscribe();
-            controller.abort();
-          }
-        };
-      } catch (error) {
-        console.error("Error in stream setup:", error);
+      };
+      
+      // Handle connection close
+      eventSource.addEventListener('close', () => {
+        observer.complete();
+      });
+      
+      // Handle errors
+      eventSource.onerror = (error) => {
+        eventSource.close();
         observer.error(error);
-        return () => {
-          if (controller) {
-            controller.abort();
-          }
-        };
-      }
+      };
+      
+      // Return teardown logic for the Observable
+      return () => {
+        eventSource.close();
+        this.stopOutput(tag).subscribe();
+      };
     });
   }
-
-  // Stop the current output stream
+  
+  // Stop the output stream
   public stopOutput(tag: string): Observable<Result<any>> {
-    this.stopStreamSubject.next();
     return this.http.post<Result<any>>(
-      `${this.apiUrl}/auth/model/action/stop`,
-      { tag },
-      { headers: this.headers },
+      `${this.apiUrl}/auth/model/action/stop?tag=${tag}`,
+      {},
+      { headers: this.headers }
+    ).pipe(
+      catchError(error => throwError(() => error))
     );
   }
-
-  // Start a new chat session
+  
+  // Start chat session
   public startChat(): Observable<Result<StartChatVo>> {
     return this.http.post<Result<StartChatVo>>(
-      `${this.apiUrl}/auth/chat/action/start`,
+      `${this.apiUrl}/auth/model/action/chat`,
       {},
-      { headers: this.headers },
+      { headers: this.headers }
     );
   }
-
+  
   // Check chat status
   public checkChatStatus(): Observable<Result<ActivationCodeVo>> {
     return this.http.get<Result<ActivationCodeVo>>(
-      `${this.apiUrl}/auth/chat/action/status`,
-      { headers: this.headers },
+      `${this.apiUrl}/auth/model/action/check-chat`,
+      { headers: this.headers }
     );
   }
-
+  
   // Save chat history
   public saveChatHistory(
-    chatHistory: Array<SaveChatHistoryDto>,
+    chatHistory: Array<SaveChatHistoryDto>
   ): Observable<Result<any>> {
     return this.http.post<Result<any>>(
-      `${this.apiUrl}/auth/chat/action/save`,
+      `${this.apiUrl}/auth/model/entity/chat`,
       chatHistory,
-      { headers: this.headers },
+      { headers: this.headers }
     );
   }
-
-  // List chat history with pagination
+  
+  // List chat history
   public listChatHistory(
     tag: number,
     page: number,
-    pageSize: number,
+    pageSize: number
   ): Observable<Result<PageListChatHistoryVo>> {
     return this.http.get<Result<PageListChatHistoryVo>>(
-      `${this.apiUrl}/auth/chat/action/list?tag=${tag}&page=${page}&size=${pageSize}`,
-      { headers: this.headers },
+      `${this.apiUrl}/auth/model/entity/chat-group?tag=${tag}&page=${page}&size=${pageSize}`,
+      { headers: this.headers }
     );
   }
-
-  // Get chat history by session ID
+  
+  // List chat history by session ID
   public listChatHistoryById(
-    sessionId: string,
+    sessionId: string
   ): Observable<Result<PageListChatSessionVo>> {
     return this.http.get<Result<PageListChatSessionVo>>(
-      `${this.apiUrl}/auth/chat/action/list/${sessionId}`,
-      { headers: this.headers },
+      `${this.apiUrl}/auth/model/entity/chat?sessionId=${sessionId}`,
+      { headers: this.headers }
     );
   }
-
-  // Get stop stream subject for external control
-  public getStopStreamSubject(): Subject<void> {
-    return this.stopStreamSubject;
-  }
-
-  // Trigger stop stream
-  public triggerStopStream(): void {
-    this.stopStreamSubject.next();
-  }
-}
+} 

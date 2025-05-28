@@ -1,9 +1,10 @@
+import { ModelMessageDTO } from './model-message-dto';
+
 export interface ListChatHistoryDto {
-  id: string;
-  userId: string;
-  role: string;
   sessionId: string;
-  content: string;
   tag: number;
+  userId: string;
+  messages: ModelMessageDTO[];
+  updateTime: string;
   createTime: string;
 }

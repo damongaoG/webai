@@ -5,7 +5,7 @@ export interface ChatMessage {
   content: string;
   isUser: boolean;
   tag?: number;
-  parsedContent?: SafeHtml;
+  parsedContent?: any;
   isFromHistory?: boolean;
   isError?: boolean; // Added optional property for error handling
 }

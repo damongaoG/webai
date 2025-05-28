@@ -1,17 +1,17 @@
-import { ListChatHistoryDto } from "./list-chat-history-dto";
-import { PageableObject } from "./pageable-object";
-import { SortObject } from "./sort-object";
+import { ListChatHistoryDto } from './list-chat-history-dto';
+import { PageableObject } from './pageable-object';
+import { SortObject } from './sort-object';
 
 export interface PageListChatHistoryVo {
-  content: Array<ListChatHistoryDto>;
+  content: ListChatHistoryDto[];
   pageable: PageableObject;
-  last: boolean;
   totalPages: number;
   totalElements: number;
-  first: boolean;
+  last: boolean;
   size: number;
   number: number;
   sort: SortObject;
   numberOfElements: number;
+  first: boolean;
   empty: boolean;
 }

@@ -1,10 +1,10 @@
-import {SortObject} from "./sort-object";
+import { SortObject } from './sort-object';
 
 export interface PageableObject {
-  pageNumber: number;
-  pageSize: number;
   sort: SortObject;
   offset: number;
+  pageSize: number;
+  pageNumber: number;
   paged: boolean;
   unpaged: boolean;
 }
