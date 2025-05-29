@@ -1,0 +1,8 @@
+/* Typography utilities */
+@layer utilities {
+  .font-mono {
+    font-family:
+      ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono",
+      Menlo, Monaco, Courier, monospace;
+  }
+}

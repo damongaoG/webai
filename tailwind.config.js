@@ -1,5 +1,5 @@
 /** @type {import('tailwindcss').Config} */
-const colors = require('tailwindcss/colors')
+const colors = require("tailwindcss/colors");
 module.exports = {
   content: ["./src/**/*.{html,scss,ts}", "node_modules/preline/dist/*.js"],
   theme: {
@@ -16,6 +16,41 @@ module.exports = {
 
     fontFamily: {
       jost: ["Jost", "sans-serif"],
+      sans: [
+        "ui-sans-serif",
+        "system-ui",
+        "-apple-system",
+        "BlinkMacSystemFont",
+        '"Segoe UI"',
+        "Roboto",
+        '"Helvetica Neue"',
+        "Arial",
+        '"Noto Sans"',
+        "sans-serif",
+        '"Apple Color Emoji"',
+        '"Segoe UI Emoji"',
+        '"Segoe UI Symbol"',
+        '"Noto Color Emoji"',
+      ],
+      serif: [
+        "ui-serif",
+        "Georgia",
+        "Cambria",
+        '"Times New Roman"',
+        "Times",
+        "serif",
+      ],
+      mono: [
+        "ui-monospace",
+        "SFMono-Regular",
+        '"SF Mono"',
+        "Consolas",
+        '"Liberation Mono"',
+        "Menlo",
+        "Monaco",
+        "Courier",
+        "monospace",
+      ],
     },
 
     extend: {

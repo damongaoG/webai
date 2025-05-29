@@ -78,7 +78,10 @@
         }
 
         code {
-          @apply rounded bg-gray-200 px-1 py-0.5 text-xs font-mono;
+          @apply rounded bg-gray-200 px-1 py-0.5 text-xs;
+          font-family:
+            ui-monospace, SFMono-Regular, "SF Mono", Consolas,
+            "Liberation Mono", Menlo, Monaco, Courier, monospace;
         }
 
         pre {
