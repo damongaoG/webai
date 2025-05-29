@@ -1,23 +1,10 @@
 import { Component, OnDestroy, OnInit } from "@angular/core";
 import { Router, RouterModule } from "@angular/router";
-import { NzLayoutModule } from "ng-zorro-antd/layout";
-import { NzMenuModule } from "ng-zorro-antd/menu";
-import { NzIconModule } from "ng-zorro-antd/icon";
 import { CommonModule } from "@angular/common";
-import { NzButtonModule } from "ng-zorro-antd/button";
-import { NzDropDownModule } from "ng-zorro-antd/dropdown";
-import { NzModalModule, NzModalService } from "ng-zorro-antd/modal";
-import { NzAvatarModule } from "ng-zorro-antd/avatar";
-import { NzToolTipModule } from "ng-zorro-antd/tooltip";
-import { NzSelectModule } from "ng-zorro-antd/select";
 import { FormsModule } from "@angular/forms";
 import { Subscription } from "rxjs";
-import { HttpClientModule } from '@angular/common/http';
-import { NzTabsModule } from 'ng-zorro-antd/tabs';
-import { NzGridModule } from 'ng-zorro-antd/grid';
-import { NzMessageModule, NzMessageService } from 'ng-zorro-antd/message';
-import { NzSpinModule } from 'ng-zorro-antd/spin';
-import { Subject, takeUntil } from 'rxjs';
+import { HttpClientModule } from "@angular/common/http";
+import { Subject, takeUntil } from "rxjs";
 
 // Import services from webai project
 import { AuthService } from "../../services/auth.service";
@@ -32,11 +19,18 @@ import { ChatMessage } from "../../interfaces/chat-dto";
 // Import services that we'll create
 import { ChatService } from "./services/chat.service";
 import { ChatBotService } from "./services/chat-bot.service";
-import { KatexService } from './services/katex.service';
-import { VisibilityService } from './services/visibility.service';
+import { KatexService } from "./services/katex.service";
+import { VisibilityService } from "./services/visibility.service";
 
 // Import components
-import { ChatBotComponent } from './components/chat-bot/chat-bot.component';
+import { ChatBotComponent } from "./components/chat-bot/chat-bot.component";
+import {
+  ButtonComponent,
+  IconComponent,
+  MessageService,
+  ModalService,
+  SpinnerComponent,
+} from "@/app/shared";
 
 @Component({
   selector: "app-rewrite-model",
@@ -45,31 +39,21 @@ import { ChatBotComponent } from './components/chat-bot/chat-bot.component';
   standalone: true,
   imports: [
     RouterModule,
-    NzLayoutModule,
-    NzMenuModule,
-    NzIconModule,
     CommonModule,
-    NzButtonModule,
-    NzDropDownModule,
-    NzModalModule,
-    NzAvatarModule,
-    NzToolTipModule,
-    NzSelectModule,
     FormsModule,
     HttpClientModule,
-    NzTabsModule,
-    NzGridModule,
-    NzMessageModule,
-    NzSpinModule,
-    ChatBotComponent
+    ButtonComponent,
+    IconComponent,
+    SpinnerComponent,
+    ChatBotComponent,
   ],
   providers: [
     ChatService,
     ChatBotService,
     KatexService,
     ChatEventsService,
-    VisibilityService
-  ]
+    VisibilityService,
+  ],
 })
 export class RewriteModelComponent implements OnInit, OnDestroy {
   // Layout state
@@ -101,18 +85,18 @@ export class RewriteModelComponent implements OnInit, OnDestroy {
 
   // Chat state
   currentSessionId: string | null = null;
-  
+
   // Cleanup subject for subscription management
   private destroy$ = new Subject<void>();
 
   constructor(
     private router: Router,
-    private modal: NzModalService,
+    private modalService: ModalService,
     private chatService: ChatService,
     private authService: AuthService,
     public chatEventsService: ChatEventsService,
     private chatBotService: ChatBotService,
-    private messageService: NzMessageService
+    private messageService: MessageService,
   ) {
     // Subscribe to user email changes
     this.emailSubscription = this.authService
@@ -137,25 +121,25 @@ export class RewriteModelComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.checkMobile();
     window.addEventListener("resize", () => this.checkMobile());
-    
+
     // Subscribe to chat history toggle event
     this.chatEventsService.showChatHistory$
       .pipe(takeUntil(this.destroy$))
-      .subscribe(show => {
+      .subscribe((show) => {
         this.showChatHistory = show;
       });
-    
+
     // Check chat status to ensure user has access
     this.chatBotService.checkChatStatus().subscribe({
       next: (result) => {
         if (result.code !== 1) {
-          this.messageService.error('Chat service unavailable');
+          this.messageService.error("Chat service unavailable");
         }
       },
       error: (error) => {
-        console.error('Error checking chat status:', error);
-        this.messageService.error('Failed to check chat status');
-      }
+        console.error("Error checking chat status:", error);
+        this.messageService.error("Failed to check chat status");
+      },
     });
   }
 
@@ -167,7 +151,7 @@ export class RewriteModelComponent implements OnInit, OnDestroy {
       this.chatHistorySubscription.unsubscribe();
     }
     window.removeEventListener("resize", () => this.checkMobile());
-    
+
     // Clean up subscriptions
     this.destroy$.next();
     this.destroy$.complete();
@@ -184,7 +168,7 @@ export class RewriteModelComponent implements OnInit, OnDestroy {
       this.isCollapsed = true;
     }
     this.chatService.setIsMobile(this.isMobile);
-    
+
     // Auto-hide chat history on mobile
     if (this.isMobile && this.showChatHistory) {
       this.chatEventsService.setShowChatHistory(false);
@@ -247,7 +231,7 @@ export class RewriteModelComponent implements OnInit, OnDestroy {
 
           // Convert the response data to ChatMessage format for display
           const chatMessages: ChatMessage[] = [];
-          
+
           filteredMessages.forEach((item: ListChatSessionVo) => {
             // Process each message in the item's messages array
             item.messages.forEach((message: ModelMessageDTO) => {
@@ -278,10 +262,10 @@ export class RewriteModelComponent implements OnInit, OnDestroy {
 
   // User management
   showLogoutConfirm(): void {
-    this.modal.confirm({
-      nzCentered: true,
-      nzTitle: "Are you sure you want to logout?",
-      nzOnOk: () => this.logout(),
+    this.modalService.confirm({
+      title: "Are you sure you want to logout?",
+      centered: true,
+      onOk: () => this.logout(),
     });
   }
 
@@ -377,12 +361,12 @@ export class RewriteModelComponent implements OnInit, OnDestroy {
     this.chatEventsService.triggerClearChat();
     this.chatService.updateSessionId(null);
     this.currentSessionId = null;
-    this.messageService.success('Started a new conversation');
+    this.messageService.success("Started a new conversation");
   }
-  
+
   // Save current chat
   saveChat() {
     this.chatEventsService.triggerSaveHistory();
-    this.messageService.success('Chat saved successfully');
+    this.messageService.success("Chat saved successfully");
   }
 }

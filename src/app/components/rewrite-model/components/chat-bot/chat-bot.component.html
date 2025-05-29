@@ -1,17 +1,75 @@
 <div class="chat-container">
   <!-- Messages Container -->
   <div #scrollMe class="messages-container">
-    <div *ngFor="let message of messages; let i = index" [ngClass]="{'user-message': message.isUser, 'assistant-message': !message.isUser, 'error-message': message.isError}" class="message">
+    <div
+      *ngFor="let message of messages; let i = index"
+      [ngClass]="{
+        'user-message': message.isUser,
+        'assistant-message': !message.isUser,
+        'error-message': message.isError,
+      }"
+      class="message"
+    >
       <div class="message-avatar">
-        <nz-avatar [nzIcon]="message.isUser ? 'user' : 'robot'" [nzSize]="36"></nz-avatar>
+        <!-- User avatar -->
+        <div
+          *ngIf="message.isUser"
+          class="flex h-9 w-9 items-center justify-center rounded-full bg-blue-500 text-white"
+        >
+          <app-icon name="user" [size]="20"></app-icon>
+        </div>
+        <!-- Assistant avatar -->
+        <div
+          *ngIf="!message.isUser"
+          class="flex h-9 w-9 items-center justify-center rounded-full bg-gray-500 text-white"
+        >
+          <app-icon name="bot" [size]="20"></app-icon>
+        </div>
       </div>
       <div class="message-content">
         <div class="message-role">
-          {{ message.isUser ? 'You' : 'Tudor AI' }}
+          {{ message.isUser ? "You" : "Tudor AI" }}
         </div>
-        <div *ngIf="message.parsedContent" [innerHTML]="message.parsedContent" class="message-text"></div>
+        <div
+          *ngIf="message.parsedContent"
+          [innerHTML]="message.parsedContent"
+          class="message-text"
+        ></div>
         <div *ngIf="!message.parsedContent" class="message-text">
           {{ message.content }}
+        </div>
+
+        <!-- Copy button for assistant messages -->
+        <div *ngIf="shouldShowCopyButton(message)" class="message-actions">
+          <app-button
+            variant="ghost"
+            size="small"
+            (clicked)="copyMessageToClipboard(message.content, i)"
+            customClass="copy-button"
+          >
+            <app-icon
+              *ngIf="copiedMessageId !== 'msg-' + selectedTabIndex + '-' + i"
+              name="copy"
+              [size]="14"
+            ></app-icon>
+            <app-icon
+              *ngIf="copiedMessageId === 'msg-' + selectedTabIndex + '-' + i"
+              name="check"
+              [size]="14"
+              customClass="text-green-500"
+            ></app-icon>
+          </app-button>
+
+          <!-- Try again button for error messages -->
+          <app-button
+            *ngIf="message.isError"
+            variant="ghost"
+            size="small"
+            (clicked)="tryAgain(message)"
+            customClass="retry-button"
+          >
+            <app-icon name="refresh-cw" [size]="14"></app-icon>
+          </app-button>
         </div>
       </div>
     </div>
@@ -22,7 +80,7 @@
       <div class="dot"></div>
       <div class="dot"></div>
     </div>
-    
+
     <!-- Spacer to ensure scroll works correctly -->
     <div class="scroll-spacer"></div>
   </div>
@@ -32,7 +90,7 @@
     <div class="char-counter" [class.limit-reached]="isLimitReached">
       {{ getCharacterCountDisplay() }}
     </div>
-    
+
     <div class="input-box">
       <textarea
         #messageInput
@@ -43,27 +101,73 @@
         placeholder="Type a message..."
         rows="1"
       ></textarea>
-      
-      <button 
+
+      <app-button
         *ngIf="isStreaming"
-        (click)="stopStreaming()"
-        class="control-button stop-button"
-        nz-button
-        nzShape="circle"
+        variant="default"
+        shape="circle"
+        size="medium"
+        (clicked)="stopStreaming()"
+        customClass="control-button stop-button"
       >
-        <span nz-icon nzType="stop"></span>
-      </button>
-      
-      <button
-        (click)="sendMessage()"
+        <app-icon name="square" [size]="16"></app-icon>
+      </app-button>
+
+      <app-button
+        variant="primary"
+        shape="circle"
+        size="medium"
+        (clicked)="sendMessage()"
         [disabled]="isSendButtonDisabled()"
-        class="control-button send-button"
-        nz-button
-        nzShape="circle"
-        nzType="primary"
+        customClass="control-button send-button"
       >
-        <span nz-icon nzType="send"></span>
-      </button>
+        <app-icon name="send" [size]="16"></app-icon>
+      </app-button>
+    </div>
+  </div>
+
+  <!-- Scroll to top button -->
+  <app-button
+    *ngIf="showScrollTop"
+    variant="default"
+    shape="circle"
+    size="medium"
+    (clicked)="scrollToTop()"
+    customClass="scroll-top-button fixed bottom-20 right-4 z-10"
+  >
+    <app-icon name="arrow-up" [size]="16"></app-icon>
+  </app-button>
+
+  <!-- Start chat overlay -->
+  <div *ngIf="!chatStarted && showInputContainer" class="start-chat-overlay">
+    <div class="start-chat-content">
+      <h3>Welcome to Tudor AI</h3>
+      <p>Click the button below to start your conversation</p>
+      <app-button
+        variant="primary"
+        size="large"
+        (clicked)="confirmStartChat()"
+        [loading]="isConfirmStartChat"
+      >
+        Start Chat
+      </app-button>
+    </div>
+  </div>
+
+  <!-- Countdown display -->
+  <div *ngIf="showCountdown" class="countdown-display">
+    <div class="countdown-content">
+      <app-icon name="clock" [size]="20"></app-icon>
+      <span>{{ countdownTime }}</span>
+      <app-button variant="ghost" size="small" (clicked)="toggleCountdown()">
+        <app-icon
+          [name]="isCountdownExpanded ? 'chevron-up' : 'chevron-down'"
+          [size]="16"
+        ></app-icon>
+      </app-button>
+    </div>
+    <div *ngIf="isCountdownExpanded" class="countdown-details">
+      <p>Session expires in {{ countdownSeconds }} seconds</p>
     </div>
   </div>
 </div>

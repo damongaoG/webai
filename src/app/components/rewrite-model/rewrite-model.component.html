@@ -5,36 +5,36 @@
       <h1 class="title">Tudor AI</h1>
     </div>
     <div class="header-actions">
-      <button 
-        nz-button 
-        nzType="default" 
-        nzShape="circle"
-        (click)="toggleChatHistory()"
+      <app-button
+        variant="default"
+        shape="circle"
+        size="medium"
+        (clicked)="toggleChatHistory()"
         [title]="showChatHistory ? 'Hide history' : 'Show history'"
-        class="header-btn"
+        customClass="header-btn"
       >
-        <span nz-icon nzType="history"></span>
-      </button>
-      <button 
-        nz-button 
-        nzType="default" 
-        nzShape="circle" 
-        (click)="startNewChat()"
+        <app-icon name="history" [size]="16"></app-icon>
+      </app-button>
+      <app-button
+        variant="default"
+        shape="circle"
+        size="medium"
+        (clicked)="startNewChat()"
         title="New chat"
-        class="header-btn"
+        customClass="header-btn"
       >
-        <span nz-icon nzType="plus"></span>
-      </button>
-      <button 
-        nz-button 
-        nzType="primary" 
-        nzShape="circle" 
-        (click)="saveChat()"
+        <app-icon name="plus" [size]="16"></app-icon>
+      </app-button>
+      <app-button
+        variant="primary"
+        shape="circle"
+        size="medium"
+        (clicked)="saveChat()"
         title="Save chat"
-        class="header-btn"
+        customClass="header-btn"
       >
-        <span nz-icon nzType="save"></span>
-      </button>
+        <app-icon name="save" [size]="16"></app-icon>
+      </app-button>
     </div>
   </header>
 
@@ -49,26 +49,31 @@
         <div *ngIf="chatHistory.length === 0" class="empty-history">
           <p>No chat history yet.</p>
         </div>
-        <div 
-          *ngFor="let history of chatHistory" 
+        <div
+          *ngFor="let history of chatHistory"
           class="history-item"
           [class.active]="activeHistoryId === history.sessionId"
           (click)="loadChat(history)"
         >
           <div class="history-title">
-            {{ truncateContent(history.messages[0]?.content || 'Untitled Chat') }}
+            {{
+              truncateContent(history.messages[0]?.content || "Untitled Chat")
+            }}
           </div>
           <div class="history-time">
-            {{ history.updateTime | date:'short' }}
+            {{ history.updateTime | date: "short" }}
           </div>
         </div>
         <div *ngIf="isLoading" class="loading-more">
-          <nz-spin nzSimple></nz-spin>
-          <span>Loading more...</span>
+          <app-spinner
+            [simple]="true"
+            text="Loading more..."
+            size="small"
+          ></app-spinner>
         </div>
       </div>
     </aside>
-    
+
     <!-- Main Chat Area -->
     <main class="chat-main">
       <app-chat-bot></app-chat-bot>
@@ -77,33 +82,33 @@
 
   <!-- Mobile Menu (only shown on mobile) -->
   <div class="mobile-menu" *ngIf="isMobile">
-    <button 
-      nz-button 
-      nzType="default" 
-      nzShape="circle"
-      (click)="toggleChatHistory()"
+    <app-button
+      variant="default"
+      shape="circle"
+      size="medium"
+      (clicked)="toggleChatHistory()"
       [title]="showChatHistory ? 'Hide history' : 'Show history'"
     >
-      <span nz-icon nzType="history"></span>
-    </button>
-    <button 
-      nz-button 
-      nzType="default" 
-      nzShape="circle" 
-      (click)="startNewChat()"
+      <app-icon name="history" [size]="16"></app-icon>
+    </app-button>
+    <app-button
+      variant="default"
+      shape="circle"
+      size="medium"
+      (clicked)="startNewChat()"
       title="New chat"
     >
-      <span nz-icon nzType="plus"></span>
-    </button>
-    <button 
-      nz-button 
-      nzType="primary" 
-      nzShape="circle" 
-      (click)="saveChat()"
+      <app-icon name="plus" [size]="16"></app-icon>
+    </app-button>
+    <app-button
+      variant="primary"
+      shape="circle"
+      size="medium"
+      (clicked)="saveChat()"
       title="Save chat"
     >
-      <span nz-icon nzType="save"></span>
-    </button>
+      <app-icon name="save" [size]="16"></app-icon>
+    </app-button>
   </div>
 
   <!-- Mobile History Overlay (when showing history on mobile) -->
@@ -111,25 +116,31 @@
     <div class="mobile-history-container">
       <div class="mobile-history-header">
         <h3>Chat History</h3>
-        <button nz-button nzType="text" (click)="toggleChatHistory()">
-          <span nz-icon nzType="close"></span>
-        </button>
+        <app-button
+          variant="ghost"
+          size="small"
+          (clicked)="toggleChatHistory()"
+        >
+          <app-icon name="x" [size]="16"></app-icon>
+        </app-button>
       </div>
       <div class="mobile-history-content">
         <div *ngIf="chatHistory.length === 0" class="empty-history">
           <p>No chat history yet.</p>
         </div>
-        <div 
-          *ngFor="let history of chatHistory" 
+        <div
+          *ngFor="let history of chatHistory"
           class="history-item"
           [class.active]="activeHistoryId === history.sessionId"
           (click)="loadChat(history)"
         >
           <div class="history-title">
-            {{ truncateContent(history.messages?.[0]?.content || 'Untitled Chat') }}
+            {{
+              truncateContent(history.messages?.[0]?.content || "Untitled Chat")
+            }}
           </div>
           <div class="history-time">
-            {{ history.updateTime | date:'short' }}
+            {{ history.updateTime | date: "short" }}
           </div>
         </div>
       </div>

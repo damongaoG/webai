@@ -4,7 +4,6 @@ import {
   Component,
   ElementRef,
   HostListener,
-  Injector,
   NgZone,
   OnDestroy,
   OnInit,
@@ -12,27 +11,19 @@ import {
   ViewChildren,
 } from "@angular/core";
 import { FormsModule } from "@angular/forms";
-import { NzInputModule } from "ng-zorro-antd/input";
-import { NzButtonModule } from "ng-zorro-antd/button";
-import { NzIconModule } from "ng-zorro-antd/icon";
-import { NzTabsModule } from "ng-zorro-antd/tabs";
-import { NzSelectModule } from "ng-zorro-antd/select";
-import { NzAvatarModule } from "ng-zorro-antd/avatar";
 import { CommonModule } from "@angular/common";
 import { ChatBotService } from "../../services/chat-bot.service";
 import { ChatService } from "../../services/chat.service";
-import { ModelMessageDTO } from "../../../../interfaces/model-message-dto";
-import { ModelRequestDto } from "../../../../interfaces/model-request-dto";
+import { ModelMessageDTO } from "@/app/interfaces/model-message-dto";
+import { ModelRequestDto } from "@/app/interfaces/model-request-dto";
 import { DomSanitizer, SafeHtml } from "@angular/platform-browser";
 import { marked } from "marked";
 import { firstValueFrom, interval, Subscription } from "rxjs";
 import { KatexService } from "../../services/katex.service";
-import { NzMessageService } from "ng-zorro-antd/message";
-import { NzModalModule, NzModalService } from "ng-zorro-antd/modal";
-import { AuthService } from "../../../../services/auth.service";
+import { AuthService } from "@/app/services/auth.service";
 import { ChatEventsService } from "../../services/chat-events.service";
 import { finalize, take } from "rxjs/operators";
-import { ChatData, ChatMessage } from "../../../../interfaces/chat-dto";
+import { ChatData, ChatMessage } from "@/app/interfaces/chat-dto";
 import {
   NavigationCancel,
   NavigationEnd,
@@ -40,11 +31,15 @@ import {
   NavigationStart,
   Router,
 } from "@angular/router";
-import { CONSTANTS } from "../../../../constants";
+import { CONSTANTS } from "@/app/constants";
 import { VisibilityService } from "../../services/visibility.service";
 import { Clipboard } from "@angular/cdk/clipboard";
-import { NzTooltipDirective, NzToolTipModule } from "ng-zorro-antd/tooltip";
-import { NzSpinModule } from "ng-zorro-antd/spin";
+import {
+  ButtonComponent,
+  IconComponent,
+  MessageService,
+  ModalService,
+} from "@/app/shared";
 
 // Configure marked for synchronous operation
 marked.setOptions({
@@ -57,24 +52,11 @@ marked.setOptions({
   templateUrl: "./chat-bot.component.html",
   styleUrls: ["./chat-bot.component.scss"],
   standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule,
-    NzInputModule,
-    NzButtonModule,
-    NzIconModule,
-    NzTabsModule,
-    NzSelectModule,
-    NzModalModule,
-    NzToolTipModule,
-    NzSpinModule,
-    NzAvatarModule,
-  ],
+  imports: [CommonModule, FormsModule, ButtonComponent, IconComponent],
 })
 export class ChatBotComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChildren("messageInput") messageInputs!: QueryList<ElementRef>;
   @ViewChildren("scrollMe") messageContainers!: QueryList<ElementRef>;
-  @ViewChildren(NzTooltipDirective) tooltips!: QueryList<NzTooltipDirective>;
 
   // Private properties for internal state management
   private userScrollingUp = false;
@@ -159,11 +141,10 @@ export class ChatBotComponent implements OnInit, AfterViewInit, OnDestroy {
     private chatService: ChatService,
     private sanitizer: DomSanitizer,
     private katexService: KatexService,
-    private message: NzMessageService,
-    private modal: NzModalService,
+    private messageService: MessageService,
+    private modalService: ModalService,
     private authService: AuthService,
     private chatEventsService: ChatEventsService,
-    private injector: Injector,
     private changeDetectorRef: ChangeDetectorRef,
     private ngZone: NgZone,
     private router: Router,
@@ -410,7 +391,7 @@ export class ChatBotComponent implements OnInit, AfterViewInit, OnDestroy {
           this.showWelcomeMessage(false);
           this.showInputContainer = false;
         } else if (result.code === -2) {
-          this.message.error(
+          this.messageService.error(
             "Your activation code has already been used on another device.",
           );
           this.chatStarted = false;
@@ -567,7 +548,7 @@ export class ChatBotComponent implements OnInit, AfterViewInit, OnDestroy {
   private sendBeaconData(): void {
     // Implementation for sending beacon data
     // Simplified version without environment dependency
-    console.log('Beacon data would be sent here');
+    console.log("Beacon data would be sent here");
   }
 
   private focusInput(): void {
@@ -802,7 +783,7 @@ export class ChatBotComponent implements OnInit, AfterViewInit, OnDestroy {
         this.showCountdown = true;
       });
     } catch (error) {
-      this.message.error("Failed to start countdown");
+      this.messageService.error("Failed to start countdown");
     }
   }
 
@@ -988,7 +969,10 @@ export class ChatBotComponent implements OnInit, AfterViewInit, OnDestroy {
                 this.chatService.clearUnsavedMessages();
                 this.loadChatHistory().then(() => resolve());
               } else {
-                console.error("Error saving chat history:", result.error?.message);
+                console.error(
+                  "Error saving chat history:",
+                  result.error?.message,
+                );
                 resolve();
               }
             },
@@ -1472,21 +1456,7 @@ export class ChatBotComponent implements OnInit, AfterViewInit, OnDestroy {
     return text.replace(/✅/g, "");
   }
 
-  copyMessageToClipboard(
-    content: string,
-    index: number,
-    tooltip: NzTooltipDirective,
-  ): void {
-    // First hide the specific tooltip that triggered the action
-    tooltip.hide();
-
-    // Hide tooltip
-    this.tooltips.forEach((t) => {
-      if (t !== tooltip) {
-        t.hide();
-      }
-    });
-
+  copyMessageToClipboard(content: string, index: number): void {
     // Filter out check mark symbols from the content
     const filteredContent = this.filterCheckMarkSymbol(content);
 
@@ -1509,7 +1479,7 @@ export class ChatBotComponent implements OnInit, AfterViewInit, OnDestroy {
         }, 2000);
       }, 100); // Small delay to ensure tooltips are hidden before icon changes
     } else {
-      this.message.error("Failed to copy");
+      this.messageService.error("Failed to copy");
     }
   }
 
@@ -1585,36 +1555,26 @@ export class ChatBotComponent implements OnInit, AfterViewInit, OnDestroy {
     ) as HTMLElement;
     if (button) {
       const rect = button.getBoundingClientRect();
-      const x = rect.left + rect.width / 2;
-      const y = rect.top + rect.height / 2;
 
-      this.modal.confirm({
-        nzTitle: "Start New Chat",
-        nzCentered: true,
-        nzNoAnimation: true,
-        nzContent:
+      this.modalService.confirm({
+        title: "Start New Chat",
+        centered: true,
+        content:
           "This will start a new chat. Are you sure you want to proceed?",
-        nzOnOk: () => this.handleStartChat(),
-        nzOnCancel: () => {
+        onOk: () => this.handleStartChat(),
+        onCancel: () => {
           this.isConfirmStartChat = false;
-        },
-        nzStyle: {
-          position: "absolute",
-          top: `${y}px`,
-          left: `${x}px`,
-          transform: "translate(-50%, -50%)",
         },
       });
     } else {
       // Fallback to centered modal if button not found
-      this.modal.confirm({
-        nzTitle: "Start New Chat",
-        nzCentered: true,
-        nzNoAnimation: true,
-        nzContent:
+      this.modalService.confirm({
+        title: "Start New Chat",
+        centered: true,
+        content:
           "This will start a new chat. Are you sure you want to proceed?",
-        nzOnOk: () => this.handleStartChat(),
-        nzOnCancel: () => {
+        onOk: () => this.handleStartChat(),
+        onCancel: () => {
           this.isConfirmStartChat = false;
         },
       });
@@ -1631,7 +1591,7 @@ export class ChatBotComponent implements OnInit, AfterViewInit, OnDestroy {
             this.isConfirmStartChat = false;
             this.showThankYou = false;
           } else if (result.code === -11) {
-            this.message.error(
+            this.messageService.error(
               "Your account has no activation code, please contact us to purchase",
             );
             this.chatStarted = false;
@@ -1639,7 +1599,7 @@ export class ChatBotComponent implements OnInit, AfterViewInit, OnDestroy {
             this.isConfirmStartChat = false;
             this.showInputContainer = false;
           } else if (result.code === -2) {
-            this.message.error(
+            this.messageService.error(
               "Your activation code has already been used on another device.",
             );
             this.chatStarted = false;
@@ -1647,7 +1607,7 @@ export class ChatBotComponent implements OnInit, AfterViewInit, OnDestroy {
             this.isConfirmStartChat = false;
             this.showInputContainer = false;
           } else if (result.code === -6) {
-            this.message.info("The activation code is being used");
+            this.messageService.info("The activation code is being used");
             this.chatStarted = true;
             this.showInputContainer = true;
             this.isConfirmStartChat = false;
@@ -1660,14 +1620,14 @@ export class ChatBotComponent implements OnInit, AfterViewInit, OnDestroy {
           }
         },
         (error) => {
-          this.message.error(error || "Failed to start chat");
+          this.messageService.error(error || "Failed to start chat");
         },
       );
     }
   }
 
   @HostListener("window:beforeunload", ["$event"])
-  handleBeforeUnload(event: BeforeUnloadEvent): void {
+  handleBeforeUnload(): void {
     this.sendBeaconData();
   }
 }
