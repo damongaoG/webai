@@ -107,6 +107,7 @@ export class RewriteModelComponent implements OnInit, OnDestroy {
     this.chatHistorySubscription = this.chatService.chatHistory$.subscribe(
       (history) => {
         this.chatHistory = history;
+        console.log("chatHistory", history);
       },
     );
 

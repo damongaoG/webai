@@ -56,9 +56,7 @@
           (click)="loadChat(history)"
         >
           <div class="history-title">
-            {{
-              truncateContent(history.messages[0]?.content || "Untitled Chat")
-            }}
+            {{ truncateContent(history.content || "Untitled Chat") }}
           </div>
           <div class="history-time">
             {{ history.updateTime | date: "short" }}
@@ -135,9 +133,7 @@
           (click)="loadChat(history)"
         >
           <div class="history-title">
-            {{
-              truncateContent(history.messages?.[0]?.content || "Untitled Chat")
-            }}
+            {{ truncateContent(history.content || "Untitled Chat") }}
           </div>
           <div class="history-time">
             {{ history.updateTime | date: "short" }}
