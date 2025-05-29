@@ -4,8 +4,16 @@
 @import "custom/_reboot.css";
 @import "custom/_navbar.css";
 @import "custom/_swiper.css";
-@import "custom/_typography.css";
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Custom utilities - must come after @tailwind utilities */
+@layer utilities {
+  .font-mono {
+    font-family:
+      ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono",
+      Menlo, Monaco, Courier, monospace;
+  }
+}
