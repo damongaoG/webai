@@ -1,31 +1,33 @@
 import { inject } from "@angular/core";
 import { CanActivateFn, Router } from "@angular/router";
+import { Observable, of } from "rxjs";
+import { map, catchError } from "rxjs/operators";
 import { AuthService } from "../services/auth.service";
 
-export const loginRedirectGuard: CanActivateFn = (route, state) => {
+export const loginRedirectGuard: CanActivateFn = (
+  route,
+  state,
+): Observable<boolean> => {
   const authService = inject(AuthService);
   const router = inject(Router);
 
-  // If user is already authenticated, redirect to dashboard
-  if (authService.isAuthenticated()) {
-    authService.reLogIn().subscribe({
-      next: (result) => {
-        if (result.code === 1) {
-          router.navigate(["/dashboard"]);
-          return false;
-        }
-        // If not authenticated, access to auth pages
-        return true;
-      },
-      error: () => {
-        return true;
-      },
-    });
-
-    // Prevent navigation until reLogin completes
-    return false;
+  // If user is not authenticated, allow access to auth pages
+  if (!authService.isAuthenticated()) {
+    return of(true);
   }
 
-  // Not authenticated
-  return true;
+  return authService.reLogIn().pipe(
+    map((result) => {
+      if (result.code === 1) {
+        router.navigate(["/dashboard"]);
+        return false; // Prevent navigation to auth page
+      }
+
+      return true;
+    }),
+    catchError(() => {
+      // On error, allow access to auth pages
+      return of(true);
+    }),
+  );
 };

@@ -14,6 +14,8 @@ import { ValidateForgetPasswordDto } from "../interfaces/validate-forget-passwor
 import { environment } from "@environment/environment";
 import { ToastService } from "../shared";
 
+type AuthRoute = "/auth/login" | "/auth/forgot-pw" | "/auth/register";
+
 @Injectable({
   providedIn: "root",
 })
@@ -31,6 +33,12 @@ export class AuthService {
   private restrictedRoutes = ["/chat", "/activate", "/profile/change-password"];
   private protectedRoutes = ["/dashboard", "/rewrite"];
   private userRoleIdSubject = new BehaviorSubject<string>("");
+
+  private readonly authRedirectRoutes: readonly AuthRoute[] = [
+    "/auth/login",
+    "/auth/forgot-pw",
+    "/auth/register",
+  ] as const;
 
   constructor(
     private router: Router,
@@ -61,6 +69,9 @@ export class AuthService {
             if (result.data?.id) {
               this.userIdSubject.next(result.data.id);
             }
+
+            // Handle redirect
+            this.handleAuthRedirectAfterSuccess();
           } else if (result.code === -7) {
             this.toastService.error("This account not user account");
           } else if (result.code === -5) {
@@ -157,9 +168,8 @@ export class AuthService {
               return;
             }
 
-            if (this.router.url === "/auth/login") {
-              this.router.navigate(["/dashboard"]);
-            }
+            // Handle redirect
+            this.handleAuthRedirectAfterSuccess();
           } else {
             // Handle unauthorized access
             this.handleUnauthorizedRedirect();
@@ -259,5 +269,16 @@ export class AuthService {
   }
   getUserEmail(): Observable<string> {
     return this.userEmailSubject.asObservable();
+  }
+
+  private handleAuthRedirectAfterSuccess(): void {
+    const currentUrl = this.router.url;
+    const shouldRedirect = this.authRedirectRoutes.some((route) =>
+      currentUrl.startsWith(route),
+    );
+
+    if (shouldRedirect) {
+      this.router.navigate(["/dashboard"]);
+    }
   }
 }
