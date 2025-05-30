@@ -24,6 +24,7 @@ import { VisibilityService } from "./services/visibility.service";
 
 // Import components
 import { ChatBotComponent } from "./components/chat-bot/chat-bot.component";
+import { UserMenuComponent } from "./components/user-menu/user-menu.component";
 import {
   ButtonComponent,
   IconComponent,
@@ -46,6 +47,7 @@ import {
     IconComponent,
     SpinnerComponent,
     ChatBotComponent,
+    UserMenuComponent,
   ],
   providers: [
     ChatService,
@@ -70,9 +72,6 @@ export class RewriteModelComponent implements OnInit, OnDestroy {
   // Chat history
   chatHistory: ListChatHistoryDto[] = [];
   isLoading = false;
-
-  // Tab options for rewrite functionality
-  options = [{ label: "Rewrite", value: 2 }];
 
   // Pagination
   private currentPage = 0;
@@ -159,10 +158,6 @@ export class RewriteModelComponent implements OnInit, OnDestroy {
   }
 
   // Layout methods
-  toggleCollapsed(): void {
-    this.isCollapsed = !this.isCollapsed;
-  }
-
   private checkMobile(): void {
     this.isMobile = window.innerWidth < 768;
     if (this.isMobile) {
@@ -177,18 +172,6 @@ export class RewriteModelComponent implements OnInit, OnDestroy {
   }
 
   // Navigation methods
-  isOnChatPage(): boolean {
-    return (
-      this.router.url === "/rewrite" || this.router.url.includes("/rewrite")
-    );
-  }
-
-  isProfileSection(): boolean {
-    return (
-      this.router.url.startsWith("/profile") || this.router.url === "/activate"
-    );
-  }
-
   // Tab management
   onTabChange(index: number): void {
     this.selectedTabIndex = index;
@@ -201,11 +184,6 @@ export class RewriteModelComponent implements OnInit, OnDestroy {
   }
 
   // Chat methods
-  clearChat(): void {
-    this.chatEventsService.triggerClearChat();
-    this.onMenuItemClick();
-  }
-
   loadChat(history: ListChatHistoryDto): void {
     console.log("Loading chat:", history);
     this.activeHistoryId = history.sessionId;
@@ -262,36 +240,15 @@ export class RewriteModelComponent implements OnInit, OnDestroy {
   }
 
   // User management
-  showLogoutConfirm(): void {
-    this.modalService.confirm({
-      title: "Are you sure you want to logout?",
-      centered: true,
-      onOk: () => this.logout(),
-    });
-  }
-
   logout(): void {
     this.authService.logout().subscribe();
   }
-
-  jumpToProfile(): void {
-    this.router.navigate(["/profile/change-password"]);
-    this.onMenuItemClick();
-  }
-
   // Mobile interaction methods
   onContentClick(): void {
     if (this.isMobile && !this.isCollapsed) {
       this.isCollapsed = true;
     }
   }
-
-  onMenuItemClick(): void {
-    if (this.isMobile && !this.isCollapsed) {
-      this.isCollapsed = true;
-    }
-  }
-
   // History scroll handling
   onHistoryScroll(event: Event): void {
     const element = event.target as HTMLElement;
@@ -340,14 +297,6 @@ export class RewriteModelComponent implements OnInit, OnDestroy {
   }
 
   // Utility methods
-  truncateEmail(email: string): string {
-    if (this.isMobile) {
-      return email.length > 20 ? `${email.substring(0, 15)}...` : email;
-    } else {
-      return email.length > 25 ? `${email.substring(0, 20)}...` : email;
-    }
-  }
-
   truncateContent(content: string): string {
     return content;
   }

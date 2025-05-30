@@ -1,0 +1,406 @@
+.activation-code-container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 2rem;
+
+  .page-header {
+    margin-bottom: 2rem;
+
+    .back-button {
+      margin-bottom: 1.5rem;
+      color: var(--text-secondary, #6b7280);
+      font-size: 0.875rem;
+
+      &:hover {
+        color: var(--text-primary, #1f2937);
+      }
+    }
+
+    .page-title {
+      font-size: 1.875rem;
+      font-weight: 700;
+      color: var(--text-primary, #1f2937);
+      margin: 0 0 0.5rem 0;
+    }
+
+    .page-description {
+      font-size: 1rem;
+      color: var(--text-secondary, #6b7280);
+      margin: 0;
+    }
+  }
+
+  .status-card {
+    background: var(--card-bg, #ffffff);
+    border: 1px solid var(--border-color, #e5e7eb);
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow:
+      0 1px 3px 0 rgba(0, 0, 0, 0.1),
+      0 1px 2px 0 rgba(0, 0, 0, 0.06);
+
+    .status-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+
+      .status-icon-success {
+        color: var(--success-color, #10b981);
+        flex-shrink: 0;
+      }
+
+      .status-icon-warning {
+        color: var(--warning-color, #f59e0b);
+        flex-shrink: 0;
+      }
+
+      .status-info {
+        flex: 1;
+
+        .status-title {
+          font-size: 1.125rem;
+          font-weight: 600;
+          color: var(--text-primary, #1f2937);
+          margin: 0 0 0.5rem 0;
+        }
+
+        .status-description {
+          font-size: 0.875rem;
+          color: var(--text-secondary, #6b7280);
+          margin: 0;
+          line-height: 1.5;
+        }
+      }
+    }
+  }
+
+  .actions-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .action-card {
+    background: var(--card-bg, #ffffff);
+    border: 1px solid var(--border-color, #e5e7eb);
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    box-shadow:
+      0 1px 3px 0 rgba(0, 0, 0, 0.1),
+      0 1px 2px 0 rgba(0, 0, 0, 0.06);
+
+    .action-header {
+      margin-bottom: 1.5rem;
+
+      h3 {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: var(--text-primary, #1f2937);
+        margin: 0 0 0.5rem 0;
+      }
+
+      p {
+        font-size: 0.875rem;
+        color: var(--text-secondary, #6b7280);
+        margin: 0;
+        line-height: 1.5;
+
+        strong {
+          color: var(--text-primary, #1f2937);
+          font-weight: 600;
+        }
+      }
+    }
+
+    .action-button {
+      .request-button {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+
+        &:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+        }
+
+        app-spinner {
+          margin-right: 0.25rem;
+        }
+      }
+    }
+
+    .activation-form {
+      .form-field {
+        margin-bottom: 1.5rem;
+
+        .field-label {
+          display: block;
+          font-size: 0.875rem;
+          font-weight: 600;
+          color: var(--text-primary, #1f2937);
+          margin-bottom: 0.5rem;
+        }
+
+        .input-wrapper {
+          position: relative;
+
+          .form-input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 2px solid var(--border-color, #e5e7eb);
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            line-height: 1.5;
+            color: var(--text-primary, #1f2937);
+            background-color: var(--bg-white, #ffffff);
+            transition:
+              border-color 0.15s ease-in-out,
+              box-shadow 0.15s ease-in-out;
+
+            &::placeholder {
+              color: var(--text-placeholder, #9ca3af);
+            }
+
+            &:focus {
+              outline: none;
+              border-color: var(--primary-color, #3b82f6);
+              box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            }
+
+            &.error {
+              border-color: var(--error-color, #ef4444);
+
+              &:focus {
+                border-color: var(--error-color, #ef4444);
+                box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+              }
+            }
+          }
+        }
+
+        .field-error {
+          margin-top: 0.5rem;
+          font-size: 0.875rem;
+          color: var(--error-color, #ef4444);
+
+          span {
+            display: block;
+            margin-bottom: 0.25rem;
+
+            &:last-child {
+              margin-bottom: 0;
+            }
+          }
+        }
+      }
+
+      .form-actions {
+        .verify-button {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          width: 100%;
+
+          &:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+          }
+
+          app-spinner {
+            margin-right: 0.25rem;
+          }
+        }
+      }
+    }
+  }
+
+  .help-section {
+    .help-card {
+      background: var(--info-bg, #eff6ff);
+      border: 1px solid var(--info-border, #dbeafe);
+      border-radius: 0.75rem;
+      padding: 1.5rem;
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+
+      .help-icon {
+        color: var(--info-color, #3b82f6);
+        flex-shrink: 0;
+      }
+
+      .help-content {
+        flex: 1;
+
+        h4 {
+          font-size: 1rem;
+          font-weight: 600;
+          color: var(--text-primary, #1f2937);
+          margin: 0 0 0.5rem 0;
+        }
+
+        p {
+          font-size: 0.875rem;
+          color: var(--text-secondary, #6b7280);
+          margin: 0;
+          line-height: 1.5;
+        }
+      }
+    }
+  }
+}
+
+// Mobile responsive design
+@media (max-width: 640px) {
+  .activation-code-container {
+    padding: 1rem;
+    max-width: 100%;
+
+    .page-header {
+      margin-bottom: 1.5rem;
+
+      .page-title {
+        font-size: 1.5rem;
+      }
+
+      .page-description {
+        font-size: 0.875rem;
+      }
+    }
+
+    .status-card,
+    .action-card {
+      padding: 1.25rem;
+    }
+
+    .actions-container {
+      gap: 1.25rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .action-card {
+      .action-header {
+        margin-bottom: 1.25rem;
+
+        h3 {
+          font-size: 1rem;
+        }
+      }
+    }
+
+    .help-section {
+      .help-card {
+        padding: 1.25rem;
+        flex-direction: column;
+        text-align: center;
+
+        .help-icon {
+          align-self: center;
+        }
+      }
+    }
+  }
+}
+
+// Dark mode support
+@media (prefers-color-scheme: dark) {
+  .activation-code-container {
+    .page-header {
+      .back-button {
+        color: var(--text-secondary-dark, #9ca3af);
+
+        &:hover {
+          color: var(--text-primary-dark, #f9fafb);
+        }
+      }
+
+      .page-title {
+        color: var(--text-primary-dark, #f9fafb);
+      }
+
+      .page-description {
+        color: var(--text-secondary-dark, #9ca3af);
+      }
+    }
+
+    .status-card,
+    .action-card {
+      background: var(--card-bg-dark, #1f2937);
+      border-color: var(--border-color-dark, #374151);
+
+      .status-header .status-info,
+      .action-header {
+        .status-title,
+        h3 {
+          color: var(--text-primary-dark, #f9fafb);
+        }
+
+        .status-description,
+        p {
+          color: var(--text-secondary-dark, #9ca3af);
+
+          strong {
+            color: var(--text-primary-dark, #f9fafb);
+          }
+        }
+      }
+
+      .activation-form {
+        .form-field {
+          .field-label {
+            color: var(--text-primary-dark, #f9fafb);
+          }
+
+          .input-wrapper {
+            .form-input {
+              color: var(--text-primary-dark, #f9fafb);
+              background-color: var(--bg-dark, #111827);
+              border-color: var(--border-color-dark, #374151);
+
+              &::placeholder {
+                color: var(--text-placeholder-dark, #6b7280);
+              }
+
+              &:focus {
+                border-color: var(--primary-color-dark, #60a5fa);
+                box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.1);
+              }
+
+              &.error {
+                border-color: var(--error-color-dark, #f87171);
+
+                &:focus {
+                  border-color: var(--error-color-dark, #f87171);
+                  box-shadow: 0 0 0 3px rgba(248, 113, 113, 0.1);
+                }
+              }
+            }
+          }
+
+          .field-error {
+            color: var(--error-color-dark, #f87171);
+          }
+        }
+      }
+    }
+
+    .help-section {
+      .help-card {
+        background: var(--info-bg-dark, #1e293b);
+        border-color: var(--info-border-dark, #334155);
+
+        .help-content {
+          h4 {
+            color: var(--text-primary-dark, #f9fafb);
+          }
+
+          p {
+            color: var(--text-secondary-dark, #9ca3af);
+          }
+        }
+      }
+    }
+  }
+}

@@ -8,13 +8,26 @@
   @apply flex items-center justify-between border-b border-gray-200 bg-white px-6 py-4 shadow-sm;
 
   .header-left {
+    @apply flex-shrink-0;
+
     .title {
       @apply text-xl font-bold text-gray-900;
     }
   }
 
+  .header-center {
+    @apply flex-1 flex justify-center mx-4;
+
+    // Ensure user menu doesn't get too wide on large screens
+    max-width: 300px;
+
+    @media (max-width: 768px) {
+      @apply flex-none mx-2;
+    }
+  }
+
   .header-actions {
-    @apply flex items-center space-x-2;
+    @apply flex items-center space-x-2 flex-shrink-0;
 
     .header-btn {
       @apply transition-colors duration-200;

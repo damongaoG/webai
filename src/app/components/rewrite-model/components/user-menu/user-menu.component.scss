@@ -1,0 +1,209 @@
+.user-menu {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  z-index: 1000;
+
+  .user-email-display {
+    .user-email {
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--text-primary, #1f2937);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 150px;
+
+      @media (max-width: 768px) {
+        display: none; // Hide email on mobile to save space
+      }
+    }
+  }
+
+  .user-dropdown {
+    position: relative;
+
+    .user-menu-trigger {
+      border: 1px solid var(--border-color, #e5e7eb);
+      transition: all 0.2s ease;
+
+      &:hover {
+        background-color: var(--hover-bg, #f3f4f6);
+        border-color: var(--border-hover, #d1d5db);
+      }
+    }
+
+    .dropdown-content {
+      position: absolute;
+      top: calc(100% + 0.5rem);
+      right: 0;
+      min-width: 220px;
+      background: var(--dropdown-bg, #ffffff);
+      border: 1px solid var(--border-color, #e5e7eb);
+      border-radius: 0.5rem;
+      box-shadow:
+        0 10px 15px -3px rgba(0, 0, 0, 0.1),
+        0 4px 6px -2px rgba(0, 0, 0, 0.05);
+      z-index: 1001;
+      animation: slideDown 0.2s ease-out;
+
+      @media (max-width: 768px) {
+        right: -1rem;
+        left: -1rem;
+        min-width: auto;
+        width: calc(100vw - 2rem);
+        max-width: 300px;
+      }
+    }
+
+    .dropdown-header {
+      padding: 1rem;
+      border-bottom: 1px solid var(--border-color, #e5e7eb);
+
+      .user-info {
+        .user-email-full {
+          font-size: 0.875rem;
+          font-weight: 500;
+          color: var(--text-primary, #1f2937);
+          word-break: break-all;
+        }
+      }
+    }
+
+    .dropdown-menu {
+      padding: 0.5rem 0;
+
+      .dropdown-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: none;
+        background: none;
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: var(--text-primary, #1f2937);
+        cursor: pointer;
+        transition: background-color 0.15s ease;
+        text-align: left;
+
+        &:hover {
+          background-color: var(--hover-bg, #f3f4f6);
+        }
+
+        &:active {
+          background-color: var(--active-bg, #e5e7eb);
+        }
+
+        &.logout {
+          color: var(--danger-color, #dc2626);
+
+          &:hover {
+            background-color: var(--danger-bg, #fee2e2);
+          }
+        }
+
+        app-icon {
+          flex-shrink: 0;
+        }
+
+        span {
+          flex: 1;
+        }
+      }
+    }
+
+    .dropdown-divider {
+      height: 1px;
+      background-color: var(--border-color, #e5e7eb);
+      margin: 0.5rem 0;
+    }
+  }
+}
+
+.dropdown-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 999;
+  background: transparent;
+
+  @media (max-width: 768px) {
+    background: rgba(0, 0, 0, 0.1);
+  }
+}
+
+// Animation keyframes
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-0.5rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Dark mode support
+@media (prefers-color-scheme: dark) {
+  .user-menu {
+    .user-email-display .user-email {
+      color: var(--text-primary-dark, #f9fafb);
+    }
+
+    .user-dropdown {
+      .user-menu-trigger {
+        border-color: var(--border-color-dark, #374151);
+
+        &:hover {
+          background-color: var(--hover-bg-dark, #374151);
+          border-color: var(--border-hover-dark, #4b5563);
+        }
+      }
+
+      .dropdown-content {
+        background: var(--dropdown-bg-dark, #1f2937);
+        border-color: var(--border-color-dark, #374151);
+      }
+
+      .dropdown-header {
+        border-bottom-color: var(--border-color-dark, #374151);
+
+        .user-email-full {
+          color: var(--text-primary-dark, #f9fafb);
+        }
+      }
+
+      .dropdown-menu {
+        .dropdown-item {
+          color: var(--text-primary-dark, #f9fafb);
+
+          &:hover {
+            background-color: var(--hover-bg-dark, #374151);
+          }
+
+          &:active {
+            background-color: var(--active-bg-dark, #4b5563);
+          }
+
+          &.logout {
+            color: var(--danger-color-dark, #f87171);
+
+            &:hover {
+              background-color: var(--danger-bg-dark, #7f1d1d);
+            }
+          }
+        }
+
+        .dropdown-divider {
+          background-color: var(--border-color-dark, #374151);
+        }
+      }
+    }
+  }
+}

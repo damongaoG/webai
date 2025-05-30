@@ -40,6 +40,28 @@ export const routes: Routes = [
     ],
   },
   {
+    path: "profile",
+    canActivate: [authGuard],
+    children: [
+      {
+        path: "change-password",
+        loadComponent: () =>
+          import(
+            "./views/profile/change-password/change-password.component"
+          ).then((mod) => mod.ChangePasswordComponent),
+        data: { title: "Change password" },
+      },
+      {
+        path: "activation-code",
+        loadComponent: () =>
+          import(
+            "./views/profile/activation-code/activation-code.component"
+          ).then((mod) => mod.ActivationCodeComponent),
+        data: { title: "Activation Code" },
+      },
+    ],
+  },
+  {
     path: "forget-password",
     component: ForgetPasswordComponent,
     data: { title: "Forget Password" },
