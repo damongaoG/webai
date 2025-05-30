@@ -127,7 +127,7 @@ export class UserMenuComponent implements OnInit, OnDestroy {
 
   navigateToChangePassword(): void {
     this.closeDropdown();
-    this.router.navigate(["/profile.change-password"]);
+    this.router.navigate(["/profile/change-password"]);
   }
 
   navigateToActivationCode(): void {
