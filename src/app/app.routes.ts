@@ -7,7 +7,9 @@ export const routes: Routes = [
   {
     path: "",
     loadComponent: () =>
-      import("./views/home/home.component").then((mod) => mod.HomeComponent),
+      import("./views/demos/index-4/index-4.component").then(
+        (mod) => mod.Index4Component,
+      ),
     data: {
       title: "WebAI- AI Startup & Technology Landing Page Angular Template",
     },
