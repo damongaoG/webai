@@ -13,31 +13,11 @@
         variant="default"
         shape="circle"
         size="medium"
-        (clicked)="toggleChatHistory()"
-        [title]="showChatHistory ? 'Hide history' : 'Show history'"
-        customClass="header-btn"
-      >
-        <app-icon name="history" [size]="16"></app-icon>
-      </app-button>
-      <app-button
-        variant="default"
-        shape="circle"
-        size="medium"
         (clicked)="startNewChat()"
         title="New chat"
         customClass="header-btn"
       >
         <app-icon name="plus" [size]="16"></app-icon>
-      </app-button>
-      <app-button
-        variant="primary"
-        shape="circle"
-        size="medium"
-        (clicked)="saveChat()"
-        title="Save chat"
-        customClass="header-btn"
-      >
-        <app-icon name="save" [size]="16"></app-icon>
       </app-button>
     </div>
   </header>

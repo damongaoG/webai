@@ -16,7 +16,7 @@
   }
 
   .header-center {
-    @apply flex-1 flex justify-center mx-4;
+    @apply flex justify-center;
 
     // Ensure user menu doesn't get too wide on large screens
     max-width: 300px;
