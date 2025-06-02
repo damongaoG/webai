@@ -168,6 +168,26 @@
   .input-box {
     @apply flex items-end space-x-2;
 
+    .start-chat-container {
+      @apply flex w-full flex-col items-center justify-center space-y-3 py-6;
+
+      .start-chat-button {
+        @apply flex items-center space-x-2 px-6 py-3 text-base font-medium shadow-lg transition-all duration-200 hover:shadow-xl;
+      }
+
+      .start-chat-hint {
+        @apply text-sm text-gray-600;
+      }
+    }
+
+    .checking-status-container {
+      @apply flex w-full items-center justify-center space-x-3 py-6;
+
+      p {
+        @apply text-sm text-gray-600;
+      }
+    }
+
     .message-input {
       @apply flex-1 resize-none rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500;
 

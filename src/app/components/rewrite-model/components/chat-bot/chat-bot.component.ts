@@ -14,6 +14,10 @@ import { FormsModule } from "@angular/forms";
 import { CommonModule } from "@angular/common";
 import { ChatBotService } from "../../services/chat-bot.service";
 import { ChatService } from "../../services/chat.service";
+import {
+  ChatStatusService,
+  ChatStatusState,
+} from "../../services/chat-status.service";
 import { ModelMessageDTO } from "@/app/interfaces/model-message-dto";
 import { ModelRequestDto } from "@/app/interfaces/model-request-dto";
 import { DomSanitizer, SafeHtml } from "@angular/platform-browser";
@@ -39,6 +43,7 @@ import {
   IconComponent,
   MessageService,
   ModalService,
+  SpinnerComponent,
 } from "@/app/shared";
 
 // Configure marked for synchronous operation
@@ -52,7 +57,13 @@ marked.setOptions({
   templateUrl: "./chat-bot.component.html",
   styleUrls: ["./chat-bot.component.scss"],
   standalone: true,
-  imports: [CommonModule, FormsModule, ButtonComponent, IconComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    ButtonComponent,
+    IconComponent,
+    SpinnerComponent,
+  ],
 })
 export class ChatBotComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChildren("messageInput") messageInputs!: QueryList<ElementRef>;
@@ -76,6 +87,8 @@ export class ChatBotComponent implements OnInit, AfterViewInit, OnDestroy {
 
   // Public component state
   chatStarted = false;
+  chatAvailable = false;
+  isCheckingChatStatus = false;
   selectedTabIndex = 2; // Default to rewrite tab
   currentMessage = "";
   isStreaming = false;
@@ -115,6 +128,7 @@ export class ChatBotComponent implements OnInit, AfterViewInit, OnDestroy {
   private readonly chatMessagesSubscription: Subscription;
   private readonly loadMoreHistorySubscription: Subscription;
   private readonly sessionIdSubscription: Subscription;
+  private readonly chatStatusSubscription: Subscription;
   private countdownSubscription?: Subscription;
 
   // Configuration objects
@@ -150,6 +164,7 @@ export class ChatBotComponent implements OnInit, AfterViewInit, OnDestroy {
     private router: Router,
     private visibilityService: VisibilityService,
     private clipboard: Clipboard,
+    private chatStatusService: ChatStatusService,
   ) {
     // Load initial chat history
     this.loadInitialChatHistory();
@@ -162,6 +177,7 @@ export class ChatBotComponent implements OnInit, AfterViewInit, OnDestroy {
     this.loadMoreHistorySubscription =
       this.initializeLoadMoreHistorySubscription();
     this.sessionIdSubscription = this.initializeSessionIdSubscription();
+    this.chatStatusSubscription = this.initializeChatStatusSubscription();
 
     // Initialize router event subscription
     this.initializeRouterSubscription();
@@ -205,6 +221,7 @@ export class ChatBotComponent implements OnInit, AfterViewInit, OnDestroy {
     this.loadMoreHistorySubscription?.unsubscribe();
     this.countdownSubscription?.unsubscribe();
     this.sessionIdSubscription?.unsubscribe();
+    this.chatStatusSubscription?.unsubscribe();
     this.visibilitySubscription?.unsubscribe();
 
     // Send beacon data if needed
@@ -351,6 +368,39 @@ export class ChatBotComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
+  private initializeChatStatusSubscription(): Subscription {
+    return this.chatStatusService.status$.subscribe(
+      (status: ChatStatusState) => {
+        this.chatAvailable = status.isAvailable;
+        this.isCheckingChatStatus = status.isChecking;
+
+        if (status.code === 1) {
+          this.chatStarted = true;
+          if (status.data?.endTime) {
+            this.startCountdown(status.data.endTime);
+          }
+          this.showWelcomeMessage(false);
+          this.showInputContainer = true;
+        } else if (status.code === 0) {
+          this.chatStarted = false;
+          this.showWelcomeMessage(false);
+          this.showInputContainer = false;
+        } else if (status.code === -2) {
+          this.messageService.error(
+            "Your activation code has already been used on another device.",
+          );
+          this.chatStarted = false;
+          this.showWelcomeMessage(false);
+          this.showInputContainer = false;
+        } else {
+          this.chatStarted = false;
+          this.showWelcomeMessage(false);
+          this.showInputContainer = false;
+        }
+      },
+    );
+  }
+
   private initializeRouterSubscription(): void {
     this.router.events.subscribe((event) => {
       if (event instanceof NavigationStart) {
@@ -376,32 +426,9 @@ export class ChatBotComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private checkChatStatusAndInitialize(): void {
-    this.chatBotService.checkChatStatus().subscribe((result) => {
+    this.chatStatusService.checkChatStatus().subscribe((result) => {
       this.ngZone.run(() => {
         this.chatService.chatStatusResult = result;
-        if (result.code === 1) {
-          this.chatStarted = true;
-          if (result.data?.endTime) {
-            this.startCountdown(result.data.endTime);
-          }
-          this.showWelcomeMessage(false);
-          this.showInputContainer = true;
-        } else if (result.code === 0) {
-          this.chatStarted = false;
-          this.showWelcomeMessage(false);
-          this.showInputContainer = false;
-        } else if (result.code === -2) {
-          this.messageService.error(
-            "Your activation code has already been used on another device.",
-          );
-          this.chatStarted = false;
-          this.showWelcomeMessage(false);
-          this.showInputContainer = false;
-        } else {
-          this.chatStarted = false;
-          this.showWelcomeMessage(false);
-          this.showInputContainer = false;
-        }
       });
     });
   }
@@ -1548,6 +1575,22 @@ export class ChatBotComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   // Chat management
+  startChatWhenUnavailable(): void {
+    this.chatStatusService.refreshStatus().subscribe({
+      next: (result) => {
+        if (result.code === 1) {
+          this.messageService.success("Chat is now available");
+        }
+      },
+      error: (error) => {
+        console.error("Failed to refresh chat status:", error);
+        this.messageService.error(
+          "Failed to check chat status. Please try again",
+        );
+      },
+    });
+  }
+
   confirmStartChat(): void {
     this.isConfirmStartChat = true;
     const button = document.querySelector(

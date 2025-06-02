@@ -1,5 +1,5 @@
 import { Component, OnDestroy, OnInit } from "@angular/core";
-import { Router, RouterModule } from "@angular/router";
+import { RouterModule } from "@angular/router";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { Subscription } from "rxjs";
@@ -29,9 +29,9 @@ import {
   ButtonComponent,
   IconComponent,
   MessageService,
-  ModalService,
   SpinnerComponent,
 } from "@/app/shared";
+import { ChatStatusService } from "@components/rewrite-model/services/chat-status.service";
 
 @Component({
   selector: "app-rewrite-model",
@@ -55,6 +55,7 @@ import {
     KatexService,
     ChatEventsService,
     VisibilityService,
+    ChatStatusService,
   ],
 })
 export class RewriteModelComponent implements OnInit, OnDestroy {
@@ -89,12 +90,11 @@ export class RewriteModelComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
 
   constructor(
-    private router: Router,
-    private modalService: ModalService,
     private chatService: ChatService,
     private authService: AuthService,
     public chatEventsService: ChatEventsService,
     private chatBotService: ChatBotService,
+    private chatStatusService: ChatStatusService,
     private messageService: MessageService,
   ) {
     // Subscribe to user email changes
@@ -130,11 +130,9 @@ export class RewriteModelComponent implements OnInit, OnDestroy {
       });
 
     // Check chat status to ensure user has access
-    this.chatBotService.checkChatStatus().subscribe({
+    this.chatStatusService.checkChatStatus().subscribe({
       next: (result) => {
-        if (result.code !== 1) {
-          this.messageService.error("Chat service unavailable");
-        }
+        console.log("Chat status checked:", result);
       },
       error: (error) => {
         console.error("Error checking chat status:", error);

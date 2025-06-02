@@ -92,37 +92,62 @@
     </div>
 
     <div class="input-box">
-      <textarea
-        #messageInput
-        [(ngModel)]="currentMessage"
-        (keyup)="handleKeyUp($event)"
-        [disabled]="isStreaming"
-        class="message-input"
-        placeholder="Type a message..."
-        rows="1"
-      ></textarea>
-
-      <app-button
-        *ngIf="isStreaming"
-        variant="default"
-        shape="circle"
-        size="medium"
-        (clicked)="stopStreaming()"
-        customClass="control-button stop-button"
+      <!-- Show Start Chat button when chat is not available -->
+      <div
+        *ngIf="!chatAvailable && !isCheckingChatStatus"
+        class="start-chat-container"
       >
-        <app-icon name="square" [size]="16"></app-icon>
-      </app-button>
+        <app-button
+          variant="primary"
+          size="large"
+          (clicked)="startChatWhenUnavailable()"
+          customClass="start-chat-button"
+        >
+          <app-icon name="message-circle" [size]="16"></app-icon>
+          Start Chat
+        </app-button>
+      </div>
 
-      <app-button
-        variant="primary"
-        shape="circle"
-        size="medium"
-        (clicked)="sendMessage()"
-        [disabled]="isSendButtonDisabled()"
-        customClass="control-button send-button"
-      >
-        <app-icon name="send" [size]="16"></app-icon>
-      </app-button>
+      <!-- Show loading state when checking status -->
+      <div *ngIf="isCheckingChatStatus" class="checking-status-container">
+        <app-spinner size="small"></app-spinner>
+        <p>Checking chat status...</p>
+      </div>
+
+      <!-- Show normal input interface when chat is available -->
+      <ng-container *ngIf="chatAvailable && !isCheckingChatStatus">
+        <textarea
+          #messageInput
+          [(ngModel)]="currentMessage"
+          (keyup)="handleKeyUp($event)"
+          [disabled]="isStreaming"
+          class="message-input"
+          placeholder="Type a message..."
+          rows="1"
+        ></textarea>
+
+        <app-button
+          *ngIf="isStreaming"
+          variant="default"
+          shape="circle"
+          size="medium"
+          (clicked)="stopStreaming()"
+          customClass="control-button stop-button"
+        >
+          <app-icon name="square" [size]="16"></app-icon>
+        </app-button>
+
+        <app-button
+          variant="primary"
+          shape="circle"
+          size="medium"
+          (clicked)="sendMessage()"
+          [disabled]="isSendButtonDisabled()"
+          customClass="control-button send-button"
+        >
+          <app-icon name="send" [size]="16"></app-icon>
+        </app-button>
+      </ng-container>
     </div>
   </div>
 
