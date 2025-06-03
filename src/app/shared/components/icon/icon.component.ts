@@ -10,6 +10,7 @@ import { LucideAngularModule } from "lucide-angular";
       [name]="name"
       [class]="iconClasses"
       [size]="size"
+      style="display: flex; align-items: center"
     ></lucide-icon>
   `,
   styles: [],

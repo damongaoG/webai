@@ -16,6 +16,7 @@ export type ButtonShape = "default" | "circle" | "round";
   imports: [CommonModule],
   template: `
     <button
+      style="gap: 4px"
       [class]="buttonClasses"
       [disabled]="disabled || loading"
       [type]="type"
