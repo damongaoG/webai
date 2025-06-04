@@ -1,6 +1,7 @@
 export interface ActivationCodeVo {
+  id: string;
   code: string;
-  startTime: string;
+  createTime: string;
   endTime: string;
   activatedUserId: number;
   status: number;
