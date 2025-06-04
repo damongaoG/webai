@@ -1574,54 +1574,18 @@ export class ChatBotComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  // Chat management
-  startChatWhenUnavailable(): void {
-    this.chatStatusService.refreshStatus().subscribe({
-      next: (result) => {
-        if (result.code === 1) {
-          this.messageService.success("Chat is now available");
-        }
-      },
-      error: (error) => {
-        console.error("Failed to refresh chat status:", error);
-        this.messageService.error(
-          "Failed to check chat status. Please try again",
-        );
-      },
-    });
-  }
-
   confirmStartChat(): void {
     this.isConfirmStartChat = true;
-    const button = document.querySelector(
-      ".start-chat-overlay button",
-    ) as HTMLElement;
-    if (button) {
-      const rect = button.getBoundingClientRect();
 
-      this.modalService.confirm({
-        title: "Start New Chat",
-        centered: true,
-        content:
-          "This will start a new chat. Are you sure you want to proceed?",
-        onOk: () => this.handleStartChat(),
-        onCancel: () => {
-          this.isConfirmStartChat = false;
-        },
-      });
-    } else {
-      // Fallback to centered modal if button not found
-      this.modalService.confirm({
-        title: "Start New Chat",
-        centered: true,
-        content:
-          "This will start a new chat. Are you sure you want to proceed?",
-        onOk: () => this.handleStartChat(),
-        onCancel: () => {
-          this.isConfirmStartChat = false;
-        },
-      });
-    }
+    this.modalService.confirm({
+      title: "Start New Chat",
+      centered: true,
+      content: "This will start a new chat. Are you sure you want to proceed?",
+      onOk: () => this.handleStartChat(),
+      onCancel: () => {
+        this.isConfirmStartChat = false;
+      },
+    });
   }
 
   handleStartChat(): void {
