@@ -20,10 +20,8 @@ export class ProfileService {
 
   constructor(private http: HttpClient) {}
   updateUserDetails(payload: ChangePasswordDto): Observable<ApiResponse> {
-    return this.http.put<ApiResponse>(
-      `${this.auiUrl}/auth/user/update`,
-      payload,
-      { headers: this.headers },
-    );
+    return this.http.put<ApiResponse>(`${this.auiUrl}/auth/users`, payload, {
+      headers: this.headers,
+    });
   }
 }

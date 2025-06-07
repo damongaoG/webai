@@ -53,41 +53,6 @@ import { CenteredLayoutComponent } from "@/app/shared";
             (ngSubmit)="onSubmit()"
             class="password-form"
           >
-            <!-- Current Password Field -->
-            <div class="form-field">
-              <label for="currentPassword" class="field-label">
-                Current Password
-              </label>
-              <div class="input-wrapper">
-                <input
-                  id="currentPassword"
-                  type="password"
-                  formControlName="currentPassword"
-                  placeholder="Enter your current password"
-                  class="form-input"
-                  [class.error]="
-                    passwordForm.get('currentPassword')?.invalid &&
-                    passwordForm.get('currentPassword')?.touched
-                  "
-                />
-              </div>
-              <div
-                *ngIf="
-                  passwordForm.get('currentPassword')?.invalid &&
-                  passwordForm.get('currentPassword')?.touched
-                "
-                class="field-error"
-              >
-                <span
-                  *ngIf="
-                    passwordForm.get('currentPassword')?.errors?.['required']
-                  "
-                >
-                  Current password is required
-                </span>
-              </div>
-            </div>
-
             <!-- New Password Field -->
             <div class="form-field">
               <label for="newPassword" class="field-label">
@@ -215,7 +180,6 @@ export class ChangePasswordComponent implements OnInit, OnDestroy {
   ) {
     this.passwordForm = this.fb.group(
       {
-        currentPassword: ["", [Validators.required]],
         newPassword: [
           "",
           [
