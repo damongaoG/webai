@@ -32,169 +32,167 @@ import { DisplayActivationCode } from "@/app/interfaces/display-activation-code"
     CenteredLayoutComponent,
   ],
   template: `
-    <app-centered-layout>
-      <div class="activation-code-container">
-        <!-- Header with back navigation -->
-        <div class="page-header">
-          <app-button
-            variant="ghost"
-            size="small"
-            (clicked)="navigateBack()"
-            customClass="back-button"
-          >
-            <app-icon name="arrow-left" [size]="16"></app-icon>
-            <span>Back to Chat</span>
-          </app-button>
-          <h1 class="page-title">Activation Codes</h1>
-          <p class="page-description">View and manage your activation codes.</p>
-        </div>
+    <div class="activation-code-container">
+      <!-- Header with back navigation -->
+      <div class="page-header">
+        <app-button
+          variant="ghost"
+          size="small"
+          (clicked)="navigateBack()"
+          customClass="back-button"
+        >
+          <app-icon name="arrow-left" [size]="16"></app-icon>
+          <span>Back to Chat</span>
+        </app-button>
+        <h1 class="page-title">Activation Codes</h1>
+        <p class="page-description">View and manage your activation codes.</p>
+      </div>
 
-        <!-- Filter Section -->
-        <div class="filter-section">
-          <select
-            class="status-filter"
-            [value]="selectedStatus()"
-            (change)="onStatusFilterChange($event)"
-          >
-            <option [value]="null">All Status</option>
-            <option [value]="0">Unused</option>
-            <option [value]="1">Using</option>
-            <option [value]="2">Used</option>
-            <option [value]="-1">Expired</option>
-          </select>
-        </div>
+      <!-- Filter Section -->
+      <div class="filter-section">
+        <select
+          class="status-filter"
+          [value]="selectedStatus()"
+          (change)="onStatusFilterChange($event)"
+        >
+          <option [value]="null">All Status</option>
+          <option [value]="0">Unused</option>
+          <option [value]="1">Using</option>
+          <option [value]="2">Used</option>
+          <option [value]="-1">Expired</option>
+        </select>
+      </div>
 
-        <!-- Desktop Table View -->
-        <div class="table-container" *ngIf="!isMobile()">
-          <div class="table-wrapper" [class.loading]="loading()">
-            <table class="activation-table">
-              <thead>
-                <tr>
-                  <th>Code</th>
-                  <th>Status</th>
-                  <th>Created At</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let item of displayData(); trackBy: trackByCode">
-                  <td class="code-cell">{{ item.code }}</td>
-                  <td>
-                    <span
-                      class="status-badge"
-                      [class]="'status-' + getStatusClass(item.status)"
-                    >
-                      {{ getStatusName(item.status) }}
-                    </span>
-                  </td>
-                  <td>
-                    <span *ngIf="item.createTime; else noDate">
-                      {{ formatDate(item.createTime) }}
-                    </span>
-                    <ng-template #noDate>-</ng-template>
-                  </td>
-                </tr>
-                <tr
-                  *ngIf="displayData().length === 0 && !loading()"
-                  class="no-data-row"
-                >
-                  <td colspan="3" class="no-data-cell">
-                    <app-icon name="inbox" [size]="24"></app-icon>
-                    <span>No activation codes found</span>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-
-            <!-- Loading overlay -->
-            <div *ngIf="loading()" class="loading-overlay">
-              <div class="loading-spinner">
-                <app-icon
-                  name="loader"
-                  [size]="24"
-                  class="animate-spin"
-                ></app-icon>
-                <span>Loading...</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Mobile Card View -->
-        <div class="mobile-cards" *ngIf="isMobile()">
-          <div
-            class="mobile-card"
-            *ngFor="let item of displayData(); trackBy: trackByCode"
-          >
-            <div class="card-row">
-              <span class="card-label">Code:</span>
-              <span class="card-value">{{ item.code }}</span>
-            </div>
-            <div class="card-row">
-              <span class="card-label">Status:</span>
-              <span
-                class="status-badge"
-                [class]="'status-' + getStatusClass(item.status)"
+      <!-- Desktop Table View -->
+      <div class="table-container" *ngIf="!isMobile()">
+        <div class="table-wrapper" [class.loading]="loading()">
+          <table class="activation-table">
+            <thead>
+              <tr>
+                <th>Code</th>
+                <th>Status</th>
+                <th>Created At</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of displayData(); trackBy: trackByCode">
+                <td class="code-cell">{{ item.code }}</td>
+                <td>
+                  <span
+                    class="status-badge"
+                    [class]="'status-' + getStatusClass(item.status)"
+                  >
+                    {{ getStatusName(item.status) }}
+                  </span>
+                </td>
+                <td>
+                  <span *ngIf="item.createTime; else noDate">
+                    {{ formatDate(item.createTime) }}
+                  </span>
+                  <ng-template #noDate>-</ng-template>
+                </td>
+              </tr>
+              <tr
+                *ngIf="displayData().length === 0 && !loading()"
+                class="no-data-row"
               >
-                {{ getStatusName(item.status) }}
-              </span>
+                <td colspan="3" class="no-data-cell">
+                  <app-icon name="inbox" [size]="24"></app-icon>
+                  <span>No activation codes found</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <!-- Loading overlay -->
+          <div *ngIf="loading()" class="loading-overlay">
+            <div class="loading-spinner">
+              <app-icon
+                name="loader"
+                [size]="24"
+                class="animate-spin"
+              ></app-icon>
+              <span>Loading...</span>
             </div>
-            <div class="card-row">
-              <span class="card-label">Created:</span>
-              <span class="card-value">
-                <span *ngIf="item.createTime; else noDate">
-                  {{ formatDate(item.createTime) }}
-                </span>
-                <ng-template #noDate>-</ng-template>
-              </span>
-            </div>
-          </div>
-
-          <div
-            *ngIf="displayData().length === 0 && !loading()"
-            class="no-data-mobile"
-          >
-            <app-icon name="inbox" [size]="32"></app-icon>
-            <span>No activation codes found</span>
-          </div>
-
-          <!-- Mobile Loading -->
-          <div *ngIf="loading()" class="mobile-loading">
-            <app-icon name="loader" [size]="24" class="animate-spin"></app-icon>
-            <span>Loading...</span>
-          </div>
-        </div>
-
-        <!-- Pagination -->
-        <div class="pagination-container" *ngIf="totalElements() > 0">
-          <div class="pagination-info">
-            <span>Total {{ totalElements() }} items</span>
-          </div>
-          <div class="pagination-controls">
-            <app-button
-              variant="ghost"
-              size="small"
-              [disabled]="currentPage() <= 1"
-              (clicked)="onPageChange(currentPage() - 1)"
-            >
-              <app-icon name="chevron-left" [size]="16"></app-icon>
-            </app-button>
-
-            <span class="page-info">
-              {{ currentPage() }} / {{ totalPages() }}
-            </span>
-
-            <app-button
-              variant="ghost"
-              size="small"
-              [disabled]="currentPage() >= totalPages()"
-              (clicked)="onPageChange(currentPage() + 1)"
-            >
-              <app-icon name="chevron-right" [size]="16"></app-icon>
-            </app-button>
           </div>
         </div>
       </div>
-    </app-centered-layout>
+
+      <!-- Mobile Card View -->
+      <div class="mobile-cards" *ngIf="isMobile()">
+        <div
+          class="mobile-card"
+          *ngFor="let item of displayData(); trackBy: trackByCode"
+        >
+          <div class="card-row">
+            <span class="card-label">Code:</span>
+            <span class="card-value">{{ item.code }}</span>
+          </div>
+          <div class="card-row">
+            <span class="card-label">Status:</span>
+            <span
+              class="status-badge"
+              [class]="'status-' + getStatusClass(item.status)"
+            >
+              {{ getStatusName(item.status) }}
+            </span>
+          </div>
+          <div class="card-row">
+            <span class="card-label">Created:</span>
+            <span class="card-value">
+              <span *ngIf="item.createTime; else noDate">
+                {{ formatDate(item.createTime) }}
+              </span>
+              <ng-template #noDate>-</ng-template>
+            </span>
+          </div>
+        </div>
+
+        <div
+          *ngIf="displayData().length === 0 && !loading()"
+          class="no-data-mobile"
+        >
+          <app-icon name="inbox" [size]="32"></app-icon>
+          <span>No activation codes found</span>
+        </div>
+
+        <!-- Mobile Loading -->
+        <div *ngIf="loading()" class="mobile-loading">
+          <app-icon name="loader" [size]="24" class="animate-spin"></app-icon>
+          <span>Loading...</span>
+        </div>
+      </div>
+
+      <!-- Pagination -->
+      <div class="pagination-container" *ngIf="totalElements() > 0">
+        <div class="pagination-info">
+          <span>Total {{ totalElements() }} items</span>
+        </div>
+        <div class="pagination-controls">
+          <app-button
+            variant="ghost"
+            size="small"
+            [disabled]="currentPage() <= 1"
+            (clicked)="onPageChange(currentPage() - 1)"
+          >
+            <app-icon name="chevron-left" [size]="16"></app-icon>
+          </app-button>
+
+          <span class="page-info">
+            {{ currentPage() }} / {{ totalPages() }}
+          </span>
+
+          <app-button
+            variant="ghost"
+            size="small"
+            [disabled]="currentPage() >= totalPages()"
+            (clicked)="onPageChange(currentPage() + 1)"
+          >
+            <app-icon name="chevron-right" [size]="16"></app-icon>
+          </app-button>
+        </div>
+      </div>
+    </div>
   `,
   styleUrls: ["./activation-code.component.scss"],
 })
