@@ -99,6 +99,23 @@
       h3 {
         @apply text-lg font-semibold text-gray-900;
       }
+
+      // Close button styling for chat history
+      .history-close-btn {
+        @apply flex items-center justify-center w-8 h-8 border-0 rounded-full bg-transparent text-gray-400 text-xl font-light leading-none cursor-pointer transition-colors duration-200;
+
+        &:hover {
+          @apply bg-gray-100 text-gray-600;
+        }
+
+        &:focus {
+          @apply outline-none ring-2 ring-blue-500 ring-offset-2;
+        }
+
+        &:active {
+          @apply bg-gray-200;
+        }
+      }
     }
 
     .mobile-history-content {

@@ -98,13 +98,15 @@
     <div class="mobile-history-container">
       <div class="mobile-history-header">
         <h3>Chat History</h3>
-        <app-button
-          variant="ghost"
-          size="small"
-          (clicked)="toggleChatHistory()"
+        <!-- Close button with CSS-only X symbol - no external icon dependencies -->
+        <button
+          type="button"
+          class="history-close-btn"
+          (click)="toggleChatHistory()"
+          aria-label="Close chat history"
         >
-          <app-icon name="x" [size]="16"></app-icon>
-        </app-button>
+          ×
+        </button>
       </div>
       <div class="mobile-history-content">
         <div *ngIf="chatHistory.length === 0" class="empty-history">

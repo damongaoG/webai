@@ -7,24 +7,20 @@ import {
   OnDestroy,
 } from "@angular/core";
 import { CommonModule } from "@angular/common";
-import { IconComponent } from "@/app/shared";
 
 export type MessageType = "success" | "error" | "warning" | "info" | "loading";
 
 @Component({
   selector: "app-message",
   standalone: true,
-  imports: [CommonModule, IconComponent],
+  imports: [CommonModule],
   template: `
     <div [class]="messageClasses" [@slideIn]>
-      <!-- Icon -->
+      <!-- Icon with CSS-only symbols - no external icon dependencies -->
       <div class="flex-shrink-0">
-        <app-icon
-          *ngIf="type !== 'loading'"
-          [name]="iconName"
-          [size]="16"
-          [customClass]="iconClasses"
-        ></app-icon>
+        <div *ngIf="type !== 'loading'" [class]="'message-icon ' + iconClasses">
+          {{ getIconSymbol() }}
+        </div>
 
         <!-- Loading spinner -->
         <div
@@ -38,19 +34,48 @@ export type MessageType = "success" | "error" | "warning" | "info" | "loading";
         <p class="text-sm font-medium">{{ content }}</p>
       </div>
 
-      <!-- Close button -->
+      <!-- Close button with CSS-only X symbol - no external icon dependencies -->
       <div *ngIf="closable" class="ml-4 flex-shrink-0">
         <button
           type="button"
-          class="inline-flex rounded-md text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2"
+          class="message-close-btn"
           (click)="close()"
+          aria-label="Close message"
         >
-          <app-icon name="x" [size]="16"></app-icon>
+          ×
         </button>
       </div>
     </div>
   `,
-  styles: [],
+  styles: [
+    `
+      .message-close-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 20px;
+        height: 20px;
+        border: none;
+        border-radius: 0.375rem;
+        background: transparent;
+        color: #9ca3af;
+        font-size: 16px;
+        font-weight: 300;
+        line-height: 1;
+        cursor: pointer;
+        transition: color 0.2s ease;
+      }
+
+      .message-close-btn:hover {
+        color: #6b7280;
+      }
+
+      .message-close-btn:focus {
+        outline: 2px solid #3b82f6;
+        outline-offset: 2px;
+      }
+    `,
+  ],
   animations: [],
 })
 export class MessageComponent implements OnInit, OnDestroy {
@@ -104,15 +129,15 @@ export class MessageComponent implements OnInit, OnDestroy {
     );
   }
 
-  get iconName(): string {
-    const iconMap = {
-      success: "check-circle",
-      error: "x-circle",
-      warning: "alert-triangle",
-      info: "info",
+  getIconSymbol(): string {
+    const symbolMap = {
+      success: "✓",
+      error: "×",
+      warning: "⚠",
+      info: "i",
       loading: "",
     };
-    return iconMap[this.type];
+    return symbolMap[this.type];
   }
 
   get iconClasses(): string {

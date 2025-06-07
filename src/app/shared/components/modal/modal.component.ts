@@ -8,12 +8,11 @@ import {
 } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { ButtonComponent } from "@/app/shared";
-import { IconComponent } from "@/app/shared";
 
 @Component({
   selector: "app-modal",
   standalone: true,
-  imports: [CommonModule, ButtonComponent, IconComponent],
+  imports: [CommonModule, ButtonComponent],
   template: `
     <!-- Modal backdrop -->
     <div
@@ -38,15 +37,16 @@ import { IconComponent } from "@/app/shared";
             <h3 *ngIf="title" class="text-lg font-semibold text-gray-900">
               {{ title }}
             </h3>
-            <app-button
+            <!-- Close button with CSS-only X symbol - no external icon dependencies -->
+            <button
               *ngIf="showCloseButton"
-              variant="ghost"
-              shape="circle"
-              size="small"
-              (clicked)="handleCancel()"
+              type="button"
+              class="modal-close-btn"
+              (click)="handleCancel()"
+              aria-label="Close modal"
             >
-              <app-icon name="x" [size]="16"></app-icon>
-            </app-button>
+              ×
+            </button>
           </div>
 
           <!-- Modal body -->
@@ -80,7 +80,40 @@ import { IconComponent } from "@/app/shared";
       </div>
     </div>
   `,
-  styles: [],
+  styles: [
+    `
+      .modal-close-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        border: none;
+        border-radius: 50%;
+        background: transparent;
+        color: #6b7280;
+        font-size: 20px;
+        font-weight: 300;
+        line-height: 1;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .modal-close-btn:hover {
+        background-color: #f3f4f6;
+        color: #374151;
+      }
+
+      .modal-close-btn:focus {
+        outline: 2px solid #3b82f6;
+        outline-offset: 2px;
+      }
+
+      .modal-close-btn:active {
+        background-color: #e5e7eb;
+      }
+    `,
+  ],
 })
 export class ModalComponent implements OnInit, OnDestroy {
   @Input() visible = false;
