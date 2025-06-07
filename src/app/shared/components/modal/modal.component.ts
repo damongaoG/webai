@@ -51,6 +51,8 @@ import { ButtonComponent } from "@/app/shared";
 
           <!-- Modal body -->
           <div class="px-6 py-4">
+            <!-- Display content if provided -->
+            <p *ngIf="content" class="text-gray-700">{{ content }}</p>
             <ng-content></ng-content>
           </div>
 
@@ -118,6 +120,7 @@ import { ButtonComponent } from "@/app/shared";
 export class ModalComponent implements OnInit, OnDestroy {
   @Input() visible = false;
   @Input() title = "";
+  @Input() content = "";
   @Input() width = "520px";
   @Input() centered = false;
   @Input() closable = true;

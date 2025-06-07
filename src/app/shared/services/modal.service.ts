@@ -3,7 +3,6 @@ import {
   ComponentRef,
   createComponent,
   Injectable,
-  Injector,
 } from "@angular/core";
 import { ModalComponent } from "@/app/shared";
 
@@ -32,10 +31,7 @@ export interface ConfirmConfig extends ModalConfig {
 export class ModalService {
   private modals: ComponentRef<ModalComponent>[] = [];
 
-  constructor(
-    private appRef: ApplicationRef,
-    private injector: Injector,
-  ) {}
+  constructor(private appRef: ApplicationRef) {}
 
   /**
    * Create a confirmation modal
@@ -52,19 +48,6 @@ export class ModalService {
       showCancelButton: true,
       ...config,
     });
-
-    // Set content if provided
-    if (config.content) {
-      const contentElement = document.createElement("p");
-      contentElement.textContent = config.content;
-      contentElement.className = "text-gray-700";
-
-      const modalElement =
-        modalRef.location.nativeElement.querySelector(".px-6.py-4");
-      if (modalElement) {
-        modalElement.appendChild(contentElement);
-      }
-    }
 
     // Handle OK button click
     modalRef.instance.ok.subscribe(async () => {
@@ -91,18 +74,6 @@ export class ModalService {
 
     modalRef.instance.visible = true;
   }
-
-  /**
-   * Create a simple info modal
-   */
-  info(config: ModalConfig): void {
-    this.createSimpleModal({
-      ...config,
-      showCancelButton: false,
-      okText: config.okText || "OK",
-    });
-  }
-
   /**
    * Create a success modal
    */
@@ -126,41 +97,8 @@ export class ModalService {
       okText: config.okText || "OK",
     });
   }
-
-  /**
-   * Create a warning modal
-   */
-  warning(config: ModalConfig): void {
-    this.createSimpleModal({
-      ...config,
-      title: config.title || "Warning",
-      showCancelButton: false,
-      okText: config.okText || "OK",
-    });
-  }
-
-  /**
-   * Close all modals
-   */
-  closeAll(): void {
-    this.modals.forEach((modal) => this.destroyModal(modal));
-  }
-
   private createSimpleModal(config: ModalConfig): void {
     const modalRef = this.createModal(config);
-
-    // Set content if provided
-    if (config.content) {
-      const contentElement = document.createElement("p");
-      contentElement.textContent = config.content;
-      contentElement.className = "text-gray-700";
-
-      const modalElement =
-        modalRef.location.nativeElement.querySelector(".px-6.py-4");
-      if (modalElement) {
-        modalElement.appendChild(contentElement);
-      }
-    }
 
     // Handle OK button click
     modalRef.instance.ok.subscribe(() => {
