@@ -222,7 +222,7 @@ export class ChatBotService {
   // Stop the output stream
   public stopOutput(tag: string): Observable<Result<any>> {
     return this.http
-      .post<
+      .patch<
         Result<any>
       >(`${this.apiUrl}/auth/model/action/stop?tag=${tag}`, {}, { headers: this.headers })
       .pipe(catchError((error) => throwError(() => error)));
