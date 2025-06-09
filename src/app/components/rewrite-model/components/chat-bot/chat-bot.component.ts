@@ -368,35 +368,39 @@ export class ChatBotComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
+  private processChatStatus(status: ChatStatusState): void {
+    this.chatAvailable = status.isAvailable;
+    this.isCheckingChatStatus = status.isChecking;
+
+    if (status.code === 1) {
+      this.chatStarted = true;
+      if (status.data?.endTime) {
+        this.startCountdown(status.data.endTime);
+      }
+      this.showWelcomeMessage(false);
+      this.showInputContainer = true;
+    } else if (status.code === 0) {
+      this.chatStarted = false;
+      this.showWelcomeMessage(false);
+      this.showInputContainer = false;
+    } else if (status.code === -2) {
+      this.messageService.error(
+        "Your activation code has already been used on another device.",
+      );
+      this.chatStarted = false;
+      this.showWelcomeMessage(false);
+      this.showInputContainer = false;
+    } else {
+      this.chatStarted = false;
+      this.showWelcomeMessage(false);
+      this.showInputContainer = false;
+    }
+  }
+
   private initializeChatStatusSubscription(): Subscription {
     return this.chatStatusService.status$.subscribe(
       (status: ChatStatusState) => {
-        this.chatAvailable = status.isAvailable;
-        this.isCheckingChatStatus = status.isChecking;
-
-        if (status.code === 1) {
-          this.chatStarted = true;
-          if (status.data?.endTime) {
-            this.startCountdown(status.data.endTime);
-          }
-          this.showWelcomeMessage(false);
-          this.showInputContainer = true;
-        } else if (status.code === 0) {
-          this.chatStarted = false;
-          this.showWelcomeMessage(false);
-          this.showInputContainer = false;
-        } else if (status.code === -2) {
-          this.messageService.error(
-            "Your activation code has already been used on another device.",
-          );
-          this.chatStarted = false;
-          this.showWelcomeMessage(false);
-          this.showInputContainer = false;
-        } else {
-          this.chatStarted = false;
-          this.showWelcomeMessage(false);
-          this.showInputContainer = false;
-        }
+        this.processChatStatus(status);
       },
     );
   }
@@ -1457,11 +1461,6 @@ export class ChatBotComponent implements OnInit, AfterViewInit, OnDestroy {
       }
     }
   }
-
-  onEnterPress(event: KeyboardEvent): void {
-    this.handleKeyUp(event);
-  }
-
   scrollToTop(): void {
     const containers = this.messageContainers.toArray();
     containers.forEach((container) => {
@@ -1593,10 +1592,26 @@ export class ChatBotComponent implements OnInit, AfterViewInit, OnDestroy {
       this.chatBotService.startChat().subscribe(
         (result) => {
           if (result.code === 1) {
-            this.chatStarted = true;
-            this.showInputContainer = true;
-            this.isConfirmStartChat = false;
-            this.showThankYou = false;
+            // Chat started successfully, check current chat stauts
+            this.chatStatusService
+              .checkChatStatus()
+              .subscribe((statusResult) => {
+                // Convert the status result
+                const chatStatus: ChatStatusState = {
+                  isAvailable: statusResult.code === 1,
+                  isChecking: false,
+                  lastCheckTime: new Date(),
+                  error:
+                    statusResult.code === 1
+                      ? null
+                      : statusResult.error?.message || null,
+                  code: statusResult.code,
+                  data: statusResult.data,
+                };
+                this.processChatStatus(chatStatus);
+                this.isConfirmStartChat = false;
+                this.showThankYou = false;
+              });
           } else if (result.code === -11) {
             this.messageService.error(
               "Your account has no activation code, please contact us to purchase",
