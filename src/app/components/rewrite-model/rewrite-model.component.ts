@@ -1,3 +1,4 @@
+import { ListChatSessionVo } from "@/app/interfaces/list-chat-session-vo";
 import { Component, OnDestroy, OnInit } from "@angular/core";
 import { RouterModule } from "@angular/router";
 import { CommonModule } from "@angular/common";
@@ -6,23 +7,21 @@ import { Subscription } from "rxjs";
 import { HttpClientModule } from "@angular/common/http";
 import { Subject, takeUntil } from "rxjs";
 
-// Import services from webai project
 import { AuthService } from "../../services/auth.service";
 import { ChatEventsService } from "./services/chat-events.service";
 
-// Import interfaces that exist in webai project
 import { ListChatHistoryDto } from "../../interfaces/list-chat-history-dto";
-import { ListChatSessionVo } from "../../interfaces/list-chat-session-vo";
 import { ModelMessageDTO } from "../../interfaces/model-message-dto";
 import { ChatMessage } from "../../interfaces/chat-dto";
+import { Result } from "../../interfaces/result";
+import { PageListChatSessionVo } from "../../interfaces/page-list-chat-session-vo";
+import { PageListChatHistoryVo } from "../../interfaces/page-list-chat-history-vo";
 
-// Import services that we'll create
 import { ChatService } from "./services/chat.service";
 import { ChatBotService } from "./services/chat-bot.service";
 import { KatexService } from "./services/katex.service";
 import { VisibilityService } from "./services/visibility.service";
 
-// Import components
 import { ChatBotComponent } from "./components/chat-bot/chat-bot.component";
 import { UserMenuComponent } from "./components/user-menu/user-menu.component";
 import {
@@ -194,47 +193,71 @@ export class RewriteModelComponent implements OnInit, OnDestroy {
     this.selectedTabIndex = history.tag;
     this.onTabChange(history.tag);
 
-    this.chatBotService
-      .listChatHistoryById(history.sessionId)
-      .subscribe((res) => {
-        if (res.code === 1 && res.data?.content) {
-          // Update sessionId in ChatService
-          this.chatService.updateSessionId(history.sessionId);
+    this.chatBotService.listChatHistoryById(history.sessionId).subscribe({
+      next: (res) => {
+        // Validate response structure
+        if (this.isValidPageListResponse(res)) {
+          try {
+            // Update sessionId in ChatService
+            this.chatService.updateSessionId(history.sessionId);
 
-          // Filter messages by the current tab
-          const filteredMessages = res.data.content.filter(
-            (item: ListChatSessionVo) => item.tag === this.selectedTabIndex,
-          );
+            // Filter messages by the current tab
+            const filteredMessages = res.data.content.filter(
+              (item: ListChatSessionVo) =>
+                item && true && item.tag === this.selectedTabIndex,
+            );
 
-          // Convert the response data to ChatMessage format for display
-          const chatMessages: ChatMessage[] = [];
+            // Convert the response data to ChatMessage format for display
+            const chatMessages: ChatMessage[] = [];
 
-          filteredMessages.forEach((item: ListChatSessionVo) => {
-            // Process each message in the item's messages array
-            item.messages.forEach((message: ModelMessageDTO) => {
-              chatMessages.push({
-                role: message.role,
-                content: message.content,
-                isUser: message.role === "user",
-                tag: item.tag,
-                parsedContent: undefined, // Let the ChatBotComponent handle the parsing
-              });
+            filteredMessages.forEach((item: ListChatSessionVo) => {
+              // Ensure item and messages array exist before processing
+              if (item?.messages && Array.isArray(item.messages)) {
+                item.messages.forEach((message: ModelMessageDTO) => {
+                  // Validate message structure before processing
+                  if (message?.role && message?.content) {
+                    chatMessages.push({
+                      role: message.role,
+                      content: message.content,
+                      isUser: message.role === "user",
+                      tag: item.tag,
+                      parsedContent: undefined,
+                    });
+                  }
+                });
+              }
             });
-          });
 
-          // Update the chat messages in the chat service
-          this.chatService.updateChatMessages(
-            chatMessages.map((msg) => ({
-              ...msg,
-              isFromHistory: true,
-            })),
-            false,
-          );
+            // Update the chat messages in the chat service
+            this.chatService.updateChatMessages(
+              chatMessages.map((msg) => ({
+                ...msg,
+                isFromHistory: true,
+              })),
+              false,
+            );
 
-          // Reset the flag after chat is loaded
-          this.isLoadingSpecificChat = false;
+            console.log(
+              `Successfully loaded ${chatMessages.length} messages from chat history`,
+            );
+          } catch (error) {
+            console.error("Error processing chat history data:", error);
+            this.messageService.error("Failed to process chat history data");
+          }
+        } else {
+          // Handle invalid response structure
+          console.log("Invalid response structure or empty content:", res);
+          this.messageService.warning("No chat history found for this session");
         }
-      });
+      },
+      error: (error) => {
+        console.error("Error loading chat history:", error);
+        this.messageService.error("Failed to load chat history");
+      },
+      complete: () => {
+        this.isLoadingSpecificChat = false;
+      },
+    });
   }
 
   // User management
@@ -271,7 +294,8 @@ export class RewriteModelComponent implements OnInit, OnDestroy {
       .listChatHistory(this.selectedTabIndex, nextPage, this.pageSize)
       .subscribe({
         next: (result) => {
-          if (result.code === 1 && result.data) {
+          // Validate response
+          if (this.isValidChatHistoryResponse(result)) {
             const newHistory = result.data.content;
 
             // Check if there is more data
@@ -282,11 +306,21 @@ export class RewriteModelComponent implements OnInit, OnDestroy {
               this.currentPage = nextPage;
               // Combine new history with existing history
               this.chatHistory = [...this.chatHistory, ...newHistory];
+              console.log(`Loaded ${newHistory.length} more history items`);
+            } else {
+              console.log("No more history items to load");
             }
+          } else {
+            // Handle invalid response or empty data
+            console.log("Invalid response or no data");
+            this.hasMoreData = false;
+            this.messageService.info("No more chat history available");
           }
         },
         error: (error) => {
           console.error("Error loading more history:", error);
+          this.messageService.error("Failed to load more chat history");
+          this.hasMoreData = false;
         },
         complete: () => {
           this.isLoading = false;
@@ -316,5 +350,49 @@ export class RewriteModelComponent implements OnInit, OnDestroy {
   saveChat() {
     this.chatEventsService.triggerSaveHistory();
     this.messageService.success("Chat saved successfully");
+  }
+
+  private isValidApiResponse<T>(
+    response: Result<T> | null | undefined,
+  ): response is Result<T> {
+    return response != null && true;
+  }
+
+  private isSuccessfulResponse<T>(response: Result<T>): boolean {
+    return response.code === 1;
+  }
+
+  private hasValidData<T>(
+    response: Result<T>,
+  ): response is Result<T> & { data: T } {
+    return response.data != null;
+  }
+
+  private isValidPageListResponse(
+    response: Result<PageListChatSessionVo> | null | undefined,
+  ): response is Result<PageListChatSessionVo> & {
+    data: PageListChatSessionVo;
+  } {
+    return (
+      this.isValidApiResponse(response) &&
+      this.isSuccessfulResponse(response) &&
+      this.hasValidData(response) &&
+      response.data.content != null &&
+      Array.isArray(response.data.content)
+    );
+  }
+
+  private isValidChatHistoryResponse(
+    response: Result<PageListChatHistoryVo> | null | undefined,
+  ): response is Result<PageListChatHistoryVo> & {
+    data: PageListChatHistoryVo;
+  } {
+    return (
+      this.isValidApiResponse(response) &&
+      this.isSuccessfulResponse(response) &&
+      this.hasValidData(response) &&
+      response.data.content != null &&
+      Array.isArray(response.data.content)
+    );
   }
 }

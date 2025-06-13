@@ -273,8 +273,15 @@ export class ChatBotService {
   public listChatHistoryById(
     sessionId: string,
   ): Observable<Result<PageListChatSessionVo>> {
+    const data = {
+      page: 0,
+      pageSize: 50,
+      dataFields: [{ name: "sessionId", value: sessionId, operator: "eq" }],
+    };
     return this.http.get<Result<PageListChatSessionVo>>(
-      `${this.apiUrl}/auth/model/entity/chat?sessionId=${sessionId}`,
+      `${this.apiUrl}/auth/model/entity/chat?list=${btoa(
+        JSON.stringify(data),
+      )}`,
       { headers: this.headers },
     );
   }
