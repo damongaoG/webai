@@ -22,11 +22,11 @@ import { ModelMessageDTO } from "@/app/interfaces/model-message-dto";
 import { ModelRequestDto } from "@/app/interfaces/model-request-dto";
 import { DomSanitizer, SafeHtml } from "@angular/platform-browser";
 import { marked } from "marked";
-import { firstValueFrom, interval, Subscription } from "rxjs";
+import { firstValueFrom, interval, Subscription, tap, finalize } from "rxjs";
 import { KatexService } from "../../services/katex.service";
 import { AuthService } from "@/app/services/auth.service";
 import { ChatEventsService } from "../../services/chat-events.service";
-import { finalize, take } from "rxjs/operators";
+import { take } from "rxjs/operators";
 import { ChatData, ChatMessage } from "@/app/interfaces/chat-dto";
 import {
   NavigationCancel,
@@ -264,7 +264,7 @@ export class ChatBotComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private initializeClearMessagesSubscription(): Subscription {
-    return this.chatEventsService.saveAndClear$.subscribe(() => {
+    return this.chatEventsService.saveAndClear$.subscribe(async () => {
       console.log("saveAndClear$ event received");
 
       // Stop streaming if active
@@ -276,10 +276,10 @@ export class ChatBotComponent implements OnInit, AfterViewInit, OnDestroy {
 
       // Prevent multiple simultaneous saves
       if (this.isSavingHistory) {
+        console.log("Save already in progress, skipping");
         return;
       }
 
-      this.isSavingHistory = true;
       this.isAfterClear = true;
       const originalSessionId = this.currentSessionId;
 
@@ -292,27 +292,25 @@ export class ChatBotComponent implements OnInit, AfterViewInit, OnDestroy {
       if (document.visibilityState === "hidden") {
         this.sendBeaconData();
         this.clearAllMessages();
-        this.isSavingHistory = false;
         return;
       }
 
-      // Save and clear sequence
-      this.saveChatHistoryIfNeeded()
-        .then(() => {
-          console.log("Chat history saved");
-          return new Promise<void>((resolve) => setTimeout(resolve, 200));
-        })
-        .then(() => {
-          console.log("Clearing messages");
-          this.clearAllMessages();
-        })
-        .catch((error) => {
-          console.error("Error in clear chat sequence:", error);
-        })
-        .finally(() => {
-          this.isSavingHistory = false;
-          this.currentSessionId = originalSessionId;
-        });
+      try {
+        // Save and clear sequence with error handling
+        console.log("Starting save and clear sequence");
+        await this.saveChatHistoryIfNeeded();
+        console.log("Chat history saved successfully");
+
+        // Save completion
+        await new Promise<void>((resolve) => setTimeout(resolve, 200));
+
+        console.log("Clearing messages");
+        this.clearAllMessages();
+      } catch (error) {
+        console.error("Error in clear chat sequence:", error);
+      } finally {
+        this.currentSessionId = originalSessionId;
+      }
     });
   }
 
@@ -878,11 +876,20 @@ export class ChatBotComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private onTabChange(index: number): void {
     this.ngZone.run(async () => {
-      // Save current tab's messages if needed
-      if (this.currentSessionId && this.chatService.hasUnsavedMessages()) {
-        await this.saveChatHistoryIfNeeded();
+      try {
+        // Save current tab's messages if needed before switching
+        if (this.shouldSaveChatHistory()) {
+          console.log(
+            `Saving messages before switching from tab ${this.selectedTabIndex} to ${index}`,
+          );
+          await this.saveChatHistoryIfNeeded();
+        }
+        this.switchTab(index);
+      } catch (error) {
+        console.error("Error during tab change:", error);
+        // Continue with tab switch
+        this.switchTab(index);
       }
-      this.switchTab(index);
     });
   }
 
@@ -930,93 +937,113 @@ export class ChatBotComponent implements OnInit, AfterViewInit, OnDestroy {
     return this.sanitizer.bypassSecurityTrustHtml(processedContent);
   }
 
-  private saveChatHistoryIfNeeded(): Promise<void> {
-    if (
-      !this.chatService.hasUnsavedMessages() &&
-      !this.hasJustCleared &&
-      !this.isFirstUser &&
-      this.isSavingHistory
-    ) {
+  private async saveChatHistoryIfNeeded(): Promise<void> {
+    if (this.isSavingHistory) {
+      console.log("Already saving chat history, skipping");
       return Promise.resolve();
     }
 
-    return new Promise<void>((resolve) => {
-      console.log(
-        "has unsaved messages",
-        this.chatService.hasUnsavedMessages(),
+    if (!this.shouldSaveChatHistory()) {
+      console.log("No need to save chat history", {
+        hasUnsavedMessages: this.chatService.hasUnsavedMessages(),
+        isFirstUser: this.isFirstUser,
+        hasJustCleared: this.hasJustCleared,
+        currentSessionId: this.currentSessionId,
+        hasMessagesInCurrentTab: this.hasMessagesInCurrentTab(),
+        isSavingHistory: this.isSavingHistory,
+      });
+      return Promise.resolve();
+    }
+
+    this.isSavingHistory = true;
+
+    try {
+      console.log("Starting chat history save process");
+
+      const userId = await firstValueFrom(this.authService.getUserId());
+      if (!userId) {
+        console.error("No user ID available for saving chat history");
+        return;
+      }
+
+      const unsavedMessages = this.chatService.getUnsavedMessages();
+      console.log("Save with session ID:", this.currentSessionId);
+
+      // Build payload from unsaved messages
+      const payload = this.buildSavePayload(unsavedMessages);
+
+      // Handle first-time users
+      this.handleFirstUserPayload(payload);
+
+      if (payload.length > 0) {
+        const result = await firstValueFrom(
+          this.chatBotService.saveChatHistory(payload),
+        );
+
+        if (result.code === 1) {
+          console.log("Chat history saved successfully");
+          this.chatService.clearUnsavedMessages();
+          await this.loadChatHistory();
+        } else {
+          console.error("Error saving chat history:", result.error?.message);
+        }
+      } else {
+        console.log("No messages to save");
+      }
+    } catch (error) {
+      console.error("Error in saveChatHistoryIfNeeded:", error);
+    } finally {
+      this.isSavingHistory = false;
+    }
+  }
+
+  private buildSavePayload(unsavedMessages: {
+    [key: string]: ChatMessage[];
+  }): any[] {
+    return Object.entries(unsavedMessages)
+      .map(([tag, messages]) => {
+        const numericTag = parseInt(tag);
+        const limit = this.maxMessagesByTag[numericTag];
+        let filteredMessages = messages;
+
+        if (limit !== undefined && messages.length > limit) {
+          filteredMessages = messages.slice(messages.length - limit);
+        }
+
+        return {
+          userId: this.userId,
+          tag: numericTag,
+          messages: this.formatMessages(filteredMessages),
+          sessionId: this.currentSessionId || undefined,
+        };
+      })
+      .filter((item) => item.messages.length > 0);
+  }
+
+  private handleFirstUserPayload(payload: any[]): void {
+    // Handle both first-time users and new conversations without sessionId
+    if (payload.length === 0 && (this.isFirstUser || !this.currentSessionId)) {
+      const currentMessages =
+        this.chatData[this.selectedTabIndex]?.messages || [];
+      const filteredMessages = currentMessages.filter(
+        (msg) =>
+          msg.content !== "thinking..." &&
+          msg.content !==
+            this.welcomeMessages[
+              this.selectedTabIndex as keyof typeof this.welcomeMessages
+            ],
       );
 
-      this.authService.getUserId().subscribe((userId) => {
-        if (!userId) {
-          console.error("No user ID available");
-          resolve();
-          return;
-        }
-        this.userId = userId;
-        const unsavedMessages = this.chatService.getUnsavedMessages();
-
-        console.log("save sessionid", this.currentSessionId);
-        const payload = Object.entries(unsavedMessages)
-          .map(([tag, messages]) => {
-            const numericTag = parseInt(tag);
-            const limit = this.maxMessagesByTag[numericTag];
-            let filteredMessages = messages;
-            if (limit !== undefined && messages.length > limit) {
-              filteredMessages = messages.slice(messages.length - limit);
-            }
-            return {
-              userId: this.userId,
-              tag: numericTag,
-              messages: this.formatMessages(filteredMessages),
-              sessionId: this.currentSessionId || undefined,
-            };
-          })
-          .filter((item) => item.messages.length > 0);
-
-        // Handle new user case
-        if (payload.length === 0 && this.isFirstUser) {
-          payload.push({
-            userId: this.userId,
-            tag: this.selectedTabIndex,
-            messages: this.formatMessages(
-              this.chatData[this.selectedTabIndex]?.messages.filter(
-                (msg) =>
-                  msg.content !== "thinking..." &&
-                  msg.content !==
-                    this.welcomeMessages[
-                      this.selectedTabIndex as keyof typeof this.welcomeMessages
-                    ],
-              ) || [],
-            ),
-            sessionId: undefined,
-          });
-        }
-
-        if (payload.length > 0) {
-          this.chatBotService.saveChatHistory(payload).subscribe({
-            next: (result) => {
-              if (result.code === 1) {
-                console.log("Chat history saved successfully");
-                this.chatService.clearUnsavedMessages();
-                this.loadChatHistory().then(() => resolve());
-              } else {
-                console.error(
-                  "Error saving chat history:",
-                  result.error?.message,
-                );
-                resolve();
-              }
-            },
-            error: (error) => {
-              console.error("Error saving chat history:", error);
-              resolve();
-            },
-          });
-        } else {
-          resolve();
-        }
-      });
-    });
+      if (filteredMessages.length > 0) {
+        console.log("Adding messages from current tab to payload for saving");
+        payload.push({
+          userId: this.userId,
+          tag: this.selectedTabIndex,
+          messages: this.formatMessages(filteredMessages),
+          sessionId: undefined,
+        });
+      }
+    }
   }
 
   private async loadChatHistory(): Promise<void> {
@@ -1263,38 +1290,8 @@ export class ChatBotComponent implements OnInit, AfterViewInit, OnDestroy {
     this.chatBotService
       .getModelResult(request)
       .pipe(
-        finalize(async () => {
-          this.isStreaming = false;
-          this.streamingTabIndex = null;
-          this.isLoading = false;
-
-          // Handle session management after completion
-          if (this.isAfterClear || this.isFirstUser) {
-            this.currentSessionId = null;
-            await this.saveChatHistoryIfNeeded();
-
-            // Get new sessionId from latest history
-            const result = await firstValueFrom(
-              this.chatBotService.listChatHistory(this.selectedTabIndex, 0, 1),
-            );
-
-            if (result.code === 1 && result.data?.content) {
-              const newSessionId = result.data.content[0].sessionId;
-              this.currentSessionId = newSessionId;
-              console.log("new session id", this.currentSessionId);
-              this.chatService.updateSessionId(newSessionId);
-              this.isFirstUser = false;
-            }
-
-            this.isAfterClear = false;
-            this.isNewSession = true;
-          }
-        }),
-      )
-      .subscribe({
-        next: (response) => {
-          console.log("Received response:", response);
-
+        tap((response) => {
+          // Handle streaming response updates
           if (response.choices?.[0]?.delta) {
             const delta = response.choices[0].delta;
             console.log("Received delta:", delta);
@@ -1334,6 +1331,17 @@ export class ChatBotComponent implements OnInit, AfterViewInit, OnDestroy {
               }
             }
           }
+        }),
+        finalize(() => {
+          // Reset streaming state
+          this.isStreaming = false;
+          this.streamingTabIndex = null;
+          this.isLoading = false;
+        }),
+      )
+      .subscribe({
+        next: (response) => {
+          console.log("Received response:", response);
         },
         error: (error) => {
           console.error("Error in model response:", error);
@@ -1353,10 +1361,9 @@ export class ChatBotComponent implements OnInit, AfterViewInit, OnDestroy {
             };
             this.chatData[this.selectedTabIndex].messages = [...messages];
 
+            // Add to unsaved messages if needed
             if (
-              this.currentSessionId &&
-              messageContent !== "thinking..." &&
-              !hasAddedToUnsaved
+              this.shouldAddToUnsavedMessages(messageContent, hasAddedToUnsaved)
             ) {
               this.chatService.addUnsavedMessage(
                 messages[lastMessageIndex],
@@ -1365,18 +1372,17 @@ export class ChatBotComponent implements OnInit, AfterViewInit, OnDestroy {
               hasAddedToUnsaved = true;
             }
 
-            // Update UI if page is visible
-            if (this.isPageVisible) {
-              this.ngZone.run(() => {
-                this.changeDetectorRef.detectChanges();
-              });
-              this.scrollToBottom();
-            } else {
-              this.pendingUpdates = true;
-            }
+            this.updateUIIfVisible();
           }
 
           this.isStreaming = false;
+
+          // Handle completion after error
+          this.handleStreamCompletion(messageContent, hasAddedToUnsaved).catch(
+            (error) => {
+              console.error("Error in stream completion handling:", error);
+            },
+          );
         },
         complete: () => {
           console.log("Stream completed. Final message:", messageContent);
@@ -1389,10 +1395,9 @@ export class ChatBotComponent implements OnInit, AfterViewInit, OnDestroy {
             messages[lastMessageIndex].parsedContent =
               this.parseMarkdown(messageContent);
 
+            // Add to unsaved messages if needed
             if (
-              this.currentSessionId &&
-              messageContent !== "thinking..." &&
-              !hasAddedToUnsaved
+              this.shouldAddToUnsavedMessages(messageContent, hasAddedToUnsaved)
             ) {
               this.chatService.addUnsavedMessage(
                 messages[lastMessageIndex],
@@ -1401,18 +1406,17 @@ export class ChatBotComponent implements OnInit, AfterViewInit, OnDestroy {
               hasAddedToUnsaved = true;
             }
 
-            // Update UI if page is visible
-            if (this.isPageVisible) {
-              this.ngZone.run(() => {
-                this.changeDetectorRef.detectChanges();
-              });
-              this.scrollToBottom();
-            } else {
-              this.pendingUpdates = true;
-            }
+            this.updateUIIfVisible();
           }
 
           this.isStreaming = false;
+
+          // Handle completion with session management
+          this.handleStreamCompletion(messageContent, hasAddedToUnsaved).catch(
+            (error) => {
+              console.error("Error in stream completion handling:", error);
+            },
+          );
         },
       });
   }
@@ -1651,5 +1655,96 @@ export class ChatBotComponent implements OnInit, AfterViewInit, OnDestroy {
   @HostListener("window:beforeunload", ["$event"])
   handleBeforeUnload(): void {
     this.sendBeaconData();
+  }
+
+  private shouldAddToUnsavedMessages(
+    messageContent: string,
+    hasAddedToUnsaved: boolean,
+  ): boolean {
+    // Allow adding messages even when sessionId is null (for new conversations)
+    return messageContent !== "thinking..." && !hasAddedToUnsaved;
+  }
+
+  private updateUIIfVisible(): void {
+    if (this.isPageVisible) {
+      this.ngZone.run(() => {
+        this.changeDetectorRef.detectChanges();
+      });
+      this.scrollToBottom();
+    } else {
+      this.pendingUpdates = true;
+    }
+  }
+
+  private async handleStreamCompletion(
+    messageContent: string,
+    hasAddedToUnsaved: boolean,
+  ): Promise<void> {
+    try {
+      // Handle session management for new sessions
+      if (this.isAfterClear || this.isFirstUser) {
+        this.currentSessionId = null;
+        await this.saveChatHistoryIfNeeded();
+
+        // Get new sessionId from latest history
+        const result = await firstValueFrom(
+          this.chatBotService.listChatHistory(this.selectedTabIndex, 0, 1),
+        );
+
+        if (result.code === 1 && result.data?.content) {
+          const newSessionId = result.data.content[0].sessionId;
+          this.currentSessionId = newSessionId;
+          console.log("New session ID assigned:", this.currentSessionId);
+          this.chatService.updateSessionId(newSessionId);
+          this.isFirstUser = false;
+        }
+
+        this.isAfterClear = false;
+        this.isNewSession = true;
+      } else {
+        // For existing sessions, save history if needed
+        await this.saveChatHistoryIfNeeded();
+      }
+    } catch (error) {
+      console.error("Error in stream completion handling:", error);
+    }
+  }
+
+  private shouldSaveChatHistory(): boolean {
+    // Don't save if already in the process of saving
+    if (this.isSavingHistory) {
+      return false;
+    }
+
+    // Always attempt to save if there are unsaved messages
+    if (this.chatService.hasUnsavedMessages()) {
+      return true;
+    }
+
+    // Save for first users or after clearing
+    if (this.isFirstUser || this.hasJustCleared) {
+      return true;
+    }
+
+    // Don not save if already in the process of saving
+    if (!this.currentSessionId && this.hasMessagesInCurrentTab()) {
+      console.log("New conversation detected, will save messages");
+      return true;
+    }
+
+    return false;
+  }
+
+  private hasMessagesInCurrentTab(): boolean {
+    const messages = this.chatData[this.selectedTabIndex]?.messages || [];
+    const nonWelcomeMessages = messages.filter(
+      (msg) =>
+        msg.content !== "thinking..." &&
+        msg.content !==
+          this.welcomeMessages[
+            this.selectedTabIndex as keyof typeof this.welcomeMessages
+          ],
+    );
+    return nonWelcomeMessages.length > 0;
   }
 }
