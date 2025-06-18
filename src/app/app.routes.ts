@@ -24,6 +24,15 @@ export const routes: Routes = [
     data: { title: "Dashboard" },
   },
   {
+    path: "essay-model",
+    loadComponent: () =>
+      import("./views/dashboard/essay-model/essay-model.component").then(
+        (mod) => mod.EssayModelComponent,
+      ),
+    canActivate: [authGuard],
+    data: { title: "Essay Model" },
+  },
+  {
     path: "rewrite",
     loadComponent: () =>
       import("./components/rewrite-model/rewrite-model.component").then(

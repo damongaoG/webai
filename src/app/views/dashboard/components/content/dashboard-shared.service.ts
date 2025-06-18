@@ -127,16 +127,6 @@ export class DashboardSharedService {
       contentType: "",
     });
   }
-
-  toggleFeatureCard(taskId: string) {
-    const currentState = this.expandableState();
-    if (currentState.isExpanded && currentState.contentType === taskId) {
-      this.collapseFeatureCard();
-    } else {
-      this.expandFeatureCard(taskId);
-    }
-  }
-
   // Select task by type
   selectTaskByType(taskType: TaskType) {
     const updatedTasks = this.taskItems().map((task) => ({
