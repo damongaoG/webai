@@ -1,4 +1,4 @@
-import { Component, inject, signal } from "@angular/core";
+import { Component, inject, signal, effect } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { LucideAngularModule } from "lucide-angular";
 import { DashboardSidebarComponent } from "./components/sidebar/sidebar.component";
@@ -10,11 +10,14 @@ import { ChatBotComponent } from "@components/rewrite-model/components/chat-bot/
 import { DashboardContentComponent } from "./components/content/dashboard-content.component";
 import { ChatHistoryComponent } from "@components/chat-history/chat-history.component";
 import { EssayHistoryComponent } from "@components/essay-history/essay-history.component";
+import { ChatStatusService } from "@components/rewrite-model/services/chat-status.service";
+import { MessageService } from "../../shared";
 import {
   UserMenuComponent,
   ChangePasswordModalComponent,
   LogoutConfirmationModalComponent,
-} from "@/app/shared";
+  EssayTitleModalComponent,
+} from "../../shared";
 
 // Interface for user credits data
 @Component({
@@ -31,6 +34,7 @@ import {
     UserMenuComponent,
     ChangePasswordModalComponent,
     LogoutConfirmationModalComponent,
+    EssayTitleModalComponent,
   ],
   template: `
     <div class="dashboard-container h-screen flex overflow-hidden bg-black">
@@ -104,6 +108,22 @@ import {
                 <div>
                   <h1 class="text-2xl font-bold text-white">Essay History</h1>
                   <p class="text-gray-400 mt-1">Your essay writing history</p>
+                </div>
+              }
+              @case (ContentType.REWRITE_NEW) {
+                <div>
+                  <h1 class="text-2xl font-bold text-white">New Rewrite</h1>
+                  <p class="text-gray-400 mt-1">
+                    Start a new text rewriting session
+                  </p>
+                </div>
+              }
+              @case (ContentType.ESSAY_NEW) {
+                <div>
+                  <h1 class="text-2xl font-bold text-white">New Essay</h1>
+                  <p class="text-gray-400 mt-1">
+                    Create a new essay with AI assistance
+                  </p>
                 </div>
               }
             }
@@ -188,6 +208,95 @@ import {
                 </div>
               </div>
             }
+            @case (ContentType.REWRITE_NEW) {
+              <div class="rewrite-new-container h-full bg-gray-900">
+                @if (isRewriteAvailable()) {
+                  <div class="h-full">
+                    <app-chat-bot></app-chat-bot>
+                  </div>
+                } @else {
+                  <div class="flex items-center justify-center h-full">
+                    <div class="text-center max-w-md">
+                      @if (isCheckingRewriteStatus()) {
+                        <div class="mb-4">
+                          <div
+                            class="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500 mx-auto"
+                          ></div>
+                        </div>
+                        <h3 class="text-xl font-semibold text-white mb-2">
+                          Checking Status...
+                        </h3>
+                        <p class="text-gray-400">
+                          Please wait while we verify your account status.
+                        </p>
+                      } @else {
+                        <div class="mb-6">
+                          <div
+                            class="inline-flex items-center justify-center w-16 h-16 bg-red-500 rounded-full mb-4"
+                          >
+                            <lucide-angular
+                              name="alert-circle"
+                              class="h-8 w-8 text-white"
+                            ></lucide-angular>
+                          </div>
+                        </div>
+                        <h3 class="text-xl font-semibold text-white mb-2">
+                          Access Restricted
+                        </h3>
+                        <p class="text-gray-400 mb-6">
+                          {{ getRewriteErrorMessage() }}
+                        </p>
+                        <button
+                          class="px-6 py-2 bg-green-600 hover:bg-green-500 text-white rounded-lg transition-colors"
+                          (click)="retryRewriteCheck()"
+                        >
+                          Try Again
+                        </button>
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+            @case (ContentType.ESSAY_NEW) {
+              <div class="essay-new-container h-full bg-gray-900">
+                @if (essayTitle()) {
+                  <div
+                    class="flex-1 overflow-hidden"
+                    style="width: 100%; height: 100%"
+                  >
+                    <app-dashboard-content></app-dashboard-content>
+                  </div>
+                } @else {
+                  <div class="flex items-center justify-center h-full">
+                    <div class="text-center max-w-md">
+                      <div class="mb-6">
+                        <div
+                          class="inline-flex items-center justify-center w-16 h-16 bg-blue-500 rounded-full mb-4"
+                        >
+                          <lucide-angular
+                            name="file-text"
+                            class="h-8 w-8 text-white"
+                          ></lucide-angular>
+                        </div>
+                      </div>
+                      <h3 class="text-xl font-semibold text-white mb-2">
+                        Create New Essay
+                      </h3>
+                      <p class="text-gray-400 mb-6">
+                        Start by entering a title for your new essay.
+                      </p>
+                      <button
+                        class="px-6 py-2 bg-green-600 hover:bg-green-500 text-white rounded-lg transition-colors"
+                        (click)="openEssayTitleModal()"
+                      >
+                        Enter Essay Title
+                      </button>
+                    </div>
+                  </div>
+                }
+              </div>
+            }
           }
         </div>
       </div>
@@ -206,6 +315,14 @@ import {
       (visibleChange)="showLogout.set($event)"
       (loggedOut)="onLoggedOut()"
     ></app-logout-confirmation-modal>
+
+    <!-- Essay Title Modal -->
+    <app-essay-title-modal
+      [visible]="showEssayTitleModal"
+      (visibleChange)="showEssayTitleModal.set($event)"
+      (titleConfirmed)="onEssayTitleConfirmed($event)"
+      (cancelled)="onEssayTitleCancelled()"
+    ></app-essay-title-modal>
   `,
   styles: [
     `
@@ -275,9 +392,38 @@ export class DashboardComponent {
   protected readonly sidebarState = inject(SidebarStateService);
   protected readonly ContentType = ContentType;
 
+  // Inject services
+  private readonly chatStatusService = inject(ChatStatusService);
+  private readonly messageService = inject(MessageService);
+
   // Modal state signals
   showChangePassword = signal(false);
   showLogout = signal(false);
+  showEssayTitleModal = signal(false);
+
+  // Essay and rewrite state
+  essayTitle = signal<string | null>(null);
+  rewriteStatus = signal<{
+    isAvailable: boolean;
+    isChecking: boolean;
+    errorMessage: string | null;
+  }>({
+    isAvailable: false,
+    isChecking: false,
+    errorMessage: null,
+  });
+
+  constructor() {
+    // React to sidebar state changes to handle new content types
+    effect(() => {
+      const content = this.sidebarState.selectedContent();
+      if (content === ContentType.REWRITE_NEW) {
+        this.handleRewriteNewSelection();
+      } else if (content === ContentType.ESSAY_NEW) {
+        this.handleEssayNewSelection();
+      }
+    });
+  }
 
   // Toggle sidebar collapse/expand
   toggleSidebar(): void {
@@ -300,5 +446,89 @@ export class DashboardComponent {
   onLoggedOut(): void {
     // User logged out successfully, modal close
     console.log("User logged out successfully");
+  }
+
+  // Rewrite new content methods
+  private handleRewriteNewSelection(): void {
+    this.checkRewriteStatus();
+  }
+
+  private checkRewriteStatus(): void {
+    this.rewriteStatus.set({
+      isAvailable: false,
+      isChecking: true,
+      errorMessage: null,
+    });
+
+    this.chatStatusService.checkChatStatus().subscribe({
+      next: (result) => {
+        const isAvailable = result.code === 1;
+        let errorMessage: string | null = null;
+
+        if (!isAvailable) {
+          if (result.code === -11 || result.code === 0) {
+            errorMessage =
+              "Your account has no activation code, please contact us to purchase";
+          } else if (result.code === -2) {
+            errorMessage =
+              "Your activation code has already been used on another device";
+          } else {
+            errorMessage = "Access denied. Please check your account status.";
+          }
+        }
+
+        this.rewriteStatus.set({
+          isAvailable,
+          isChecking: false,
+          errorMessage,
+        });
+      },
+      error: (error) => {
+        console.error("Error checking rewrite status:", error);
+        this.rewriteStatus.set({
+          isAvailable: false,
+          isChecking: false,
+          errorMessage: "Failed to check status. Please try again.",
+        });
+      },
+    });
+  }
+
+  isRewriteAvailable(): boolean {
+    return this.rewriteStatus().isAvailable;
+  }
+
+  isCheckingRewriteStatus(): boolean {
+    return this.rewriteStatus().isChecking;
+  }
+
+  getRewriteErrorMessage(): string {
+    return this.rewriteStatus().errorMessage || "Access denied";
+  }
+
+  retryRewriteCheck(): void {
+    this.checkRewriteStatus();
+  }
+
+  // Essay new content methods
+  private handleEssayNewSelection(): void {
+    // Reset essay title when first entering essay new
+    if (!this.essayTitle()) {
+      this.essayTitle.set(null);
+    }
+  }
+
+  openEssayTitleModal(): void {
+    this.showEssayTitleModal.set(true);
+  }
+
+  onEssayTitleConfirmed(title: string): void {
+    this.essayTitle.set(title);
+    this.showEssayTitleModal.set(false);
+    this.messageService.success(`Essay "${title}" created successfully!`);
+  }
+
+  onEssayTitleCancelled(): void {
+    this.showEssayTitleModal.set(false);
   }
 }

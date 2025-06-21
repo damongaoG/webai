@@ -22,6 +22,8 @@ export enum ContentType {
   ESSAY_MODEL = "essay-model",
   REWRITE_HISTORY = "rewrite-history",
   ESSAY_HISTORY = "essay-history",
+  REWRITE_NEW = "rewrite-new",
+  ESSAY_NEW = "essay-new",
 }
 
 @Injectable({
@@ -40,14 +42,20 @@ export class SidebarStateService {
       name: "Rewrite Model",
       icon: "edit",
       isExpanded: false,
-      children: [{ id: "rewrite-history", name: "History", icon: "history" }],
+      children: [
+        { id: "rewrite-new", name: "New", icon: "plus" },
+        { id: "rewrite-history", name: "History", icon: "history" },
+      ],
     },
     {
       id: "essay-model",
       name: "Essay Model",
       icon: "file-text",
       isExpanded: false,
-      children: [{ id: "essay-history", name: "History", icon: "history" }],
+      children: [
+        { id: "essay-new", name: "New", icon: "plus" },
+        { id: "essay-history", name: "History", icon: "history" },
+      ],
     },
   ]);
 
@@ -121,8 +129,15 @@ export class SidebarStateService {
   selectSubMenuItem(parentId: string, subItemId: string): void {
     let contentType: ContentType;
 
-    if (parentId === "rewrite-model" && subItemId === "rewrite-history") {
+    if (parentId === "rewrite-model" && subItemId === "rewrite-new") {
+      contentType = ContentType.REWRITE_NEW;
+    } else if (
+      parentId === "rewrite-model" &&
+      subItemId === "rewrite-history"
+    ) {
       contentType = ContentType.REWRITE_HISTORY;
+    } else if (parentId === "essay-model" && subItemId === "essay-new") {
+      contentType = ContentType.ESSAY_NEW;
     } else if (parentId === "essay-model" && subItemId === "essay-history") {
       contentType = ContentType.ESSAY_HISTORY;
     } else {
@@ -141,11 +156,13 @@ export class SidebarStateService {
       case "rewrite-model":
         return (
           currentContent === ContentType.REWRITE_MODEL ||
+          currentContent === ContentType.REWRITE_NEW ||
           currentContent === ContentType.REWRITE_HISTORY
         );
       case "essay-model":
         return (
           currentContent === ContentType.ESSAY_MODEL ||
+          currentContent === ContentType.ESSAY_NEW ||
           currentContent === ContentType.ESSAY_HISTORY
         );
       default:
@@ -156,8 +173,11 @@ export class SidebarStateService {
   isSubMenuItemSelected(subItemId: string): boolean {
     const currentContent = this._selectedContent();
     return (
+      (subItemId === "rewrite-new" &&
+        currentContent === ContentType.REWRITE_NEW) ||
       (subItemId === "rewrite-history" &&
         currentContent === ContentType.REWRITE_HISTORY) ||
+      (subItemId === "essay-new" && currentContent === ContentType.ESSAY_NEW) ||
       (subItemId === "essay-history" &&
         currentContent === ContentType.ESSAY_HISTORY)
     );
