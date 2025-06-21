@@ -17,6 +17,7 @@ export interface SubMenuItem {
 
 // Enum for main content types
 export enum ContentType {
+  DASHBOARD = "dashboard",
   REWRITE_MODEL = "rewrite-model",
   ESSAY_MODEL = "essay-model",
   REWRITE_HISTORY = "rewrite-history",
@@ -28,6 +29,12 @@ export enum ContentType {
 })
 export class SidebarStateService {
   private readonly _menuItems = signal<MenuItem[]>([
+    {
+      id: "dashboard",
+      name: "Dashboard",
+      icon: "layout-dashboard",
+      isExpanded: false,
+    },
     {
       id: "rewrite-model",
       name: "Rewrite Model",
@@ -45,7 +52,7 @@ export class SidebarStateService {
   ]);
 
   private readonly _selectedContent = signal<ContentType>(
-    ContentType.REWRITE_MODEL,
+    ContentType.DASHBOARD,
   );
 
   // Public computed signals for component consumption
@@ -63,18 +70,29 @@ export class SidebarStateService {
 
   selectMainMenuItem(menuId: string): void {
     // Set the selected content based on menu selection
-    const contentType =
-      menuId === "rewrite-model"
-        ? ContentType.REWRITE_MODEL
-        : ContentType.ESSAY_MODEL;
+    let contentType: ContentType;
+
+    switch (menuId) {
+      case "dashboard":
+        contentType = ContentType.DASHBOARD;
+        break;
+      case "rewrite-model":
+        contentType = ContentType.REWRITE_MODEL;
+        break;
+      case "essay-model":
+        contentType = ContentType.ESSAY_MODEL;
+        break;
+      default:
+        contentType = ContentType.DASHBOARD;
+    }
 
     this._selectedContent.set(contentType);
 
-    // Expand the selected menu if not already expanded
+    // Expand the selected menu if it has children, otherwise collapse all
     this._menuItems.update((items) =>
       items.map((item) => ({
         ...item,
-        isExpanded: item.id === menuId,
+        isExpanded: !!(item.id === menuId && item.children),
       })),
     );
   }
@@ -95,14 +113,23 @@ export class SidebarStateService {
 
   isMenuItemSelected(menuId: string): boolean {
     const currentContent = this._selectedContent();
-    return (
-      (menuId === "rewrite-model" &&
-        (currentContent === ContentType.REWRITE_MODEL ||
-          currentContent === ContentType.REWRITE_HISTORY)) ||
-      (menuId === "essay-model" &&
-        (currentContent === ContentType.ESSAY_MODEL ||
-          currentContent === ContentType.ESSAY_HISTORY))
-    );
+
+    switch (menuId) {
+      case "dashboard":
+        return currentContent === ContentType.DASHBOARD;
+      case "rewrite-model":
+        return (
+          currentContent === ContentType.REWRITE_MODEL ||
+          currentContent === ContentType.REWRITE_HISTORY
+        );
+      case "essay-model":
+        return (
+          currentContent === ContentType.ESSAY_MODEL ||
+          currentContent === ContentType.ESSAY_HISTORY
+        );
+      default:
+        return false;
+    }
   }
 
   isSubMenuItemSelected(subItemId: string): boolean {
