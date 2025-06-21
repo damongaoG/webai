@@ -34,12 +34,11 @@ import {
   ],
   template: `
     <div class="dashboard-container h-screen flex overflow-hidden bg-black">
-      <!-- Sidebar -->
-      <app-dashboard-sidebar
-        [class.collapsed]="sidebarState.isSidebarCollapsed()"
-        class="sidebar-transition"
-      >
-      </app-dashboard-sidebar>
+      <!-- Sidebar - Only render when not collapsed -->
+      @if (!sidebarState.isSidebarCollapsed()) {
+        <app-dashboard-sidebar class="sidebar-transition">
+        </app-dashboard-sidebar>
+      }
 
       <!-- Main Content Area -->
       <div
@@ -263,10 +262,6 @@ import {
           left: 0;
           z-index: 50;
           height: 100vh;
-        }
-
-        .sidebar-transition.collapsed {
-          transform: translateX(-100%);
         }
 
         .main-content-area {
