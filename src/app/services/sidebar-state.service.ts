@@ -55,9 +55,30 @@ export class SidebarStateService {
     ContentType.DASHBOARD,
   );
 
+  // Sidebar collapse state management
+  private readonly _isSidebarCollapsed = signal<boolean>(false);
+
   // Public computed signals for component consumption
   public readonly menuItems = computed(() => this._menuItems());
   public readonly selectedContent = computed(() => this._selectedContent());
+  public readonly isSidebarCollapsed = computed(() =>
+    this._isSidebarCollapsed(),
+  );
+
+  // Toggle sidebar collapse/expand state
+  toggleSidebarCollapse(): void {
+    this._isSidebarCollapsed.update((collapsed) => !collapsed);
+
+    // When sidebar is collapsed, close all expanded menus
+    if (this._isSidebarCollapsed()) {
+      this._menuItems.update((items) =>
+        items.map((item) => ({
+          ...item,
+          isExpanded: false,
+        })),
+      );
+    }
+  }
 
   toggleMenuExpansion(menuId: string): void {
     this._menuItems.update((items) =>

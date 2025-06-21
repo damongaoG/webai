@@ -12,18 +12,28 @@ import {
   standalone: true,
   imports: [CommonModule, LucideAngularModule],
   template: `
-    <div class="sidebar h-screen w-64 bg-black text-white">
+    <div
+      class="sidebar h-screen bg-black text-white transition-all duration-300 ease-in-out"
+      [class.w-64]="!sidebarState.isSidebarCollapsed()"
+      [class.w-16]="sidebarState.isSidebarCollapsed()"
+    >
       <!-- Logo section -->
-      <div class="flex items-center p-4 border-b border-gray-700">
+      <div
+        class="flex items-center p-4 border-b border-gray-700"
+        [class.justify-center]="sidebarState.isSidebarCollapsed()"
+      >
         <div
-          class="logo-container h-10 w-10 rounded-lg bg-green-500 flex items-center justify-center"
+          class="logo-container h-10 w-10 rounded-lg bg-green-500 flex items-center justify-center flex-shrink-0"
+          [title]="sidebarState.isSidebarCollapsed() ? 'Tudor AI' : ''"
         >
           <lucide-angular
             name="leaf"
             class="h-6 w-6 text-white"
           ></lucide-angular>
         </div>
-        <div class="ml-3 text-xl font-semibold text-white">Tudor AI</div>
+        @if (!sidebarState.isSidebarCollapsed()) {
+          <div class="ml-3 text-xl font-semibold text-white">Tudor AI</div>
+        }
       </div>
 
       <!-- Navigation Menu -->
@@ -33,13 +43,20 @@ import {
             <div class="mb-2">
               <!-- Main Menu Item -->
               <div
-                class="menu-item flex items-center justify-between p-3 rounded-lg cursor-pointer transition-all duration-200 hover:bg-gray-800"
+                class="menu-item flex items-center p-3 rounded-lg cursor-pointer transition-all duration-200 hover:bg-gray-800 relative"
                 [class.active]="sidebarState.isMenuItemSelected(menuItem.id)"
-                [class.expanded]="menuItem.isExpanded"
+                [class.expanded]="
+                  menuItem.isExpanded && !sidebarState.isSidebarCollapsed()
+                "
+                [class.justify-center]="sidebarState.isSidebarCollapsed()"
+                [title]="sidebarState.isSidebarCollapsed() ? menuItem.name : ''"
                 (click)="onMainMenuClick(menuItem)"
               >
-                <div class="flex items-center">
-                  <div class="menu-icon-container">
+                <div
+                  class="flex items-center"
+                  [class.w-full]="!sidebarState.isSidebarCollapsed()"
+                >
+                  <div class="menu-icon-container flex-shrink-0">
                     <lucide-angular
                       [name]="menuItem.icon || 'circle'"
                       class="h-5 w-5"
@@ -51,31 +68,48 @@ import {
                       "
                     ></lucide-angular>
                   </div>
-                  <span
-                    class="ml-3 text-sm font-medium transition-colors"
-                    [class.text-green-400]="
-                      sidebarState.isMenuItemSelected(menuItem.id)
-                    "
-                    [class.text-white]="
-                      !sidebarState.isMenuItemSelected(menuItem.id)
-                    "
+                  @if (!sidebarState.isSidebarCollapsed()) {
+                    <span
+                      class="ml-3 text-sm font-medium transition-colors"
+                      [class.text-green-400]="
+                        sidebarState.isMenuItemSelected(menuItem.id)
+                      "
+                      [class.text-white]="
+                        !sidebarState.isMenuItemSelected(menuItem.id)
+                      "
+                    >
+                      {{ menuItem.name }}
+                    </span>
+                  }
+                </div>
+
+                <!-- Expand/Collapse Arrow (only visible when not collapsed) -->
+                @if (!sidebarState.isSidebarCollapsed() && menuItem.children) {
+                  <div class="arrow-container">
+                    <lucide-angular
+                      name="chevron-right"
+                      class="h-4 w-4 text-gray-400 transition-transform duration-200"
+                      [class.rotate-90]="menuItem.isExpanded"
+                    ></lucide-angular>
+                  </div>
+                }
+
+                <!-- Tooltip for collapsed state -->
+                @if (sidebarState.isSidebarCollapsed()) {
+                  <div
+                    class="tooltip absolute left-full ml-2 px-2 py-1 bg-gray-800 text-white text-sm rounded opacity-0 invisible transition-all duration-200 whitespace-nowrap z-50"
                   >
                     {{ menuItem.name }}
-                  </span>
-                </div>
-
-                <!-- Expand/Collapse Arrow -->
-                <div class="arrow-container">
-                  <lucide-angular
-                    name="chevron-right"
-                    class="h-4 w-4 text-gray-400 transition-transform duration-200"
-                    [class.rotate-90]="menuItem.isExpanded"
-                  ></lucide-angular>
-                </div>
+                  </div>
+                }
               </div>
 
-              <!-- Sub Menu Items (Children) -->
-              @if (menuItem.isExpanded && menuItem.children) {
+              <!-- Sub Menu Items (Children) - Only visible when expanded and not collapsed -->
+              @if (
+                menuItem.isExpanded &&
+                menuItem.children &&
+                !sidebarState.isSidebarCollapsed()
+              ) {
                 <div
                   class="submenu-container mt-2 ml-4 border-l border-gray-700 pl-4"
                 >
@@ -125,6 +159,7 @@ import {
       .sidebar {
         border-right: 1px solid rgba(255, 255, 255, 0.1);
         font-family: "Source Han Sans CN", sans-serif;
+        overflow: hidden;
       }
 
       .menu-item {
@@ -180,6 +215,11 @@ import {
         background-color: rgba(255, 255, 255, 0.05);
       }
 
+      .menu-item:hover .tooltip {
+        opacity: 1;
+        visibility: visible;
+      }
+
       .submenu-item:hover {
         background-color: rgba(255, 255, 255, 0.05);
       }
@@ -192,6 +232,20 @@ import {
       .submenu-item.active-submenu:hover {
         background-color: rgba(5, 167, 111, 0.2);
       }
+
+      /* Tooltip styling */
+      .tooltip {
+        pointer-events: none;
+      }
+
+      /* Collapsed state adjustments */
+      .sidebar.w-16 .menu-item {
+        justify-content: center;
+      }
+
+      .sidebar.w-16 .logo-container {
+        margin: 0 auto;
+      }
     `,
   ],
 })
@@ -199,18 +253,20 @@ export class DashboardSidebarComponent {
   protected readonly sidebarState = inject(SidebarStateService);
 
   onMainMenuClick(menuItem: MenuItem): void {
-    // Select the main menu item and show its default content
-    this.sidebarState.selectMainMenuItem(menuItem.id);
-
-    // Toggle expansion to show/hide submenu
-    this.sidebarState.toggleMenuExpansion(menuItem.id);
+    // In collapsed state, only select the menu item without expanding
+    if (this.sidebarState.isSidebarCollapsed()) {
+      this.sidebarState.selectMainMenuItem(menuItem.id);
+    } else {
+      // In expanded state, handle normal menu expansion/selection
+      if (menuItem.children) {
+        this.sidebarState.toggleMenuExpansion(menuItem.id);
+      } else {
+        this.sidebarState.selectMainMenuItem(menuItem.id);
+      }
+    }
   }
 
   onSubMenuClick(parentId: string, subItem: SubMenuItem): void {
-    // Select the sub menu item
     this.sidebarState.selectSubMenuItem(parentId, subItem.id);
-
-    // Prevent event bubbling to parent menu item
-    event?.stopPropagation();
   }
 }
