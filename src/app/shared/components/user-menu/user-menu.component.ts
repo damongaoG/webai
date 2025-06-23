@@ -47,7 +47,7 @@ import { IconComponent } from "@/app/shared";
             class="menu-item text-red-400 hover:text-red-300"
             (click)="handleLogout()"
           >
-            <app-icon name="logout" [size]="16"></app-icon>
+            <app-icon name="log-out" [size]="16"></app-icon>
             <span>Logout</span>
           </button>
         </div>

@@ -25,6 +25,31 @@ import { authInterceptor } from "./interceptors/auth.interceptor";
 import { provideNzIcons } from "ng-zorro-antd/icon";
 import { icons } from "./icons-provider";
 
+// Import Lucide Angular Module and required icons
+import {
+  LucideAngularModule,
+  Pencil,
+  TriangleAlert,
+  Plus,
+  History,
+  FileText,
+  LayoutDashboard,
+  Leaf,
+  ChevronRight,
+  ChevronUp,
+  ChevronLeft,
+  ArrowLeft,
+  Inbox,
+  Loader,
+  User,
+  Lock,
+  Key,
+  LogOut,
+  X,
+  Menu,
+  CircleAlert,
+} from "lucide-angular";
+
 export const appConfig: ApplicationConfig = {
   providers: [
     FakeBackendProvider,
@@ -35,9 +60,36 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(
       withFetch(),
       withInterceptors([authInterceptor]),
-      withInterceptorsFromDi()
+      withInterceptorsFromDi(),
     ),
-    importProvidersFrom(BrowserModule, NzMessageModule, NzModalModule),
+    importProvidersFrom(
+      BrowserModule,
+      NzMessageModule,
+      NzModalModule,
+      // Add Lucide Angular Module with required icons
+      LucideAngularModule.pick({
+        Pencil,
+        TriangleAlert,
+        Plus,
+        History,
+        FileText,
+        LayoutDashboard,
+        Leaf,
+        ChevronRight,
+        ChevronUp,
+        ChevronLeft,
+        ArrowLeft,
+        Inbox,
+        Loader,
+        User,
+        Lock,
+        Key,
+        LogOut,
+        X,
+        Menu,
+        CircleAlert,
+      }),
+    ),
     provideAnimations(),
     provideNzIcons(icons),
   ],

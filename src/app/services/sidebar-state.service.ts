@@ -40,7 +40,7 @@ export class SidebarStateService {
     {
       id: "rewrite-model",
       name: "Rewrite Model",
-      icon: "edit",
+      icon: "pencil",
       isExpanded: false,
       children: [
         { id: "rewrite-new", name: "New", icon: "plus" },

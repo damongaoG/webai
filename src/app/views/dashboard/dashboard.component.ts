@@ -235,7 +235,7 @@ import {
                             class="inline-flex items-center justify-center w-16 h-16 bg-red-500 rounded-full mb-4"
                           >
                             <lucide-angular
-                              name="alert-circle"
+                              name="circle-alert"
                               class="h-8 w-8 text-white"
                             ></lucide-angular>
                           </div>
@@ -415,14 +415,17 @@ export class DashboardComponent {
 
   constructor() {
     // React to sidebar state changes to handle new content types
-    effect(() => {
-      const content = this.sidebarState.selectedContent();
-      if (content === ContentType.REWRITE_NEW) {
-        this.handleRewriteNewSelection();
-      } else if (content === ContentType.ESSAY_NEW) {
-        this.handleEssayNewSelection();
-      }
-    });
+    effect(
+      () => {
+        const content = this.sidebarState.selectedContent();
+        if (content === ContentType.REWRITE_NEW) {
+          this.handleRewriteNewSelection();
+        } else if (content === ContentType.ESSAY_NEW) {
+          this.handleEssayNewSelection();
+        }
+      },
+      { allowSignalWrites: true },
+    );
   }
 
   // Toggle sidebar collapse/expand

@@ -26,7 +26,7 @@ import { ModalComponent } from "@/app/shared";
         <div class="flex items-center gap-3 mb-4">
           <div class="warning-icon">
             <app-icon
-              name="warning"
+              name="triangle-alert"
               [size]="24"
               class="text-yellow-500"
             ></app-icon>
