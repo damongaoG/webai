@@ -1,7 +1,9 @@
 import { Component, OnInit, OnDestroy, signal, computed } from "@angular/core";
 import { CommonModule } from "@angular/common";
-import { Subject } from "rxjs";
+import { Subject, takeUntil } from "rxjs";
 import { SpinnerComponent } from "@/app/shared";
+import { ChatBotService } from "../rewrite-model/services/chat-bot.service";
+import { ListChatHistoryDto } from "@/app/interfaces/list-chat-history-dto";
 
 // Interface for chat history item
 interface ChatHistoryItem {
@@ -158,11 +160,20 @@ export class ChatHistoryComponent implements OnInit, OnDestroy {
   private readonly _chatHistory = signal<ChatHistoryItem[]>([]);
   private readonly _activeHistoryId = signal<string | null>(null);
   private readonly _isLoading = signal<boolean>(false);
+  private readonly _hasMore = signal<boolean>(true);
+  private readonly _loadingMore = signal<boolean>(false);
 
   // Public computed signals
   public readonly chatHistory = computed(() => this._chatHistory());
   public readonly activeHistoryId = computed(() => this._activeHistoryId());
   public readonly isLoading = computed(() => this._isLoading());
+
+  // Pagination configuration
+  private readonly DEFAULT_TAG = 2; // Default tag value
+  private readonly PAGE_SIZE = 10;
+  private currentPage = 0;
+
+  constructor(private readonly chatBotService: ChatBotService) {}
 
   ngOnInit(): void {
     this.loadChatHistory();
@@ -172,35 +183,34 @@ export class ChatHistoryComponent implements OnInit, OnDestroy {
     this.destroy$.next();
     this.destroy$.complete();
   }
+
   private loadChatHistory(): void {
     this._isLoading.set(true);
+    this.currentPage = 0; // Reset page when loading fresh
 
-    // Simulate API call - replace with actual service call
-    setTimeout(() => {
-      const mockHistory: ChatHistoryItem[] = [
-        {
-          sessionId: "session-1",
-          content: "Help me rewrite this essay about climate change",
-          updateTime: new Date(Date.now() - 1000 * 60 * 30), // 30 minutes ago
-          messageCount: 12,
+    this.chatBotService
+      .listChatHistory(this.DEFAULT_TAG, this.currentPage, this.PAGE_SIZE)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (result) => {
+          if (result.code === 1 && result.data) {
+            const items = this.mapToHistoryItems(result.data.content);
+            this._chatHistory.set(items);
+            this._hasMore.set(!result.data.last);
+          } else {
+            // Handle error or empty result
+            this._chatHistory.set([]);
+            this._hasMore.set(false);
+          }
+          this._isLoading.set(false);
         },
-        {
-          sessionId: "session-2",
-          content: "Can you improve the grammar in this paragraph?",
-          updateTime: new Date(Date.now() - 1000 * 60 * 60 * 2), // 2 hours ago
-          messageCount: 8,
+        error: (error) => {
+          console.error("Error loading chat history:", error);
+          this._chatHistory.set([]);
+          this._isLoading.set(false);
+          this._hasMore.set(false);
         },
-        {
-          sessionId: "session-3",
-          content: "Rewrite this business proposal to sound more professional",
-          updateTime: new Date(Date.now() - 1000 * 60 * 60 * 24), // 1 day ago
-          messageCount: 15,
-        },
-      ];
-
-      this._chatHistory.set(mockHistory);
-      this._isLoading.set(false);
-    }, 1000);
+      });
   }
 
   loadChat(history: ChatHistoryItem): void {
@@ -221,31 +231,50 @@ export class ChatHistoryComponent implements OnInit, OnDestroy {
 
     if (
       element.scrollTop + element.clientHeight >=
-      element.scrollHeight - threshold
+        element.scrollHeight - threshold &&
+      this._hasMore() &&
+      !this._loadingMore()
     ) {
       this.loadMoreHistory();
     }
   }
 
   private loadMoreHistory(): void {
-    if (this._isLoading()) return;
+    if (this._loadingMore() || !this._hasMore()) return;
 
-    this._isLoading.set(true);
+    this._loadingMore.set(true);
+    this.currentPage++;
 
-    // Simulate loading more items
-    setTimeout(() => {
-      const moreItems: ChatHistoryItem[] = [
-        {
-          sessionId: `session-${Date.now()}`,
-          content: "Previous conversation...",
-          updateTime: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2), // 2 days ago
-          messageCount: 5,
+    this.chatBotService
+      .listChatHistory(this.DEFAULT_TAG, this.currentPage, this.PAGE_SIZE)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (result) => {
+          if (result.code === 1 && result.data) {
+            const newItems = this.mapToHistoryItems(result.data.content);
+            this._chatHistory.update((current) => [...current, ...newItems]);
+            this._hasMore.set(!result.data.last);
+          } else {
+            this._hasMore.set(false);
+          }
+          this._loadingMore.set(false);
         },
-      ];
+        error: (error) => {
+          console.error("Error loading more history:", error);
+          this._loadingMore.set(false);
+          this._hasMore.set(false);
+        },
+      });
+  }
 
-      this._chatHistory.update((current) => [...current, ...moreItems]);
-      this._isLoading.set(false);
-    }, 1000);
+  private mapToHistoryItems(items: ListChatHistoryDto[]): ChatHistoryItem[] {
+    return items.map((item) => ({
+      sessionId: item.sessionId,
+      content: item.content,
+      updateTime: new Date(item.updateTime),
+      messageCount: undefined,
+      isActive: false,
+    }));
   }
 
   truncateContent(content: string, maxLength: number = 50): string {
