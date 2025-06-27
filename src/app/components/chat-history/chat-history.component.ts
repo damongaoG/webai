@@ -4,6 +4,7 @@ import { Subject, takeUntil } from "rxjs";
 import { SpinnerComponent } from "@/app/shared";
 import { ChatBotService } from "../rewrite-model/services/chat-bot.service";
 import { ListChatHistoryDto } from "@/app/interfaces/list-chat-history-dto";
+import { SidebarStateService } from "@/app/services/sidebar-state.service";
 
 // Interface for chat history item
 interface ChatHistoryItem {
@@ -173,7 +174,10 @@ export class ChatHistoryComponent implements OnInit, OnDestroy {
   private readonly PAGE_SIZE = 10;
   private currentPage = 0;
 
-  constructor(private readonly chatBotService: ChatBotService) {}
+  constructor(
+    private readonly chatBotService: ChatBotService,
+    private readonly sidebarStateService: SidebarStateService,
+  ) {}
 
   ngOnInit(): void {
     this.loadChatHistory();
@@ -216,11 +220,17 @@ export class ChatHistoryComponent implements OnInit, OnDestroy {
   loadChat(history: ChatHistoryItem): void {
     this._activeHistoryId.set(history.sessionId);
 
+    // Navigate to the rewrite-new view to display the chat
+    // this.sidebarStateService.selectSubMenuItem("rewrite-model", "rewrite-new");
+
     console.log("Loading chat session:", history.sessionId);
   }
 
   startNewChat(): void {
     this._activeHistoryId.set(null);
+
+    // Navigate to the rewrite-new view
+    this.sidebarStateService.selectSubMenuItem("rewrite-model", "rewrite-new");
 
     console.log("Starting new chat session");
   }
