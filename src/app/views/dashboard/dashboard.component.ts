@@ -11,7 +11,9 @@ import { DashboardContentComponent } from "./components/content/dashboard-conten
 import { ChatHistoryComponent } from "@components/chat-history/chat-history.component";
 import { EssayHistoryComponent } from "@components/essay-history/essay-history.component";
 import { ChatStatusService } from "@components/rewrite-model/services/chat-status.service";
+import { ChatBotService } from "@components/rewrite-model/services/chat-bot.service";
 import { MessageService } from "../../shared";
+import { switchMap, of, catchError } from "rxjs";
 import {
   UserMenuComponent,
   ChangePasswordModalComponent,
@@ -394,6 +396,7 @@ export class DashboardComponent {
 
   // Inject services
   private readonly chatStatusService = inject(ChatStatusService);
+  private readonly chatBotService = inject(ChatBotService);
   private readonly messageService = inject(MessageService);
 
   // Modal state signals
@@ -463,37 +466,66 @@ export class DashboardComponent {
       errorMessage: null,
     });
 
-    this.chatStatusService.checkChatStatus().subscribe({
-      next: (result) => {
-        const isAvailable = result.code === 1;
-        let errorMessage: string | null = null;
-
-        if (!isAvailable) {
-          if (result.code === -11 || result.code === 0) {
-            errorMessage =
-              "Your account has no activation code, please contact us to purchase";
-          } else if (result.code === -2) {
-            errorMessage =
-              "Your activation code has already been used on another device";
-          } else {
-            errorMessage = "Access denied. Please check your account status.";
+    this.chatStatusService
+      .checkChatStatus()
+      .pipe(
+        switchMap((result) => {
+          // If code is 0, need to start chat first
+          if (result.code === 0) {
+            return this.chatBotService.startChat();
           }
-        }
+          // Otherwise, return the result
+          return of(result);
+        }),
+        catchError((error) => {
+          console.error("Error in chat status flow:", error);
+          this.updateRewriteStatus(
+            false,
+            false,
+            "Failed to check status. Please try again.",
+          );
+          return of(null);
+        }),
+      )
+      .subscribe({
+        next: (result) => {
+          if (result) {
+            this.handleChatResult(result);
+          }
+        },
+      });
+  }
 
-        this.rewriteStatus.set({
-          isAvailable,
-          isChecking: false,
-          errorMessage,
-        });
-      },
-      error: (error) => {
-        console.error("Error checking rewrite status:", error);
-        this.rewriteStatus.set({
-          isAvailable: false,
-          isChecking: false,
-          errorMessage: "Failed to check status. Please try again.",
-        });
-      },
+  // Handle the result
+  private handleChatResult(result: any): void {
+    const isAvailable = result.code === 1;
+    let errorMessage: string | null = null;
+
+    if (!isAvailable) {
+      if (result.code === -11) {
+        errorMessage =
+          "Your account has no activation code, please contact us to purchase";
+      } else if (result.code === -2) {
+        errorMessage =
+          "Your activation code has already been used on another device";
+      } else {
+        errorMessage = "Access denied. Please check your account status.";
+      }
+    }
+
+    this.updateRewriteStatus(isAvailable, false, errorMessage);
+  }
+
+  // Update rewrite status helper method
+  private updateRewriteStatus(
+    isAvailable: boolean,
+    isChecking: boolean,
+    errorMessage: string | null,
+  ): void {
+    this.rewriteStatus.set({
+      isAvailable,
+      isChecking,
+      errorMessage,
     });
   }
 
