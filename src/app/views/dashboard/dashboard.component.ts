@@ -470,6 +470,7 @@ export class DashboardComponent {
       .checkChatStatus()
       .pipe(
         switchMap((result) => {
+          console.log("chat status:", result);
           // If code is 0, need to start chat first
           if (result.code === 0) {
             return this.chatBotService.startChat();

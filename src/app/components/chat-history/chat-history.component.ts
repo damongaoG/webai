@@ -10,7 +10,7 @@ import { SidebarStateService } from "@/app/services/sidebar-state.service";
 interface ChatHistoryItem {
   sessionId: string;
   content: string;
-  updateTime: Date;
+  createTime: Date;
   messageCount?: number;
   isActive?: boolean;
 }
@@ -61,7 +61,7 @@ interface ChatHistoryItem {
                   {{ truncateContent(history.content || "Untitled Chat") }}
                 </div>
                 <div class="history-time text-xs text-gray-400 mt-1">
-                  {{ formatDate(history.updateTime) }}
+                  {{ formatDate(history.createTime) }}
                 </div>
                 @if (history.messageCount) {
                   <div class="message-count text-xs text-gray-500 mt-1">
@@ -281,7 +281,7 @@ export class ChatHistoryComponent implements OnInit, OnDestroy {
     return items.map((item) => ({
       sessionId: item.sessionId,
       content: item.content,
-      updateTime: new Date(item.updateTime),
+      createTime: new Date(item.createTime),
       messageCount: undefined,
       isActive: false,
     }));
