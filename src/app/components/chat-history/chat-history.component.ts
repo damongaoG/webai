@@ -63,11 +63,6 @@ interface ChatHistoryItem {
                 <div class="history-time text-xs text-gray-400 mt-1">
                   {{ formatDate(history.createTime) }}
                 </div>
-                @if (history.messageCount) {
-                  <div class="message-count text-xs text-gray-500 mt-1">
-                    {{ history.messageCount }} messages
-                  </div>
-                }
               </div>
               @if (activeHistoryId() === history.sessionId) {
                 <div class="active-indicator">
@@ -278,32 +273,55 @@ export class ChatHistoryComponent implements OnInit, OnDestroy {
   }
 
   private mapToHistoryItems(items: ListChatHistoryDto[]): ChatHistoryItem[] {
-    return items.map((item) => ({
-      sessionId: item.sessionId,
-      content: item.content,
-      createTime: new Date(item.createTime),
-      messageCount: undefined,
-      isActive: false,
-    }));
+    return items.map((item) => {
+      // Parse string timestamp to Date object
+      const timestamp = parseInt(item.createTime, 10);
+      const createTime = isNaN(timestamp) ? new Date() : new Date(timestamp);
+
+      return {
+        sessionId: item.sessionId,
+        content: item.content,
+        createTime,
+        messageCount: undefined,
+        isActive: false,
+      };
+    });
   }
 
-  truncateContent(content: string, maxLength: number = 50): string {
+  truncateContent(content: string, maxLength: number = 100): string {
     if (content.length <= maxLength) return content;
     return content.substring(0, maxLength) + "...";
   }
 
   formatDate(date: Date): string {
+    // Validate date object
+    if (!date || isNaN(date.getTime())) {
+      return "Invalid date";
+    }
+
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
-    const diffMins = Math.floor(diffMs / (1000 * 60));
-    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
-    if (diffMins < 1) return "Just now";
-    if (diffMins < 60) return `${diffMins}m ago`;
+    // Time constants in milliseconds
+    const MINUTE = 60 * 1000;
+    const HOUR = 60 * MINUTE;
+    const DAY = 24 * HOUR;
+    // Calculate time differences
+    const diffMinutes = Math.floor(diffMs / MINUTE);
+    const diffHours = Math.floor(diffMs / HOUR);
+    const diffDays = Math.floor(diffMs / DAY);
+
+    // Return time string
+    if (diffMinutes < 1) return "Just now";
+    if (diffMinutes < 60) return `${diffMinutes}m ago`;
     if (diffHours < 24) return `${diffHours}h ago`;
     if (diffDays < 7) return `${diffDays}d ago`;
 
-    return date.toLocaleDateString();
+    // Format as locale date
+    return date.toLocaleDateString(undefined, {
+      month: "short",
+      day: "numeric",
+      year: diffDays > 365 ? "numeric" : undefined,
+    });
   }
 }
