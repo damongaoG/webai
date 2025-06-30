@@ -5,6 +5,7 @@ import { SpinnerComponent } from "@/app/shared";
 import { ChatBotService } from "../rewrite-model/services/chat-bot.service";
 import { ListChatHistoryDto } from "@/app/interfaces/list-chat-history-dto";
 import { SidebarStateService } from "@/app/services/sidebar-state.service";
+import { ChatSessionStateService } from "@/app/services/chat-session-state.service";
 
 // Interface for chat history item
 interface ChatHistoryItem {
@@ -172,6 +173,7 @@ export class ChatHistoryComponent implements OnInit, OnDestroy {
   constructor(
     private readonly chatBotService: ChatBotService,
     private readonly sidebarStateService: SidebarStateService,
+    private readonly chatSessionStateService: ChatSessionStateService,
   ) {}
 
   ngOnInit(): void {
@@ -216,9 +218,42 @@ export class ChatHistoryComponent implements OnInit, OnDestroy {
     this._activeHistoryId.set(history.sessionId);
 
     // Navigate to the rewrite-new view to display the chat
-    // this.sidebarStateService.selectSubMenuItem("rewrite-model", "rewrite-new");
+    this.sidebarStateService.selectSubMenuItem("rewrite-model", "rewrite-new");
 
-    console.log("Loading chat session:", history.sessionId);
+    // Set loading state
+    this.chatSessionStateService.setLoading(true);
+
+    // Load chat history by session ID
+    this.chatBotService
+      .listChatHistoryById(history.sessionId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (result) => {
+          if (
+            result.code === 1 &&
+            result.data &&
+            result.data.content.length > 0
+          ) {
+            // Get the first session
+            const sessionData = result.data.content[0];
+
+            // Update the chat session state with the loaded messages
+            this.chatSessionStateService.setSession(
+              history.sessionId,
+              [sessionData], // Pass the session data as an array
+            );
+          } else {
+            // Handle empty or error result
+            this.chatSessionStateService.setError(
+              "No chat history found for this session",
+            );
+          }
+        },
+        error: (error) => {
+          console.error("Error loading chat session:", error);
+          this.chatSessionStateService.setError("Failed to load chat history");
+        },
+      });
   }
 
   startNewChat(): void {
@@ -226,6 +261,9 @@ export class ChatHistoryComponent implements OnInit, OnDestroy {
 
     // Navigate to the rewrite-new view
     this.sidebarStateService.selectSubMenuItem("rewrite-model", "rewrite-new");
+
+    // Clear any existing session
+    this.chatSessionStateService.startNewSession();
 
     console.log("Starting new chat session");
   }

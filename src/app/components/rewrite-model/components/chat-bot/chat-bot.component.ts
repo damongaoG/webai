@@ -22,7 +22,15 @@ import { ModelMessageDTO } from "@/app/interfaces/model-message-dto";
 import { ModelRequestDto } from "@/app/interfaces/model-request-dto";
 import { DomSanitizer, SafeHtml } from "@angular/platform-browser";
 import { marked } from "marked";
-import { firstValueFrom, interval, Subscription, tap, finalize } from "rxjs";
+import {
+  firstValueFrom,
+  interval,
+  Subscription,
+  tap,
+  finalize,
+  Subject,
+  takeUntil,
+} from "rxjs";
 import { KatexService } from "../../services/katex.service";
 import { AuthService } from "@/app/services/auth.service";
 import { ChatEventsService } from "../../services/chat-events.service";
@@ -45,6 +53,7 @@ import {
   ModalService,
   SpinnerComponent,
 } from "@/app/shared";
+import { ChatSessionStateService } from "@/app/services/chat-session-state.service";
 
 // Configure marked for synchronous operation
 marked.setOptions({
@@ -70,6 +79,7 @@ export class ChatBotComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChildren("scrollMe") messageContainers!: QueryList<ElementRef>;
 
   // Private properties for internal state management
+  private readonly destroy$ = new Subject<void>();
   private userScrollingUp = false;
   private isPageVisible = true;
   private visibilitySubscription: Subscription | undefined;
@@ -130,6 +140,7 @@ export class ChatBotComponent implements OnInit, AfterViewInit, OnDestroy {
   private readonly sessionIdSubscription: Subscription;
   private readonly chatStatusSubscription: Subscription;
   private countdownSubscription?: Subscription;
+  private chatSessionStateSubscription?: Subscription;
 
   // Configuration objects
   private readonly welcomeMessages: Record<number, string> = {
@@ -165,6 +176,7 @@ export class ChatBotComponent implements OnInit, AfterViewInit, OnDestroy {
     private visibilityService: VisibilityService,
     private clipboard: Clipboard,
     private chatStatusService: ChatStatusService,
+    private chatSessionStateService: ChatSessionStateService,
   ) {
     // Load initial chat history
     this.loadInitialChatHistory();
@@ -181,6 +193,9 @@ export class ChatBotComponent implements OnInit, AfterViewInit, OnDestroy {
 
     // Initialize router event subscription
     this.initializeRouterSubscription();
+
+    // Initialize chat session state subscription
+    this.initializeChatSessionStateSubscription();
   }
 
   ngOnInit(): void {
@@ -213,6 +228,10 @@ export class ChatBotComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    // Emit destroy signal
+    this.destroy$.next();
+    this.destroy$.complete();
+
     // Unsubscribe from all subscriptions
     this.clearMessagesSubscription?.unsubscribe();
     this.tabChangeSubscription?.unsubscribe();
@@ -223,6 +242,7 @@ export class ChatBotComponent implements OnInit, AfterViewInit, OnDestroy {
     this.sessionIdSubscription?.unsubscribe();
     this.chatStatusSubscription?.unsubscribe();
     this.visibilitySubscription?.unsubscribe();
+    this.chatSessionStateSubscription?.unsubscribe();
 
     // Send beacon data if needed
     if (!this.isRouteChange && this.chatService.hasUnsavedMessages()) {
@@ -1746,5 +1766,87 @@ export class ChatBotComponent implements OnInit, AfterViewInit, OnDestroy {
           ],
     );
     return nonWelcomeMessages.length > 0;
+  }
+
+  private initializeChatSessionStateSubscription(): void {
+    this.chatSessionStateSubscription =
+      this.chatSessionStateService.currentSession$
+        .pipe(takeUntil(this.destroy$))
+        .subscribe((sessionState) => {
+          this.ngZone.run(() => {
+            if (sessionState.loading) {
+              // Show loading state
+              this.isLoading = true;
+              return;
+            }
+
+            this.isLoading = false;
+
+            if (sessionState.error) {
+              // Show error message
+              this.messageService.error(sessionState.error);
+              return;
+            }
+
+            if (sessionState.sessionId && sessionState.messages.length > 0) {
+              // Process loaded session data
+              this.loadSessionMessages(
+                sessionState.sessionId,
+                sessionState.messages[0],
+              );
+            }
+          });
+        });
+  }
+
+  private loadSessionMessages(sessionId: string, sessionData: any): void {
+    // Clear current messages
+    this.clearAllMessages();
+
+    // Set current session ID
+    this.currentSessionId = sessionId;
+
+    // Update session ID in chat service
+    const userId = this.authService.getUserId();
+    if (userId) {
+      this.chatService.updateSessionId(sessionId);
+    }
+
+    // Convert session messages to ChatMessage format
+    if (sessionData.messages && Array.isArray(sessionData.messages)) {
+      const chatMessages: ChatMessage[] = sessionData.messages.map(
+        (msg: any) => {
+          const isUser = msg.role === "user";
+          const parsedContent = !isUser
+            ? this.parseMarkdown(msg.content)
+            : undefined;
+
+          return {
+            role: msg.role,
+            content: msg.content,
+            isUser: isUser,
+            parsedContent: parsedContent,
+            tag: sessionData.tag || this.selectedTabIndex,
+            isFromHistory: true,
+          };
+        },
+      );
+
+      // Set the correct tab
+      const tag = sessionData.tag || this.selectedTabIndex;
+      if (this.selectedTabIndex !== tag) {
+        this.selectedTabIndex = tag;
+      }
+
+      // Add messages to the current tab
+      this.processIncomingMessages(chatMessages);
+
+      // Update UI
+      this.chatStarted = true;
+      this.showInputContainer = true;
+
+      // Scroll to bottom after messages are loaded
+      setTimeout(() => this.scrollToBottom(), 100);
+    }
   }
 }
