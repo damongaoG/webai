@@ -421,8 +421,10 @@ export class DashboardComponent {
     effect(
       () => {
         const content = this.sidebarState.selectedContent();
+        const navContext = this.sidebarState.navigationContext();
+
         if (content === ContentType.REWRITE_NEW) {
-          this.handleRewriteNewSelection();
+          this.handleRewriteNewSelection(navContext);
         } else if (content === ContentType.ESSAY_NEW) {
           this.handleEssayNewSelection();
         }
@@ -455,8 +457,24 @@ export class DashboardComponent {
   }
 
   // Rewrite new content methods
-  private handleRewriteNewSelection(): void {
-    this.checkRewriteStatus();
+  private handleRewriteNewSelection(navContext?: {
+    fromHistory?: boolean;
+    sessionId?: string;
+  }): void {
+    // If navigating from history, skip status check and set as available
+    if (navContext?.fromHistory) {
+      this.rewriteStatus.set({
+        isAvailable: true,
+        isChecking: false,
+        errorMessage: null,
+      });
+
+      // Clear navigation context after handling
+      this.sidebarState.clearNavigationContext();
+    } else {
+      // Check status
+      this.checkRewriteStatus();
+    }
   }
 
   private checkRewriteStatus(): void {

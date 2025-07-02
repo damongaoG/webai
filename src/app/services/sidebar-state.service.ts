@@ -66,12 +66,19 @@ export class SidebarStateService {
   // Sidebar collapse state management
   private readonly _isSidebarCollapsed = signal<boolean>(false);
 
+  // Navigation context management
+  private readonly _navigationContext = signal<{
+    fromHistory?: boolean;
+    sessionId?: string;
+  }>({});
+
   // Public computed signals for component consumption
   public readonly menuItems = computed(() => this._menuItems());
   public readonly selectedContent = computed(() => this._selectedContent());
   public readonly isSidebarCollapsed = computed(() =>
     this._isSidebarCollapsed(),
   );
+  public readonly navigationContext = computed(() => this._navigationContext());
 
   // Toggle sidebar collapse/expand state
   toggleSidebarCollapse(): void {
@@ -126,7 +133,11 @@ export class SidebarStateService {
     );
   }
 
-  selectSubMenuItem(parentId: string, subItemId: string): void {
+  selectSubMenuItem(
+    parentId: string,
+    subItemId: string,
+    context?: { fromHistory?: boolean; sessionId?: string },
+  ): void {
     let contentType: ContentType;
 
     if (parentId === "rewrite-model" && subItemId === "rewrite-new") {
@@ -144,7 +155,20 @@ export class SidebarStateService {
       return; // Invalid combination
     }
 
+    // Set navigation context if provided
+    if (context) {
+      this._navigationContext.set(context);
+    } else {
+      // Clear context for normal navigation
+      this._navigationContext.set({});
+    }
+
     this._selectedContent.set(contentType);
+  }
+
+  // Method to clear navigation context
+  clearNavigationContext(): void {
+    this._navigationContext.set({});
   }
 
   isMenuItemSelected(menuId: string): boolean {

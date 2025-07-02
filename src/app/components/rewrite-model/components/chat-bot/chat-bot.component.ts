@@ -94,6 +94,7 @@ export class ChatBotComponent implements OnInit, AfterViewInit, OnDestroy {
   private lastAssistantMessage: ChatMessage | null = null;
   private isRouteChange = false;
   private _showThankYou = false;
+  private isLoadingFromHistory = false;
 
   // Public component state
   chatStarted = false;
@@ -213,8 +214,11 @@ export class ChatBotComponent implements OnInit, AfterViewInit, OnDestroy {
     this.focusInput();
     this.setupScrollListener();
 
-    // Check chat status and initialize
-    this.checkChatStatusAndInitialize();
+    // Don't check chat status if loading from history
+    if (!this.isLoadingFromHistory) {
+      // Check chat status and initialize
+      this.checkChatStatusAndInitialize();
+    }
 
     // Load chat data from session
     this.loadChatDataFromSession();
@@ -1777,6 +1781,7 @@ export class ChatBotComponent implements OnInit, AfterViewInit, OnDestroy {
             if (sessionState.loading) {
               // Show loading state
               this.isLoading = true;
+              this.isLoadingFromHistory = true; // Set flag when loading from history
               return;
             }
 
@@ -1785,6 +1790,7 @@ export class ChatBotComponent implements OnInit, AfterViewInit, OnDestroy {
             if (sessionState.error) {
               // Show error message
               this.messageService.error(sessionState.error);
+              this.isLoadingFromHistory = false; // Reset flag on error
               return;
             }
 
@@ -1794,6 +1800,8 @@ export class ChatBotComponent implements OnInit, AfterViewInit, OnDestroy {
                 sessionState.sessionId,
                 sessionState.messages[0],
               );
+            } else {
+              this.isLoadingFromHistory = false; // Reset flag if no session to load
             }
           });
         });
@@ -1843,7 +1851,10 @@ export class ChatBotComponent implements OnInit, AfterViewInit, OnDestroy {
 
       // Update UI
       this.chatStarted = true;
+      this.chatAvailable = false;
       this.showInputContainer = true;
+      this.isCheckingChatStatus = false;
+      this.isLoadingFromHistory = false; // Reset flag after loading
 
       // Scroll to bottom after messages are loaded
       setTimeout(() => this.scrollToBottom(), 100);

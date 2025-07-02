@@ -218,7 +218,10 @@ export class ChatHistoryComponent implements OnInit, OnDestroy {
     this._activeHistoryId.set(history.sessionId);
 
     // Navigate to the rewrite-new view to display the chat
-    this.sidebarStateService.selectSubMenuItem("rewrite-model", "rewrite-new");
+    this.sidebarStateService.selectSubMenuItem("rewrite-model", "rewrite-new", {
+      fromHistory: true,
+      sessionId: history.sessionId,
+    });
 
     // Set loading state
     this.chatSessionStateService.setLoading(true);
@@ -259,8 +262,10 @@ export class ChatHistoryComponent implements OnInit, OnDestroy {
   startNewChat(): void {
     this._activeHistoryId.set(null);
 
-    // Navigate to the rewrite-new view
-    this.sidebarStateService.selectSubMenuItem("rewrite-model", "rewrite-new");
+    // Navigate to the rewrite-new view with empty context
+    this.sidebarStateService.selectSubMenuItem("rewrite-model", "rewrite-new", {
+      fromHistory: false,
+    });
 
     // Clear any existing session
     this.chatSessionStateService.startNewSession();
