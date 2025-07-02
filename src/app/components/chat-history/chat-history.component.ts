@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy, signal, computed } from "@angular/core";
 import { CommonModule } from "@angular/common";
-import { Subject, takeUntil } from "rxjs";
+import { Subject, takeUntil, switchMap } from "rxjs";
 import { SpinnerComponent } from "@/app/shared";
 import { ChatBotService } from "../rewrite-model/services/chat-bot.service";
 import { ListChatHistoryDto } from "@/app/interfaces/list-chat-history-dto";
@@ -49,6 +49,8 @@ interface ChatHistoryItem {
             [class.bg-green-900]="activeHistoryId() === history.sessionId"
             [class.border-l-4]="activeHistoryId() === history.sessionId"
             [class.border-green-400]="activeHistoryId() === history.sessionId"
+            [class.opacity-50]="loadingSessionId() === history.sessionId"
+            [class.cursor-wait]="loadingSessionId() === history.sessionId"
             (click)="loadChat(history)"
           >
             <div class="flex items-start justify-between">
@@ -65,7 +67,13 @@ interface ChatHistoryItem {
                   {{ formatDate(history.createTime) }}
                 </div>
               </div>
-              @if (activeHistoryId() === history.sessionId) {
+              @if (loadingSessionId() === history.sessionId) {
+                <div class="loading-indicator">
+                  <div
+                    class="animate-spin h-4 w-4 border-2 border-green-400 rounded-full border-t-transparent"
+                  ></div>
+                </div>
+              } @else if (activeHistoryId() === history.sessionId) {
                 <div class="active-indicator">
                   <div class="w-2 h-2 bg-green-400 rounded-full"></div>
                 </div>
@@ -152,6 +160,7 @@ interface ChatHistoryItem {
 })
 export class ChatHistoryComponent implements OnInit, OnDestroy {
   private readonly destroy$ = new Subject<void>();
+  private readonly loadChatRequest$ = new Subject<ChatHistoryItem>();
 
   // Signals for reactive state management
   private readonly _chatHistory = signal<ChatHistoryItem[]>([]);
@@ -159,11 +168,13 @@ export class ChatHistoryComponent implements OnInit, OnDestroy {
   private readonly _isLoading = signal<boolean>(false);
   private readonly _hasMore = signal<boolean>(true);
   private readonly _loadingMore = signal<boolean>(false);
+  private readonly _loadingSessionId = signal<string | null>(null);
 
   // Public computed signals
   public readonly chatHistory = computed(() => this._chatHistory());
   public readonly activeHistoryId = computed(() => this._activeHistoryId());
   public readonly isLoading = computed(() => this._isLoading());
+  public readonly loadingSessionId = computed(() => this._loadingSessionId());
 
   // Pagination configuration
   private readonly DEFAULT_TAG = 2; // Default tag value
@@ -178,11 +189,83 @@ export class ChatHistoryComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.loadChatHistory();
+    this.setupLoadChatHandler();
   }
 
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+    this.loadChatRequest$.complete();
+  }
+
+  private setupLoadChatHandler(): void {
+    // Handle load chat requests
+    this.loadChatRequest$
+      .pipe(
+        takeUntil(this.destroy$),
+        switchMap((history) => {
+          // Set loading states
+          this._loadingSessionId.set(history.sessionId);
+          this._activeHistoryId.set(history.sessionId);
+          this.chatSessionStateService.setLoading(true);
+
+          // Return the API call
+          return this.chatBotService.listChatHistoryById(history.sessionId);
+        }),
+      )
+      .subscribe({
+        next: (result) => {
+          const sessionId = this._loadingSessionId();
+
+          if (!sessionId) return;
+
+          if (
+            result.code === 1 &&
+            result.data &&
+            result.data.content.length > 0
+          ) {
+            // Get the first session
+            const sessionData = result.data.content[0];
+
+            // Update the chat session state with the loaded messages
+            this.chatSessionStateService.setSession(sessionId, [sessionData]);
+
+            // Navigate to the rewrite-new view after data is loaded successfully
+            this.sidebarStateService.selectSubMenuItem(
+              "rewrite-model",
+              "rewrite-new",
+              {
+                fromHistory: true,
+                sessionId: sessionId,
+              },
+            );
+          } else {
+            // Handle empty or error result
+            this.chatSessionStateService.setError(
+              "No chat history found for this session",
+            );
+            this.chatSessionStateService.setLoading(false);
+
+            // Reset active history on error
+            this._activeHistoryId.set(null);
+          }
+
+          // Clear loading state for this session
+          this._loadingSessionId.set(null);
+        },
+        error: (error) => {
+          console.error("Error loading chat session:", error);
+
+          let errorMessage = "Failed to load chat history";
+
+          this.chatSessionStateService.setError(errorMessage);
+          this.chatSessionStateService.setLoading(false);
+
+          // Reset states on error
+          this._activeHistoryId.set(null);
+          this._loadingSessionId.set(null);
+        },
+      });
   }
 
   private loadChatHistory(): void {
@@ -215,51 +298,19 @@ export class ChatHistoryComponent implements OnInit, OnDestroy {
   }
 
   loadChat(history: ChatHistoryItem): void {
-    this._activeHistoryId.set(history.sessionId);
+    // Prevent duplicate requests for the same session
+    if (this._loadingSessionId() === history.sessionId) {
+      console.log("Already loading this session");
+      return;
+    }
 
-    // Navigate to the rewrite-new view to display the chat
-    this.sidebarStateService.selectSubMenuItem("rewrite-model", "rewrite-new", {
-      fromHistory: true,
-      sessionId: history.sessionId,
-    });
-
-    // Set loading state
-    this.chatSessionStateService.setLoading(true);
-
-    // Load chat history by session ID
-    this.chatBotService
-      .listChatHistoryById(history.sessionId)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (result) => {
-          if (
-            result.code === 1 &&
-            result.data &&
-            result.data.content.length > 0
-          ) {
-            // Get the first session
-            const sessionData = result.data.content[0];
-
-            // Update the chat session state with the loaded messages
-            this.chatSessionStateService.setSession(
-              history.sessionId,
-              [sessionData], // Pass the session data as an array
-            );
-          } else {
-            // Handle empty or error result
-            this.chatSessionStateService.setError(
-              "No chat history found for this session",
-            );
-          }
-        },
-        error: (error) => {
-          console.error("Error loading chat session:", error);
-          this.chatSessionStateService.setError("Failed to load chat history");
-        },
-      });
+    // Trigger the load request
+    this.loadChatRequest$.next(history);
   }
 
   startNewChat(): void {
+    // Clear any loading states
+    this._loadingSessionId.set(null);
     this._activeHistoryId.set(null);
 
     // Navigate to the rewrite-new view with empty context
