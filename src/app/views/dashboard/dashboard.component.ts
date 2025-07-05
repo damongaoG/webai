@@ -399,6 +399,8 @@ export class DashboardComponent {
   private readonly chatBotService = inject(ChatBotService);
   private readonly messageService = inject(MessageService);
 
+  private isFirstEffectExecution = true;
+
   // Modal state signals
   showChangePassword = signal(false);
   showLogout = signal(false);
@@ -422,6 +424,21 @@ export class DashboardComponent {
       () => {
         const content = this.sidebarState.selectedContent();
         const navContext = this.sidebarState.navigationContext();
+
+        console.log(
+          "Dashboard effect triggered - content:",
+          content,
+          "navContext:",
+          navContext,
+          "isFirst:",
+          this.isFirstEffectExecution,
+        );
+
+        // Skip the first execution to avoid unnecessary checks on component initialization
+        if (this.isFirstEffectExecution) {
+          this.isFirstEffectExecution = false;
+          return;
+        }
 
         if (content === ContentType.REWRITE_NEW) {
           this.handleRewriteNewSelection(navContext);
@@ -461,17 +478,25 @@ export class DashboardComponent {
     fromHistory?: boolean;
     sessionId?: string;
   }): void {
+    console.log("handleRewriteNewSelection called with context:", navContext);
+
     // If navigating from history, skip status check and set as available
-    if (navContext?.fromHistory) {
+    if (navContext?.fromHistory === true) {
+      console.log("Navigation from history detected, skipping status check");
+
       this.rewriteStatus.set({
         isAvailable: true,
         isChecking: false,
         errorMessage: null,
       });
 
-      // Clear navigation context after handling
-      this.sidebarState.clearNavigationContext();
+      // Clear navigation context after handling to prevent reuse
+      setTimeout(() => {
+        console.log("Clearing navigation context");
+        this.sidebarState.clearNavigationContext();
+      }, 500);
     } else {
+      console.log("Normal navigation, checking rewrite status");
       // Check status
       this.checkRewriteStatus();
     }

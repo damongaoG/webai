@@ -4,6 +4,7 @@ import { Subject, takeUntil, switchMap } from "rxjs";
 import { SpinnerComponent } from "@/app/shared";
 import { ChatBotService } from "../rewrite-model/services/chat-bot.service";
 import { ListChatHistoryDto } from "@/app/interfaces/list-chat-history-dto";
+import { ListChatSessionVo } from "@/app/interfaces/list-chat-session-vo";
 import { SidebarStateService } from "@/app/services/sidebar-state.service";
 import { ChatSessionStateService } from "@/app/services/chat-session-state.service";
 
@@ -222,22 +223,44 @@ export class ChatHistoryComponent implements OnInit, OnDestroy {
           if (
             result.code === 1 &&
             result.data &&
+            result.data.content &&
             result.data.content.length > 0
           ) {
-            // Get the first session
-            const sessionData = result.data.content[0];
+            // Transform the response to match format
+            const messages = result.data.content;
+            console.log("Raw messages from API:", messages);
 
-            // Update the chat session state with the loaded messages
+            const sessionData: ListChatSessionVo = {
+              id: messages[0]?.id || "",
+              userId: "",
+              sessionId: sessionId,
+              tag: messages[0]?.tag || 2,
+              messages: messages.map((msg: any) => ({
+                role: msg.role,
+                content: msg.content,
+              })),
+              createTime: messages[0]?.createTime || new Date().toISOString(),
+              updateTime:
+                messages[messages.length - 1]?.createTime ||
+                new Date().toISOString(),
+            };
+
+            console.log("Transformed session data:", sessionData);
+
+            // Update the chat session state with the transformed data
             this.chatSessionStateService.setSession(sessionId, [sessionData]);
 
             // Navigate to the rewrite-new view after data is loaded successfully
+            const navContext = {
+              fromHistory: true,
+              sessionId: sessionId,
+            };
+            console.log("Setting navigation context:", navContext);
+
             this.sidebarStateService.selectSubMenuItem(
               "rewrite-model",
               "rewrite-new",
-              {
-                fromHistory: true,
-                sessionId: sessionId,
-              },
+              navContext,
             );
           } else {
             // Handle empty or error result
@@ -300,10 +323,11 @@ export class ChatHistoryComponent implements OnInit, OnDestroy {
   loadChat(history: ChatHistoryItem): void {
     // Prevent duplicate requests for the same session
     if (this._loadingSessionId() === history.sessionId) {
-      console.log("Already loading this session");
+      console.log("Already loading session:", history.sessionId);
       return;
     }
 
+    console.log("Loading chat history for session:", history.sessionId);
     // Trigger the load request
     this.loadChatRequest$.next(history);
   }

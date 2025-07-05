@@ -386,7 +386,9 @@ export class ChatBotComponent implements OnInit, AfterViewInit, OnDestroy {
     return this.chatService.sessionId$.subscribe((sessionId) => {
       this.currentSessionId = sessionId;
       console.log("currentSessionId", this.currentSessionId);
-      this.changeDetectorRef.detectChanges();
+      setTimeout(() => {
+        this.changeDetectorRef.detectChanges();
+      }, 100);
     });
   }
 
@@ -846,16 +848,14 @@ export class ChatBotComponent implements OnInit, AfterViewInit, OnDestroy {
       const welcomeMessage = this.welcomeMessages[this.selectedTabIndex];
       const parsedContent = this.parseMarkdown(welcomeMessage);
 
-      this.ngZone.run(() => {
-        const welcomeChatMessage: ChatMessage = {
-          role: "assistant",
-          content: welcomeMessage,
-          isUser: false,
-          parsedContent,
-        };
-        this.addMessage(welcomeChatMessage);
-        this.changeDetectorRef.detectChanges();
-      });
+      const welcomeChatMessage: ChatMessage = {
+        role: "assistant",
+        content: welcomeMessage,
+        isUser: false,
+        parsedContent,
+      };
+
+      this.addMessage(welcomeChatMessage);
     }
   }
 
@@ -1234,8 +1234,10 @@ export class ChatBotComponent implements OnInit, AfterViewInit, OnDestroy {
       this.chatService.addUnsavedMessage(messageToAdd, this.selectedTabIndex);
     }
 
-    this.changeDetectorRef.detectChanges();
-    setTimeout(() => this.scrollToBottom(), 0);
+    setTimeout(() => {
+      this.changeDetectorRef.detectChanges();
+      this.scrollToBottom();
+    }, 0);
   }
 
   // Public methods for component interaction
@@ -1777,33 +1779,31 @@ export class ChatBotComponent implements OnInit, AfterViewInit, OnDestroy {
       this.chatSessionStateService.currentSession$
         .pipe(takeUntil(this.destroy$))
         .subscribe((sessionState) => {
-          this.ngZone.run(() => {
-            if (sessionState.loading) {
-              // Show loading state
-              this.isLoading = true;
-              this.isLoadingFromHistory = true; // Set flag when loading from history
-              return;
-            }
+          if (sessionState.loading) {
+            // Show loading state
+            this.isLoading = true;
+            this.isLoadingFromHistory = true; // Set flag when loading from history
+            return;
+          }
 
-            this.isLoading = false;
+          this.isLoading = false;
 
-            if (sessionState.error) {
-              // Show error message
-              this.messageService.error(sessionState.error);
-              this.isLoadingFromHistory = false; // Reset flag on error
-              return;
-            }
+          if (sessionState.error) {
+            // Show error message
+            this.messageService.error(sessionState.error);
+            this.isLoadingFromHistory = false; // Reset flag on error
+            return;
+          }
 
-            if (sessionState.sessionId && sessionState.messages.length > 0) {
+          if (sessionState.sessionId && sessionState.messages.length > 0) {
+            const sessionId = sessionState.sessionId;
+            setTimeout(() => {
               // Process loaded session data
-              this.loadSessionMessages(
-                sessionState.sessionId,
-                sessionState.messages[0],
-              );
-            } else {
-              this.isLoadingFromHistory = false; // Reset flag if no session to load
-            }
-          });
+              this.loadSessionMessages(sessionId, sessionState.messages[0]);
+            }, 0);
+          } else {
+            this.isLoadingFromHistory = false; // Reset flag if no session to load
+          }
         });
   }
 
