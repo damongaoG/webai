@@ -7,6 +7,7 @@ import { PricingPlansComponent } from "./components/pricing-plans/pricing-plans.
 import { FaqsComponent } from "./components/faqs/faqs.component";
 import { Footer5Component } from "./components/footer/footer.component";
 import { PrivacyProtectionComponent } from "./components/privacy-protection/privacy-protection.component";
+import { CtaSectionComponent } from "./components/cta-section/cta-section.component";
 
 @Component({
   selector: "app-index-4",
@@ -17,6 +18,7 @@ import { PrivacyProtectionComponent } from "./components/privacy-protection/priv
     ToolsComponent,
     FeaturesComponent,
     PrivacyProtectionComponent,
+    CtaSectionComponent,
     PricingPlansComponent,
     FaqsComponent,
     Footer5Component,
