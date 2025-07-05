@@ -1,0 +1,53 @@
+<section id="privacy" class="py-20">
+  <div class="container">
+    <!-- Header section -->
+    <div class="mb-10 flex items-end justify-between">
+      <div class="mx-auto max-w-3xl text-center">
+        <h2 class="mb-4 text-4xl font-medium capitalize text-white">
+          Your Privacy. Fully Protected.
+        </h2>
+        <p class="text-lg font-medium text-default-200">
+          Your data is secure, your content remains yours, and your privacy is
+          our priority.
+        </p>
+      </div>
+    </div>
+
+    <!-- Privacy features grid -->
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+      @for (feature of privacyFeatures; track $index) {
+        <div
+          class="overflow-hidden rounded-3xl border border-white/10 bg-default-950/40 p-10 transition-all duration-300 hover:border-white/20"
+          data-aos="fade-up"
+          data-aos-easing="ease"
+          data-aos-duration="1000"
+          [attr.data-aos-delay]="$index * 100"
+        >
+          <div class="group">
+            <!-- Icon container -->
+            <div class="mb-6 inline-flex items-center justify-center">
+              <div
+                class="rounded-2xl bg-primary/10 p-4 transition-all duration-300 group-hover:bg-primary/20"
+              >
+                <lucide-icon
+                  [name]="feature.icon"
+                  class="h-10 w-10 text-primary"
+                ></lucide-icon>
+              </div>
+            </div>
+
+            <!-- Content -->
+            <div>
+              <h4 class="mb-4 text-xl font-medium text-white">
+                {{ feature.title }}
+              </h4>
+              <p class="text-base leading-relaxed text-default-200">
+                {{ feature.description }}
+              </p>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</section>
