@@ -399,7 +399,7 @@ export class DashboardComponent {
   private readonly chatBotService = inject(ChatBotService);
   private readonly messageService = inject(MessageService);
 
-  private isFirstEffectExecution = true;
+  private lastContent: ContentType | null = null;
 
   // Modal state signals
   showChangePassword = signal(false);
@@ -430,15 +430,17 @@ export class DashboardComponent {
           content,
           "navContext:",
           navContext,
-          "isFirst:",
-          this.isFirstEffectExecution,
+          "lastContent:",
+          this.lastContent,
         );
 
-        // Skip the first execution to avoid unnecessary checks on component initialization
-        if (this.isFirstEffectExecution) {
-          this.isFirstEffectExecution = false;
+        // Only process if content actually changed
+        if (content === this.lastContent) {
+          console.log("Content unchanged, skipping processing");
           return;
         }
+
+        this.lastContent = content;
 
         if (content === ContentType.REWRITE_NEW) {
           this.handleRewriteNewSelection(navContext);
@@ -489,12 +491,6 @@ export class DashboardComponent {
         isChecking: false,
         errorMessage: null,
       });
-
-      // Clear navigation context after handling to prevent reuse
-      setTimeout(() => {
-        console.log("Clearing navigation context");
-        this.sidebarState.clearNavigationContext();
-      }, 500);
     } else {
       console.log("Normal navigation, checking rewrite status");
       // Check status

@@ -206,7 +206,9 @@ export class ChatBotComponent implements OnInit, AfterViewInit, OnDestroy {
       .visibility()
       .subscribe((isVisible) => {
         console.log("Page visibility changed:", isVisible);
-        this.handleVisibilityChange(isVisible);
+        setTimeout(() => {
+          this.handleVisibilityChange(isVisible);
+        }, 0);
       });
   }
 
@@ -454,11 +456,13 @@ export class ChatBotComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private checkChatStatusAndInitialize(): void {
-    this.chatStatusService.checkChatStatus().subscribe((result) => {
-      this.ngZone.run(() => {
-        this.chatService.chatStatusResult = result;
+    setTimeout(() => {
+      this.chatStatusService.checkChatStatus().subscribe((result) => {
+        this.ngZone.run(() => {
+          this.chatService.chatStatusResult = result;
+        });
       });
-    });
+    }, 0);
   }
 
   private loadChatDataFromSession(): void {
