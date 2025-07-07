@@ -9,25 +9,25 @@ import type {
 
 export const aiTools: ToolType[] = [
   {
-    icon: "dribbble",
+    icon: "tags",
     title: "Smart Keyword Extraction",
     description:
       "Just enter your title — AI instantly generates key concepts to guide your writing and spark inspiration.",
   },
   {
-    icon: "messages-square",
+    icon: "git-branch",
     title: "Precise Argument Generation",
     description:
       "Turn keywords into clear, well-structured arguments with one click, making it easy to build a strong essay framework.",
   },
   {
-    icon: "image",
+    icon: "folder-open",
     title: "Rich Case Support",
     description:
       "Each argument comes with relevant, real-world examples to strengthen your points and add credibility to your writing.",
   },
   {
-    icon: "image",
+    icon: "file-text",
     title: "Auto Conclusion & Summary",
     description:
       "Automatically generate insightful conclusions and summaries to complete your essay with clarity and coherence.",
@@ -36,25 +36,25 @@ export const aiTools: ToolType[] = [
 
 export const features: FeatureType[] = [
   {
-    icon: "send",
+    icon: "shield-check",
     name: "Bypass AI Detection with Human-Like Writing",
     description:
       "Advanced rewriting techniques to help your content sound natural and undetectable.",
   },
   {
-    icon: "youtube",
+    icon: "list-checks",
     name: "Step-by-Step Problem Solving",
     description:
       "Input a question, and get structured, easy-to-understand explanations — great for academic subjects.",
   },
   {
-    icon: "facebook",
+    icon: "zap",
     name: "Lightning-Fast Essay Drafts",
     description:
       "Go from title to complete essay structure in minutes — powered by smart, guided workflows.",
   },
   {
-    icon: "mail",
+    icon: "pen-tool",
     name: "Zero Writing Blocks",
     description:
       "Always know what to write next — AI guides you through the entire process.",
@@ -216,12 +216,12 @@ export const faqs: FaqType[] = [
   {
     question: "Is it safe to use this for academic assignments?",
     answer:
-      "Our tool is designed to assist in content planning and idea development. You should always follow your institution’s academic policies.",
+      "Our tool is designed to assist in content planning and idea development. You should always follow your institution's academic policies.",
   },
   {
     question: "Is this tool meant to replace writing myself?",
     answer:
-      "No. It’s a tool to assist and accelerate your writing, not a substitute for your own thinking or voice.",
+      "No. It's a tool to assist and accelerate your writing, not a substitute for your own thinking or voice.",
   },
   {
     question: "Who can I contact if I need help?",
