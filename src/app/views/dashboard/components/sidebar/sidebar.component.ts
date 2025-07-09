@@ -21,7 +21,7 @@ import {
       <div
         class="flex items-center border-b border-gray-700"
         [class.justify-center]="sidebarState.isSidebarCollapsed()"
-        style="padding: 25px"
+        style="padding: 25px; height: 80px"
       >
         <div
           class="logo-container h-10 w-10 rounded-lg bg-green-500 flex items-center justify-center flex-shrink-0"

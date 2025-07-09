@@ -53,7 +53,8 @@ import {
       >
         <!-- Top Header with Toggle Button -->
         <div
-          class="top-header p-4 border-b border-gray-700 flex justify-between items-center bg-gray-900"
+          class="top-header border-b border-gray-700 flex justify-between items-center bg-gray-900"
+          style="height: 80px; padding: 10px;"
         >
           <div class="flex items-center">
             <!-- Sidebar Toggle Button -->
