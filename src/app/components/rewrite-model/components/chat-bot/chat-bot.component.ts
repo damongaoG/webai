@@ -118,6 +118,7 @@ export class ChatBotComponent implements OnInit, AfterViewInit, OnDestroy {
   showInputContainer = true;
   currentSessionId: string | null = null;
   copiedMessageId: string | null = null;
+  isTimeExpired = false; // Track if chat time has expired
 
   // Chat messages for different tabs
   economicQAMessages: ChatMessage[] = [];
@@ -400,6 +401,7 @@ export class ChatBotComponent implements OnInit, AfterViewInit, OnDestroy {
 
     if (status.code === 1) {
       this.chatStarted = true;
+      this.isTimeExpired = false; // Reset time expired when chat is available
       if (status.data?.endTime) {
         this.startCountdown(status.data.endTime);
       }
@@ -824,6 +826,7 @@ export class ChatBotComponent implements OnInit, AfterViewInit, OnDestroy {
           this.chatEventsService.setShowChatHistory(false);
           // Set time expired to true
           this.chatService.setTimeExpired(true);
+          this.isTimeExpired = true; // Set flag when time expires
           this.countdownSubscription?.unsubscribe();
           if (this.isStreaming) {
             this.stopStreaming();
@@ -1645,6 +1648,7 @@ export class ChatBotComponent implements OnInit, AfterViewInit, OnDestroy {
                 this.processChatStatus(chatStatus);
                 this.isConfirmStartChat = false;
                 this.showThankYou = false;
+                this.isTimeExpired = false; // Reset time expired flag when starting new chat
               });
           } else if (result.code === -11) {
             this.messageService.error(

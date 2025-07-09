@@ -92,9 +92,9 @@
     </div>
 
     <div class="input-box">
-      <!-- Show Start Chat button when chat is not available -->
+      <!-- Show Start Chat button when chat is not available or time has expired -->
       <div
-        *ngIf="!chatAvailable && !isCheckingChatStatus"
+        *ngIf="(!chatAvailable || isTimeExpired) && !isCheckingChatStatus"
         class="start-chat-container"
       >
         <app-button
@@ -114,8 +114,10 @@
         <p>Checking chat status...</p>
       </div>
 
-      <!-- Show normal input interface when chat is available -->
-      <ng-container *ngIf="chatAvailable && !isCheckingChatStatus">
+      <!-- Show normal input interface when chat is available and time has not expired -->
+      <ng-container
+        *ngIf="chatAvailable && !isTimeExpired && !isCheckingChatStatus"
+      >
         <textarea
           #messageInput
           [(ngModel)]="currentMessage"
