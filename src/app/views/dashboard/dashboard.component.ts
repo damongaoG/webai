@@ -125,7 +125,9 @@ import {
               }
               @case (ContentType.ESSAY_NEW) {
                 <div>
-                  <h1 class="text-2xl font-bold text-white">New Essay</h1>
+                  <h1 class="text-2xl font-bold text-white">
+                    {{ essayTitle() || "New Essay" }}
+                  </h1>
                   <p class="text-gray-400 mt-1">
                     Create a new essay with AI assistance
                   </p>
