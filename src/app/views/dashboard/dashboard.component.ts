@@ -14,6 +14,8 @@ import { ChatStatusService } from "@components/rewrite-model/services/chat-statu
 import { ChatBotService } from "@components/rewrite-model/services/chat-bot.service";
 import { MessageService } from "../../shared";
 import { switchMap, of, catchError } from "rxjs";
+import { EssayService } from "../../services/essay.service";
+import { CreateEssayDto } from "../../interfaces/essay-create.interface";
 import {
   UserMenuComponent,
   ChangePasswordModalComponent,
@@ -263,7 +265,7 @@ import {
             }
             @case (ContentType.ESSAY_NEW) {
               <div class="essay-new-container h-full bg-gray-900">
-                @if (essayTitle()) {
+                @if (essayTitle() && essayCreationStatus().created) {
                   <div
                     class="flex-1 overflow-hidden"
                     style="width: 100%; height: 100%"
@@ -273,28 +275,68 @@ import {
                 } @else {
                   <div class="flex items-center justify-center h-full">
                     <div class="text-center max-w-md">
-                      <div class="mb-6">
-                        <div
-                          class="inline-flex items-center justify-center w-16 h-16 bg-blue-500 rounded-full mb-4"
-                        >
-                          <lucide-angular
-                            name="file-text"
-                            class="h-8 w-8 text-white"
-                          ></lucide-angular>
+                      @if (essayCreationStatus().isCreating) {
+                        <!-- Creating essay state -->
+                        <div class="mb-4">
+                          <div
+                            class="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500 mx-auto"
+                          ></div>
                         </div>
-                      </div>
-                      <h3 class="text-xl font-semibold text-white mb-2">
-                        Create New Essay
-                      </h3>
-                      <p class="text-gray-400 mb-6">
-                        Start by entering a title for your new essay.
-                      </p>
-                      <button
-                        class="px-6 py-2 bg-green-600 hover:bg-green-500 text-white rounded-lg transition-colors"
-                        (click)="openEssayTitleModal()"
-                      >
-                        Enter Essay Title
-                      </button>
+                        <h3 class="text-xl font-semibold text-white mb-2">
+                          Creating Essay...
+                        </h3>
+                        <p class="text-gray-400">
+                          Please wait while we create your essay.
+                        </p>
+                      } @else if (essayCreationStatus().errorMessage) {
+                        <!-- Error state -->
+                        <div class="mb-6">
+                          <div
+                            class="inline-flex items-center justify-center w-16 h-16 bg-red-500 rounded-full mb-4"
+                          >
+                            <lucide-angular
+                              name="circle-alert"
+                              class="h-8 w-8 text-white"
+                            ></lucide-angular>
+                          </div>
+                        </div>
+                        <h3 class="text-xl font-semibold text-white mb-2">
+                          Essay Creation Failed
+                        </h3>
+                        <p class="text-gray-400 mb-6">
+                          {{ essayCreationStatus().errorMessage }}
+                        </p>
+                        <button
+                          class="px-6 py-2 bg-green-600 hover:bg-green-500 text-white rounded-lg transition-colors"
+                          (click)="openEssayTitleModal()"
+                        >
+                          Try Again
+                        </button>
+                      } @else {
+                        <!-- Initial state -->
+                        <div class="mb-6">
+                          <div
+                            class="inline-flex items-center justify-center w-16 h-16 bg-blue-500 rounded-full mb-4"
+                          >
+                            <lucide-angular
+                              name="file-text"
+                              class="h-8 w-8 text-white"
+                            ></lucide-angular>
+                          </div>
+                        </div>
+                        <h3 class="text-xl font-semibold text-white mb-2">
+                          Create New Essay
+                        </h3>
+                        <p class="text-gray-400 mb-6">
+                          Start by entering a title for your new essay.
+                        </p>
+                        <button
+                          class="px-6 py-2 bg-green-600 hover:bg-green-500 text-white rounded-lg transition-colors"
+                          (click)="openEssayTitleModal()"
+                        >
+                          Enter Essay Title
+                        </button>
+                      }
                     </div>
                   </div>
                 }
@@ -399,6 +441,7 @@ export class DashboardComponent {
   private readonly chatStatusService = inject(ChatStatusService);
   private readonly chatBotService = inject(ChatBotService);
   private readonly messageService = inject(MessageService);
+  private readonly essayService = inject(EssayService);
 
   private lastContent: ContentType | null = null;
 
@@ -409,6 +452,15 @@ export class DashboardComponent {
 
   // Essay and rewrite state
   essayTitle = signal<string | null>(null);
+  essayCreationStatus = signal<{
+    isCreating: boolean;
+    created: boolean;
+    errorMessage: string | null;
+  }>({
+    isCreating: false,
+    created: false,
+    errorMessage: null,
+  });
   rewriteStatus = signal<{
     isAvailable: boolean;
     isChecking: boolean;
@@ -588,10 +640,16 @@ export class DashboardComponent {
 
   // Essay new content methods
   private handleEssayNewSelection(): void {
-    // Reset essay title when first entering essay new
+    // Reset essay title and creation status when first entering essay new
     if (!this.essayTitle()) {
       this.essayTitle.set(null);
     }
+    // Reset creation status
+    this.essayCreationStatus.set({
+      isCreating: false,
+      created: false,
+      errorMessage: null,
+    });
   }
 
   openEssayTitleModal(): void {
@@ -601,7 +659,55 @@ export class DashboardComponent {
   onEssayTitleConfirmed(title: string): void {
     this.essayTitle.set(title);
     this.showEssayTitleModal.set(false);
-    this.messageService.success(`Essay "${title}" created successfully!`);
+
+    // Set creating state
+    this.essayCreationStatus.set({
+      isCreating: true,
+      created: false,
+      errorMessage: null,
+    });
+
+    // Create essay request DTO
+    const createEssayDto: CreateEssayDto = { title };
+
+    // Call the API to create essay
+    this.essayService
+      .createEssay(createEssayDto)
+      .pipe(
+        catchError((error) => {
+          console.error("Error creating essay:", error);
+          this.essayCreationStatus.set({
+            isCreating: false,
+            created: false,
+            errorMessage: "Failed to create essay. Please try again.",
+          });
+          return of(null);
+        }),
+      )
+      .subscribe({
+        next: (response) => {
+          if (response && response.code === 1) {
+            // Success - essay created
+            this.essayCreationStatus.set({
+              isCreating: false,
+              created: true,
+              errorMessage: null,
+            });
+            this.messageService.success(
+              `Essay "${title}" created successfully!`,
+            );
+          } else {
+            // API returned error code
+            const errorMessage = "Failed to create essay. Please try again.";
+
+            this.essayCreationStatus.set({
+              isCreating: false,
+              created: false,
+              errorMessage,
+            });
+          }
+        },
+      });
   }
 
   onEssayTitleCancelled(): void {
