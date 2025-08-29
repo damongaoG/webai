@@ -32,7 +32,7 @@ function handleModelRequest(request: any, requestId: any) {
         const timeSinceLastMessage = Date.now() - lastMessageTime;
         if (timeSinceLastMessage > 15000) {
           console.log(
-            "Worker: No new messages for 15 seconds, closing connection"
+            "Worker: No new messages for 15 seconds, closing connection",
           );
           postMessage({
             type: "MODEL_ERROR",
@@ -165,7 +165,7 @@ function handleModelRequest(request: any, requestId: any) {
                     console.error(
                       "Worker: Error parsing line:",
                       parseError,
-                      line
+                      line,
                     );
                     // Continue processing other lines even if one fails
                   }

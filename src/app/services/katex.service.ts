@@ -1,12 +1,11 @@
-import {Injectable} from '@angular/core';
-import katex from 'katex';
+import { Injectable } from "@angular/core";
+import katex from "katex";
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: "root",
 })
 export class KatexService {
-  constructor() {
-  }
+  constructor() {}
 
   /**
    * Render math formula
@@ -15,17 +14,17 @@ export class KatexService {
    */
   renderMath(text: string): string {
     // Check if it is a block-level formula
-    const isDisplayMode = text.startsWith('$$') || text.startsWith('\\[');
+    const isDisplayMode = text.startsWith("$$") || text.startsWith("\\[");
 
     // Remove formula separators
     let formula = text;
-    if (text.startsWith('$$') && text.endsWith('$$')) {
+    if (text.startsWith("$$") && text.endsWith("$$")) {
       formula = text.slice(2, -2);
-    } else if (text.startsWith('$') && text.endsWith('$')) {
+    } else if (text.startsWith("$") && text.endsWith("$")) {
       formula = text.slice(1, -1);
-    } else if (text.startsWith('\\[') && text.endsWith('\\]')) {
+    } else if (text.startsWith("\\[") && text.endsWith("\\]")) {
       formula = text.slice(2, -2);
-    } else if (text.startsWith('\\(') && text.endsWith('\\)')) {
+    } else if (text.startsWith("\\(") && text.endsWith("\\)")) {
       formula = text.slice(2, -2);
     }
 
@@ -33,11 +32,11 @@ export class KatexService {
       return katex.renderToString(formula.trim(), {
         displayMode: isDisplayMode,
         throwOnError: false,
-        output: 'html'
+        output: "html",
       });
     } catch (e) {
-      console.error('Error rendering math:', e);
+      console.error("Error rendering math:", e);
       return text;
     }
   }
-} 
+}

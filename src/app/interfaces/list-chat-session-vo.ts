@@ -1,4 +1,4 @@
-import { ModelMessageDTO } from './model-message-dto';
+import { ModelMessageDTO } from "./model-message-dto";
 
 export interface ListChatSessionVo {
   id: string;

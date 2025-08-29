@@ -1,6 +1,6 @@
-import { ListChatSessionVo } from './list-chat-session-vo';
-import { PageableObject } from './pageable-object';
-import { SortObject } from './sort-object';
+import { ListChatSessionVo } from "./list-chat-session-vo";
+import { PageableObject } from "./pageable-object";
+import { SortObject } from "./sort-object";
 
 export interface PageListChatSessionVo {
   content: ListChatSessionVo[];

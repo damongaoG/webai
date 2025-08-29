@@ -1,22 +1,22 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing'
+import { ComponentFixture, TestBed } from "@angular/core/testing";
 
-import { Footer4Component } from './footer-4.component'
+import { Footer4Component } from "./footer-4.component";
 
-describe('Footer3Component', () => {
-  let component: Footer4Component
-  let fixture: ComponentFixture<Footer4Component>
+describe("Footer3Component", () => {
+  let component: Footer4Component;
+  let fixture: ComponentFixture<Footer4Component>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [Footer4Component],
-    }).compileComponents()
+    }).compileComponents();
 
-    fixture = TestBed.createComponent(Footer4Component)
-    component = fixture.componentInstance
-    fixture.detectChanges()
-  })
+    fixture = TestBed.createComponent(Footer4Component);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
 
-  it('should create', () => {
-    expect(component).toBeTruthy()
-  })
-})
+  it("should create", () => {
+    expect(component).toBeTruthy();
+  });
+});

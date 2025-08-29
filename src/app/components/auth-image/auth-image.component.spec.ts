@@ -1,22 +1,22 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing'
+import { ComponentFixture, TestBed } from "@angular/core/testing";
 
-import { AuthImageComponent } from './auth-image.component'
+import { AuthImageComponent } from "./auth-image.component";
 
-describe('AuthImageComponent', () => {
-  let component: AuthImageComponent
-  let fixture: ComponentFixture<AuthImageComponent>
+describe("AuthImageComponent", () => {
+  let component: AuthImageComponent;
+  let fixture: ComponentFixture<AuthImageComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [AuthImageComponent],
-    }).compileComponents()
+    }).compileComponents();
 
-    fixture = TestBed.createComponent(AuthImageComponent)
-    component = fixture.componentInstance
-    fixture.detectChanges()
-  })
+    fixture = TestBed.createComponent(AuthImageComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
 
-  it('should create', () => {
-    expect(component).toBeTruthy()
-  })
-})
+  it("should create", () => {
+    expect(component).toBeTruthy();
+  });
+});

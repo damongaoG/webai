@@ -13,7 +13,7 @@ import { environment } from "@environment/environment";
 export class RegistrationService {
   constructor(
     private http: HttpClient,
-    private authService: AuthService
+    private authService: AuthService,
   ) {}
 
   registerUser(data: RegistryCustomerDto): Observable<Result<any>> {
@@ -21,7 +21,7 @@ export class RegistrationService {
   }
 
   resendVerificationEmail(
-    data: ResendValidateEmailDto
+    data: ResendValidateEmailDto,
   ): Observable<Result<any>> {
     return this.authService.resendValidateEmail(data);
   }
@@ -35,7 +35,7 @@ export class RegistrationService {
 
     return this.http.get(
       `${environment.securityServiceUrl}/anon/kaptcha/validation-email?t=${Date.now()}`,
-      { headers: headers, responseType: "blob" }
+      { headers: headers, responseType: "blob" },
     );
   }
 }

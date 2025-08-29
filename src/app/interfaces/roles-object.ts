@@ -1,4 +1,4 @@
-import {PermissionsObject} from "./permissions-object";
+import { PermissionsObject } from "./permissions-object";
 
 export interface RolesObject {
   id: string;

@@ -1,8 +1,8 @@
-import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, Subject } from 'rxjs';
+import { Injectable } from "@angular/core";
+import { BehaviorSubject, Observable, Subject } from "rxjs";
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: "root",
 })
 export class ChatEventsService {
   private readonly saveAndClearSubject = new Subject<void>();
@@ -42,4 +42,4 @@ export class ChatEventsService {
   triggerLoadMoreHistory(): void {
     this.loadMoreHistorySubject.next();
   }
-} 
+}

@@ -1,9 +1,9 @@
-import { CommonModule } from '@angular/common'
-import { Component, HostListener } from '@angular/core'
-import { LucideAngularModule } from 'lucide-angular'
+import { CommonModule } from "@angular/common";
+import { Component, HostListener } from "@angular/core";
+import { LucideAngularModule } from "lucide-angular";
 
 @Component({
-  selector: 'app-back-to-top',
+  selector: "app-back-to-top",
   standalone: true,
   imports: [CommonModule, LucideAngularModule],
   template: `
@@ -19,14 +19,14 @@ import { LucideAngularModule } from 'lucide-angular'
   styles: ``,
 })
 export class BackToTopComponent {
-  isVisible = false
+  isVisible = false;
 
-  @HostListener('window:scroll', [])
+  @HostListener("window:scroll", [])
   onWindowScroll() {
-    this.isVisible = window.scrollY > 500
+    this.isVisible = window.scrollY > 500;
   }
 
   scrollToTop() {
-    window.scrollTo({ top: 0, behavior: 'smooth' })
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 }

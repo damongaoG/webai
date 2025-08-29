@@ -1,4 +1,4 @@
-import { SortObject } from './sort-object';
+import { SortObject } from "./sort-object";
 
 export interface PageableObject {
   sort: SortObject;

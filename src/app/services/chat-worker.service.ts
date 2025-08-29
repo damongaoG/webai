@@ -19,7 +19,7 @@ export class ChatWorkerService {
       try {
         // Create the worker
         this.worker = new Worker(
-          new URL("../workers/chat-api.worker.ts", import.meta.url)
+          new URL("../workers/chat-api.worker.ts", import.meta.url),
         );
 
         // Set up message handler
@@ -91,7 +91,7 @@ export class ChatWorkerService {
       type: "MODEL_REQUEST",
       requestId,
       payload: {
-        apiUrl: '/model-service',
+        apiUrl: "/model-service",
         modelRequest: request,
       },
     });
@@ -109,4 +109,4 @@ export class ChatWorkerService {
       payload: { tag },
     });
   }
-} 
+}

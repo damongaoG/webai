@@ -7,7 +7,7 @@ import { TaskSelectionEvent, TaskType } from "../interfaces/task.interface";
 })
 export class TaskSelectionService {
   private taskSelectionSubject = new BehaviorSubject<TaskSelectionEvent | null>(
-    null
+    null,
   );
 
   // Observable for components to subscribe to

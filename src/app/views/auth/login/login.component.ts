@@ -152,7 +152,7 @@ export class LoginComponent implements OnInit {
         `${
           environment.securityServiceUrl
         }/anon/kaptcha/login-code?t=${Date.now()}`,
-        { headers: headers, responseType: "blob" }
+        { headers: headers, responseType: "blob" },
       )
       .subscribe((response) => {
         this.kaptchaUrl = URL.createObjectURL(response);

@@ -3,5 +3,5 @@ export interface ChoicesVo {
   delta: {
     role?: string;
     content: string;
-  }
+  };
 }

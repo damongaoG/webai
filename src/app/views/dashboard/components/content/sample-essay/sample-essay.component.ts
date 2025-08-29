@@ -46,11 +46,11 @@ export class SampleEssayComponent implements OnInit, OnDestroy {
     // Add additional paragraphs for demonstration purposes
     if (paragraphs.length > 0) {
       paragraphs.push(
-        "The COVID-19 pandemic created an unprecedented economic shock, prompting governments across the world to adopt large-scale fiscal stimulus programs. These policies were aimed at supporting household income, preserving business operations, and maintaining aggregate demand. While monetary policy remained accommodative, fiscal actions were central to stabilizing the economy. This paper explores the extent to which fiscal policy has been effective in driving recovery and whether its consequences—particularly inflation and public debt—pose long-term risks."
+        "The COVID-19 pandemic created an unprecedented economic shock, prompting governments across the world to adopt large-scale fiscal stimulus programs. These policies were aimed at supporting household income, preserving business operations, and maintaining aggregate demand. While monetary policy remained accommodative, fiscal actions were central to stabilizing the economy. This paper explores the extent to which fiscal policy has been effective in driving recovery and whether its consequences—particularly inflation and public debt—pose long-term risks.",
       );
 
       paragraphs.push(
-        "This paper contributes to the growing literature on post-pandemic fiscal policy effectiveness by providing a comprehensive analysis of multiple economic indicators across different countries and time periods. The findings have important implications for future policy design and implementation."
+        "This paper contributes to the growing literature on post-pandemic fiscal policy effectiveness by providing a comprehensive analysis of multiple economic indicators across different countries and time periods. The findings have important implications for future policy design and implementation.",
       );
     }
 

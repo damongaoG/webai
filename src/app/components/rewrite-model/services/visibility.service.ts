@@ -1,27 +1,27 @@
-import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, fromEvent } from 'rxjs';
+import { Injectable } from "@angular/core";
+import { BehaviorSubject, Observable, fromEvent } from "rxjs";
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: "root",
 })
 export class VisibilityService {
   // Subject to track document visibility state
   private visibilitySubject = new BehaviorSubject<boolean>(
-    this.isDocumentVisible()
+    this.isDocumentVisible(),
   );
 
   constructor() {
     // Add event listener for visibility change
-    document.addEventListener('visibilitychange', () => {
+    document.addEventListener("visibilitychange", () => {
       this.visibilitySubject.next(this.isDocumentVisible());
     });
 
     // Handle window focus/blur events as backup for visibility API
-    fromEvent(window, 'focus').subscribe(() => {
+    fromEvent(window, "focus").subscribe(() => {
       this.visibilitySubject.next(true);
     });
 
-    fromEvent(window, 'blur').subscribe(() => {
+    fromEvent(window, "blur").subscribe(() => {
       this.visibilitySubject.next(false);
     });
   }
@@ -40,4 +40,4 @@ export class VisibilityService {
   public isVisible(): boolean {
     return this.visibilitySubject.getValue();
   }
-} 
+}

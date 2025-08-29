@@ -1,12 +1,12 @@
 export type FooterLinkType = {
-  title: string
+  title: string;
   links: {
-    url?: string
-    name: string
-  }[]
-}
+    url?: string;
+    name: string;
+  }[];
+};
 
 export type FaqType = {
-  question: string
-  answer: string
-}
+  question: string;
+  answer: string;
+};

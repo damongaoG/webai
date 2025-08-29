@@ -1,15 +1,15 @@
-import { Component, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core'
-import { SwiperDirective } from '@components/swiper-directive.component'
-import type { SwiperOptions } from 'swiper/types'
-import { register } from 'swiper/element'
+import { Component, CUSTOM_ELEMENTS_SCHEMA } from "@angular/core";
+import { SwiperDirective } from "@components/swiper-directive.component";
+import type { SwiperOptions } from "swiper/types";
+import { register } from "swiper/element";
 
-register()
+register();
 
 @Component({
-  selector: 'hero-swiper',
+  selector: "hero-swiper",
   standalone: true,
   imports: [SwiperDirective],
-  templateUrl: './hero-swiper.component.html',
+  templateUrl: "./hero-swiper.component.html",
   styles: ``,
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
@@ -20,8 +20,8 @@ export class HeroSwiperComponent {
     centeredSlides: true,
     loop: true,
     navigation: {
-      nextEl: '.swiper-button-next',
-      prevEl: '.swiper-button-prev',
+      nextEl: ".swiper-button-next",
+      prevEl: ".swiper-button-prev",
     },
     autoplay: {
       delay: 3500,
@@ -41,5 +41,5 @@ export class HeroSwiperComponent {
         spaceBetween: 50,
       },
     },
-  }
+  };
 }

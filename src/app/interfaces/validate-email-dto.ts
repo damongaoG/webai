@@ -1,4 +1,4 @@
 export interface ValidateEmailDto {
-    username: string;
-    code: string;
+  username: string;
+  code: string;
 }

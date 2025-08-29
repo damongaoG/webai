@@ -1,38 +1,38 @@
 // title.service.ts
-import { Injectable } from '@angular/core'
-import { Title } from '@angular/platform-browser'
-import { ActivatedRoute, NavigationEnd, Router } from '@angular/router'
-import { filter } from 'rxjs/operators'
+import { Injectable } from "@angular/core";
+import { Title } from "@angular/platform-browser";
+import { ActivatedRoute, NavigationEnd, Router } from "@angular/router";
+import { filter } from "rxjs/operators";
 
 @Injectable({
-  providedIn: 'root',
+  providedIn: "root",
 })
 export class TitleService {
   constructor(
     private titleService: Title,
     private router: Router,
-    private activatedRoute: ActivatedRoute
+    private activatedRoute: ActivatedRoute,
   ) {}
 
   init(): void {
     this.router.events
       .pipe(filter((event) => event instanceof NavigationEnd))
       .subscribe(() => {
-        this.updateTitle()
-      })
+        this.updateTitle();
+      });
   }
 
   private updateTitle(): void {
-    let route = this.activatedRoute
+    let route = this.activatedRoute;
     while (route.firstChild) {
-      route = route.firstChild
+      route = route.firstChild;
     }
 
-    if (route.snapshot.data['title']) {
+    if (route.snapshot.data["title"]) {
       this.titleService.setTitle(
-        route.snapshot.data['title'] +
-          ' | WebAi - AI Startup & Technology Landing Page Angular Template'
-      )
+        route.snapshot.data["title"] +
+          " | WebAi - AI Startup & Technology Landing Page Angular Template",
+      );
     }
   }
 }

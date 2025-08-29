@@ -5,4 +5,4 @@ export * from "./components";
 export * from "./validators/email.validator";
 export * from "./validators/password.validator";
 
-export * from './services';
+export * from "./services";

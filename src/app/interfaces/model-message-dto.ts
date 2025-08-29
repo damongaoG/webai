@@ -4,4 +4,4 @@
 export interface ModelMessageDTO {
   role: string;
   content: string;
-} 
+}

@@ -190,7 +190,7 @@ export class ForgetPasswordComponent implements OnInit {
   private key: string | null = null;
 
   private validateSpecialCharacters(
-    control: AbstractControl
+    control: AbstractControl,
   ): ValidationErrors | null {
     const invalidChars = ["(", ")", "!", "*", "'"];
     const value = control.value;
@@ -204,7 +204,7 @@ export class ForgetPasswordComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private authService: AuthService,
-    private toastService: ToastService
+    private toastService: ToastService,
   ) {
     this.resetForm = this.fb.group(
       {
@@ -220,7 +220,7 @@ export class ForgetPasswordComponent implements OnInit {
       },
       {
         validators: this.passwordMatchValidator,
-      }
+      },
     );
   }
 

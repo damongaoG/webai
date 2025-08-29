@@ -1,6 +1,6 @@
-import { ListChatHistoryDto } from './list-chat-history-dto';
-import { PageableObject } from './pageable-object';
-import { SortObject } from './sort-object';
+import { ListChatHistoryDto } from "./list-chat-history-dto";
+import { PageableObject } from "./pageable-object";
+import { SortObject } from "./sort-object";
 
 export interface PageListChatHistoryVo {
   content: ListChatHistoryDto[];

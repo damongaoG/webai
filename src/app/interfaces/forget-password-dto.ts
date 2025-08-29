@@ -1,4 +1,4 @@
 export interface ForgetPasswordDto {
-    username: string;
-    verifyCode: string;
+  username: string;
+  verifyCode: string;
 }

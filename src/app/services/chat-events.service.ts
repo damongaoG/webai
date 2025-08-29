@@ -30,4 +30,4 @@ export class ChatEventsService {
   triggerLoadMoreHistory(): void {
     this.loadMoreHistorySubject.next();
   }
-} 
+}

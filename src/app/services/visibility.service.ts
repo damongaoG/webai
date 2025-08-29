@@ -7,13 +7,13 @@ import { map } from "rxjs/operators";
 })
 export class VisibilityService {
   private visibilitySubject = new BehaviorSubject<boolean>(
-    this.isDocumentVisible()
+    this.isDocumentVisible(),
   );
 
   constructor() {
     // Listen for visibility change events
     const visibilityChange$ = fromEvent(document, "visibilitychange").pipe(
-      map(() => this.isDocumentVisible())
+      map(() => this.isDocumentVisible()),
     );
 
     // Also listen for window focus/blur as a backup
@@ -24,7 +24,7 @@ export class VisibilityService {
     merge(visibilityChange$, windowFocus$, windowBlur$).subscribe(
       (isVisible) => {
         this.visibilitySubject.next(isVisible);
-      }
+      },
     );
   }
 
@@ -39,4 +39,4 @@ export class VisibilityService {
   public isVisible(): boolean {
     return this.visibilitySubject.value;
   }
-} 
+}

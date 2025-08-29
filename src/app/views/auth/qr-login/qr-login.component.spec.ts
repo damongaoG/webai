@@ -1,22 +1,22 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing'
+import { ComponentFixture, TestBed } from "@angular/core/testing";
 
-import { QrLoginComponent } from './qr-login.component'
+import { QrLoginComponent } from "./qr-login.component";
 
-describe('QrLoginComponent', () => {
-  let component: QrLoginComponent
-  let fixture: ComponentFixture<QrLoginComponent>
+describe("QrLoginComponent", () => {
+  let component: QrLoginComponent;
+  let fixture: ComponentFixture<QrLoginComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [QrLoginComponent],
-    }).compileComponents()
+    }).compileComponents();
 
-    fixture = TestBed.createComponent(QrLoginComponent)
-    component = fixture.componentInstance
-    fixture.detectChanges()
-  })
+    fixture = TestBed.createComponent(QrLoginComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
 
-  it('should create', () => {
-    expect(component).toBeTruthy()
-  })
-})
+  it("should create", () => {
+    expect(component).toBeTruthy();
+  });
+});

@@ -1,10 +1,10 @@
-import { Component } from '@angular/core'
+import { Component } from "@angular/core";
 
 @Component({
-  selector: 'third-party-login',
+  selector: "third-party-login",
   standalone: true,
   imports: [],
-  templateUrl: './third-party-login.component.html',
+  templateUrl: "./third-party-login.component.html",
   styles: ``,
 })
 export class ThirdPartyLoginComponent {}

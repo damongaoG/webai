@@ -1,45 +1,45 @@
-import { Component } from '@angular/core'
-import { LightgalleryModule } from 'lightgallery/angular'
-import { LucideAngularModule } from 'lucide-angular'
-import lgVideo from 'lightgallery/plugins/video'
+import { Component } from "@angular/core";
+import { LightgalleryModule } from "lightgallery/angular";
+import { LucideAngularModule } from "lucide-angular";
+import lgVideo from "lightgallery/plugins/video";
 
 @Component({
-  selector: 'hero-5',
+  selector: "hero-5",
   standalone: true,
   imports: [LucideAngularModule, LightgalleryModule],
-  templateUrl: './hero.component.html',
+  templateUrl: "./hero.component.html",
   styles: ``,
 })
 export class HeroComponent {
-  isModalOpen = false
+  isModalOpen = false;
 
   settings = {
     counter: false,
-    selector: 'a',
+    selector: "a",
     plugins: [lgVideo],
     download: false,
-  }
+  };
 
   openModal() {
-    this.isModalOpen = true
+    this.isModalOpen = true;
     setTimeout(() => {
-      const modal = document.getElementById('watchvideomodal')
+      const modal = document.getElementById("watchvideomodal");
 
       if (modal) {
-        modal.classList.remove('hidden')
+        modal.classList.remove("hidden");
       }
-    }, 0)
+    }, 0);
   }
 
   closeModal(event: MouseEvent) {
-    const target = event.target as HTMLElement
+    const target = event.target as HTMLElement;
 
     // Close modal if the clicked target is the modal overlay
-    if (target.id === 'watchvideomodal') {
-      this.isModalOpen = false
-      const modal = document.getElementById('watchvideomodal')
+    if (target.id === "watchvideomodal") {
+      this.isModalOpen = false;
+      const modal = document.getElementById("watchvideomodal");
       if (modal) {
-        modal.classList.add('hidden')
+        modal.classList.add("hidden");
       }
     }
   }

@@ -1,16 +1,16 @@
-import { Component } from '@angular/core'
-import { pricingPlans } from '../data'
-import { LucideAngularModule } from 'lucide-angular'
-import { currency } from '@common/constants'
+import { Component } from "@angular/core";
+import { pricingPlans } from "../data";
+import { LucideAngularModule } from "lucide-angular";
+import { currency } from "@common/constants";
 
 @Component({
-  selector: 'pricing-card',
+  selector: "pricing-card",
   standalone: true,
   imports: [LucideAngularModule],
-  templateUrl: './pricing-card.component.html',
+  templateUrl: "./pricing-card.component.html",
   styles: ``,
 })
 export class PricingCardComponent {
-  pricingPlans = pricingPlans
-  currency = currency
+  pricingPlans = pricingPlans;
+  currency = currency;
 }

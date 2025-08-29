@@ -46,7 +46,7 @@ export class RegisterComponent implements OnInit, OnDestroy {
     private registrationService: RegistrationService,
     private router: Router,
     private route: ActivatedRoute,
-    private toastService: ToastService
+    private toastService: ToastService,
   ) {
     this.initForm();
   }
@@ -96,7 +96,7 @@ export class RegisterComponent implements OnInit, OnDestroy {
               this.refreshKaptcha();
             } else {
               this.toastService.error(
-                result.error?.message || "Registration failed"
+                result.error?.message || "Registration failed",
               );
             }
             this.isLoading = false;
@@ -167,7 +167,7 @@ export class RegisterComponent implements OnInit, OnDestroy {
         },
         error: (error) => {
           this.toastService.error(
-            error.message || "Failed to send verification email"
+            error.message || "Failed to send verification email",
           );
           this.refreshKaptcha();
         },
@@ -211,7 +211,7 @@ export class RegisterComponent implements OnInit, OnDestroy {
       },
       {
         Validators: PasswordValidators.passwordMatchValidator(),
-      }
+      },
     );
 
     this.verificationForm = this.fb.group({

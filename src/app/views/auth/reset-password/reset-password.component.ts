@@ -40,7 +40,7 @@ export class ResetPasswordComponent implements OnInit {
     private authService: AuthService,
     private router: Router,
     private http: HttpClient,
-    private toastService: ToastService
+    private toastService: ToastService,
   ) {}
 
   ngOnInit(): void {
@@ -65,7 +65,7 @@ export class ResetPasswordComponent implements OnInit {
     this.http
       .get(
         `${environment.securityServiceUrl}/anon/kaptcha/forget-password-code?t=${Date.now()}`,
-        { headers: headers, responseType: "blob" }
+        { headers: headers, responseType: "blob" },
       )
       .subscribe((response) => {
         this.kaptchaUrl = URL.createObjectURL(response);
@@ -87,12 +87,12 @@ export class ResetPasswordComponent implements OnInit {
         next: (result) => {
           if (result.code === 1) {
             this.toastService.success(
-              "Reset password email has been sent. Please check your email."
+              "Reset password email has been sent. Please check your email.",
             );
             this.startCountdown();
           } else {
             this.toastService.error(
-              result.error?.message || "Failed to process request"
+              result.error?.message || "Failed to process request",
             );
           }
           this.refreshKaptcha();

@@ -1,4 +1,4 @@
-import {ChoicesVo} from "./choices-vo";
+import { ChoicesVo } from "./choices-vo";
 
 export interface ModelRequestVo {
   created: number;
