@@ -5,47 +5,50 @@
     <div class="header-left">
       <!-- AI Bot Icon -->
       <div class="ai-bot-icon">
-        <img src="/assets/images/icon/ai-bot.svg" alt="AI Bot" />
+        <img
+          src="/assets/images/icon/ai-bot.svg"
+          alt="AI Bot"
+          class="w-6 h-6 sm:w-8 sm:h-8"
+        />
       </div>
       <!-- Title -->
-      <div class="flex items-center">
+      <div class="flex items-center gap-2">
         <h2 class="essay-title">Your Sample Essay</h2>
         <img
           src="/assets/images/icon/star.svg"
           alt="Star"
-          class="w-6 h-6"
-          style="margin-bottom: 18px"
+          class="w-4 h-4 sm:w-6 sm:h-6 flex-shrink-0"
         />
       </div>
     </div>
 
-    <!-- Document Icon -->
-    <div class="header-right">
+    <!-- Document Icon - Hidden on mobile -->
+    <div class="header-right hidden sm:flex">
       <img
         src="/assets/images/icon/assignment.svg"
         alt="Assignment"
-        style="position: absolute; top: 30px; left: 49px"
+        class="absolute top-6 left-12 w-6 h-6 lg:w-8 lg:h-8"
       />
       <div
-        class="document-icon w-28 h-28 opacity-40 bg-[radial-gradient(ellipse_50.00%_50.00%_at_50.00%_50.00%,_#64E9A7_0%,_rgba(147,_238,_196,_0.50)_100%)] rounded-full blur-xl"
+        class="document-icon w-20 h-20 lg:w-28 lg:h-28 opacity-40 bg-[radial-gradient(ellipse_50.00%_50.00%_at_50.00%_50.00%,_#64E9A7_0%,_rgba(147,_238,_196,_0.50)_100%)] rounded-full blur-xl"
       ></div>
     </div>
   </header>
 
   <!-- Loading State -->
-  <div style="padding-left: 2rem; padding-right: 2rem; position: relative">
+  <div class="px-4 sm:px-6 lg:px-8 relative">
     <div
       class="h-0 outline outline-1 outline-offset-[-0.50px] outline-gray-400/30"
     ></div>
     <img
       src="/assets/images/icon/arrow-right-01.svg"
       alt=""
-      style="position: absolute; top: -7px; left: 17px"
+      class="absolute -top-1.5 left-4 sm:left-6 w-3 h-3 sm:w-4 sm:h-4"
     />
     <img
       src="/assets/images/icon/arrow-left.svg"
       alt=""
-      style="position: absolute; top: -7px; right: 17px"
+      class="absolute -top-1.5 right-4 sm:right-6 w-3 h-3 sm:w-4 sm:h-4"
     />
   </div>
 
@@ -57,7 +60,7 @@
         <div class="empty-state-icon">
           <lucide-angular
             name="file-text"
-            class="h-12 w-12 text-gray-400"
+            class="h-8 w-8 sm:h-10 sm:w-10 lg:h-12 lg:w-12 text-gray-400"
           ></lucide-angular>
         </div>
         <h3 class="empty-state-title">No content generated yet</h3>
@@ -126,7 +129,7 @@
     <footer class="essay-footer">
       <div class="action-button-container">
         <button
-          class="action-button"
+          class="action-button w-full sm:w-auto"
           type="button"
           (click)="onEditAndExport()"
           [disabled]="isContentGenerating"
@@ -135,14 +138,14 @@
           <img
             src="/assets/images/icon/file-edit.svg"
             alt="Edit"
-            class="action-icon"
+            class="action-icon w-4 h-4 sm:w-5 sm:h-5"
           />
-          <span class="action-text">Edit & Export</span>
+          <span class="action-text text-sm sm:text-base">Edit & Export</span>
           <!-- Arrow Right Icon -->
           <img
             src="/assets/images/icon/arrow-right.svg"
             alt="Arrow Right"
-            class="arrow-icon"
+            class="arrow-icon w-4 h-4 sm:w-5 sm:h-5"
           />
         </button>
       </div>

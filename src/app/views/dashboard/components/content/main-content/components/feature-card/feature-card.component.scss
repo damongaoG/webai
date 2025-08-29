@@ -11,6 +11,13 @@
   &:hover {
     transform: translateY(-2px);
   }
+
+  // Mobile responsiveness
+  @media (max-width: 640px) {
+    margin-top: 0.75rem !important;
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
+  }
 }
 
 // Gradient indicator styles with simplified show/hide animation
@@ -32,16 +39,20 @@
 // Expand button styles
 .expand {
   cursor: pointer;
-  gap: 6px;
   display: flex;
-  flex-direction: row;
-  position: absolute;
-  right: 32px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   transition: all 0.2s ease;
 
   // Expanded state styling
   &.expanded {
     color: #05a76f;
+  }
+
+  // Mobile adjustments
+  @media (max-width: 640px) {
+    gap: 2px;
   }
 }
 
@@ -66,8 +77,8 @@
 
 // Task container styles
 .task-container {
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -78,6 +89,17 @@
   stroke: #fff;
   filter: drop-shadow(0px 4px 4px rgba(0, 0, 0, 0.05));
   backdrop-filter: blur(5px);
+
+  // Responsive sizing
+  @media (min-width: 640px) {
+    width: 32px;
+    height: 32px;
+  }
+
+  @media (min-width: 1024px) {
+    width: 36px;
+    height: 36px;
+  }
 }
 
 // Responsive adjustments for the wrapper

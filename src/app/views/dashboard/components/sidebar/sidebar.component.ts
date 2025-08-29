@@ -16,12 +16,13 @@ import {
       class="sidebar h-screen bg-black text-white transition-all duration-300 ease-in-out"
       [class.w-64]="!sidebarState.isSidebarCollapsed()"
       [class.w-16]="sidebarState.isSidebarCollapsed()"
+      [class.shadow-2xl]="isMobileView()"
     >
       <!-- Logo section -->
       <div
-        class="flex items-center border-b border-gray-700"
+        class="flex items-center border-b border-gray-700 px-4 sm:px-6"
         [class.justify-center]="sidebarState.isSidebarCollapsed()"
-        style="padding: 25px; height: 80px"
+        style="height: 80px"
       >
         <div
           class="logo-container h-10 w-10 rounded-lg bg-green-500 flex items-center justify-center flex-shrink-0"
@@ -39,7 +40,7 @@ import {
 
       <!-- Navigation Menu -->
       <nav class="mt-6">
-        <div class="px-2">
+        <div class="px-2 sm:px-3">
           @for (menuItem of sidebarState.menuItems(); track menuItem.id) {
             <div class="mb-2">
               <!-- Main Menu Item -->
@@ -247,11 +248,53 @@ import {
       .sidebar.w-16 .logo-container {
         margin: 0 auto;
       }
+
+      /* Mobile responsive styles */
+      @media (max-width: 1024px) {
+        .sidebar {
+          position: fixed;
+          top: 0;
+          left: 0;
+          z-index: 50;
+          height: 100vh;
+          width: 256px !important; /* Force full width on mobile */
+        }
+
+        .menu-item {
+          padding: 12px 16px;
+        }
+
+        .submenu-container {
+          margin-left: 16px;
+          padding-left: 16px;
+        }
+      }
+
+      /* Mobile touch optimizations */
+      @media (max-width: 640px) {
+        .menu-item {
+          padding: 14px 16px;
+          font-size: 16px;
+        }
+
+        .submenu-item {
+          padding: 12px 16px;
+          font-size: 15px;
+        }
+      }
     `,
   ],
 })
 export class DashboardSidebarComponent {
   protected readonly sidebarState = inject(SidebarStateService);
+
+  // Check if current view is mobile/tablet
+  isMobileView(): boolean {
+    if (typeof window !== "undefined") {
+      return window.innerWidth <= 1024;
+    }
+    return false;
+  }
 
   onMainMenuClick(menuItem: MenuItem): void {
     // In collapsed state, only select the menu item without expanding

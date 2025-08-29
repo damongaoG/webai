@@ -1,10 +1,42 @@
 // Main content container styles
 .main-content {
-  min-width: 400px;
+  min-width: 0; // Reset min-width for responsive design
   background-image: url("/assets/images/bg.png");
   background-size: cover;
   background-repeat: no-repeat;
+  background-position: center;
   position: relative;
+  overflow-y: auto;
+
+  // Responsive adjustments for background
+  @media (max-width: 768px) {
+    background-size: contain;
+    background-position: top center;
+  }
+}
+
+// Cards container responsive layout
+.cards-container {
+  // Mobile: single column with spacing
+  @media (max-width: 640px) {
+    gap: 0.75rem;
+  }
+
+  // Tablet and up: maintain single column with better spacing
+  @media (min-width: 641px) {
+    gap: 1rem;
+  }
+}
+
+// Feature card responsive wrapper
+.feature-card-responsive {
+  width: 100%;
+  max-width: 100%;
+
+  // Ensure cards don't overflow on small screens
+  @media (max-width: 640px) {
+    min-height: auto;
+  }
 }
 
 // File upload notification styles

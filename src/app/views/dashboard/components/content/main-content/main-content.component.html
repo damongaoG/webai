@@ -1,14 +1,17 @@
-<div class="main-content h-full flex flex-col">
-  <!-- Dynamic feature cards -->
-  <app-feature-card
-    *ngFor="let card of featureCards; trackBy: trackByCardId"
-    [featureCard]="card"
-    [cardState]="getCardState(card.id)"
-    [taskType]="card.taskType"
-    (expandClicked)="toggleGradient($event)"
-    (expandHoverStart)="showGradientOnHover($event)"
-    (expandHoverEnd)="hideGradientOnHover($event)"
-    (keywordSelected)="onKeywordSelected($event)"
-    (keywordDeselected)="onKeywordDeselected($event)"
-  ></app-feature-card>
+<div class="main-content h-full flex flex-col gap-3 sm:gap-4 p-3 sm:p-4 lg:p-6">
+  <!-- Dynamic feature cards with responsive layout -->
+  <div class="cards-container grid grid-cols-1 gap-3 sm:gap-4">
+    <app-feature-card
+      *ngFor="let card of featureCards; trackBy: trackByCardId"
+      [featureCard]="card"
+      [cardState]="getCardState(card.id)"
+      [taskType]="card.taskType"
+      (expandClicked)="toggleGradient($event)"
+      (expandHoverStart)="showGradientOnHover($event)"
+      (expandHoverEnd)="hideGradientOnHover($event)"
+      (keywordSelected)="onKeywordSelected($event)"
+      (keywordDeselected)="onKeywordDeselected($event)"
+      class="feature-card-responsive"
+    ></app-feature-card>
+  </div>
 </div>

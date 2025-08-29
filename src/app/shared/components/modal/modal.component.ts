@@ -26,22 +26,25 @@ import { ButtonComponent } from "@/app/shared";
       ></div>
 
       <!-- Modal container -->
-      <div class="flex min-h-full items-center justify-center p-4">
+      <div class="flex min-h-full items-center justify-center p-3 sm:p-4">
         <!-- Modal content -->
         <div [class]="modalClasses" (click)="$event.stopPropagation()">
           <!-- Modal header -->
           <div
             *ngIf="title || showCloseButton"
-            class="flex items-center justify-between border-b border-gray-200 px-6 py-4"
+            class="flex items-center justify-between border-b border-gray-200 px-4 sm:px-6 py-3 sm:py-4"
           >
-            <h3 *ngIf="title" class="text-lg font-semibold text-gray-900">
+            <h3
+              *ngIf="title"
+              class="text-base sm:text-lg font-semibold text-gray-900 pr-4 truncate"
+            >
               {{ title }}
             </h3>
             <!-- Close button with CSS-only X symbol - no external icon dependencies -->
             <button
               *ngIf="showCloseButton"
               type="button"
-              class="modal-close-btn"
+              class="modal-close-btn flex-shrink-0"
               (click)="handleCancel()"
               aria-label="Close modal"
             >
@@ -50,22 +53,25 @@ import { ButtonComponent } from "@/app/shared";
           </div>
 
           <!-- Modal body -->
-          <div class="px-6 py-4">
+          <div class="px-4 sm:px-6 py-3 sm:py-4">
             <!-- Display content if provided -->
-            <p *ngIf="content" class="text-gray-700">{{ content }}</p>
+            <p *ngIf="content" class="text-sm sm:text-base text-gray-700">
+              {{ content }}
+            </p>
             <ng-content></ng-content>
           </div>
 
           <!-- Modal footer -->
           <div
             *ngIf="showFooter"
-            class="flex justify-end space-x-3 border-t border-gray-200 px-6 py-4"
+            class="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 border-t border-gray-200 px-4 sm:px-6 py-3 sm:py-4"
           >
             <app-button
               *ngIf="showCancelButton"
               variant="default"
               (clicked)="handleCancel()"
               [disabled]="confirmLoading"
+              class="w-full sm:w-auto order-2 sm:order-1"
             >
               {{ cancelText }}
             </app-button>
@@ -74,6 +80,7 @@ import { ButtonComponent } from "@/app/shared";
               variant="primary"
               (clicked)="handleOk()"
               [loading]="confirmLoading"
+              class="w-full sm:w-auto order-1 sm:order-2"
             >
               {{ okText }}
             </app-button>
@@ -88,17 +95,25 @@ import { ButtonComponent } from "@/app/shared";
         display: flex;
         align-items: center;
         justify-content: center;
-        width: 32px;
-        height: 32px;
+        width: 28px;
+        height: 28px;
         border: none;
         border-radius: 50%;
         background: transparent;
         color: #6b7280;
-        font-size: 20px;
+        font-size: 18px;
         font-weight: 300;
         line-height: 1;
         cursor: pointer;
         transition: all 0.2s ease;
+      }
+
+      @media (min-width: 640px) {
+        .modal-close-btn {
+          width: 32px;
+          height: 32px;
+          font-size: 20px;
+        }
       }
 
       .modal-close-btn:hover {
@@ -113,6 +128,14 @@ import { ButtonComponent } from "@/app/shared";
 
       .modal-close-btn:active {
         background-color: #e5e7eb;
+      }
+
+      /* Ensure modal content scrolls on mobile if needed */
+      @media (max-height: 600px) {
+        .modal-container {
+          align-items: flex-start;
+          padding-top: 2rem;
+        }
       }
     `,
   ],
@@ -156,9 +179,15 @@ export class ModalComponent implements OnInit, OnDestroy {
       "shadow-xl",
       "transform",
       "transition-all",
-      "max-w-lg",
+      "max-w-sm",
+      "sm:max-w-md",
+      "lg:max-w-lg",
       "w-full",
       "mx-auto",
+      "max-h-[90vh]",
+      "overflow-hidden",
+      "flex",
+      "flex-col",
     ];
 
     return [...baseClasses, this.customClass].join(" ");

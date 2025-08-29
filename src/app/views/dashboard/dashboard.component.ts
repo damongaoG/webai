@@ -41,10 +41,27 @@ import {
     EssayTitleModalComponent,
   ],
   template: `
-    <div class="dashboard-container h-screen flex overflow-hidden bg-black">
-      <!-- Sidebar - Only render when not collapsed -->
+    <div
+      class="dashboard-container h-screen flex overflow-hidden bg-black relative"
+    >
+      <!-- Mobile Sidebar Overlay -->
+      @if (!sidebarState.isSidebarCollapsed() && isMobileView()) {
+        <div
+          class="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+          (click)="toggleSidebar()"
+        ></div>
+      }
+
+      <!-- Sidebar - Responsive positioning -->
       @if (!sidebarState.isSidebarCollapsed()) {
-        <app-dashboard-sidebar class="sidebar-transition">
+        <app-dashboard-sidebar
+          class="sidebar-transition"
+          [class.fixed]="isMobileView()"
+          [class.z-50]="isMobileView()"
+          [class.h-full]="isMobileView()"
+          [class.top-0]="isMobileView()"
+          [class.left-0]="isMobileView()"
+        >
         </app-dashboard-sidebar>
       }
 
@@ -52,17 +69,18 @@ import {
       <div
         class="main-content-area flex-1 overflow-auto transition-all duration-300 ease-in-out"
         [class.expanded]="sidebarState.isSidebarCollapsed()"
+        [class.w-full]="isMobileView()"
       >
         <!-- Top Header with Toggle Button -->
         <div
-          class="top-header border-b border-gray-700 flex justify-between items-center bg-gray-900"
-          style="height: 80px; padding: 10px;"
+          class="top-header border-b border-gray-700 flex justify-between items-center bg-gray-900 px-3 sm:px-4 lg:px-6"
+          style="height: 80px;"
         >
-          <div class="flex items-center">
+          <div class="flex items-center min-w-0 flex-1">
             <!-- Sidebar Toggle Button -->
             <button
               (click)="toggleSidebar()"
-              class="sidebar-toggle-btn p-2 rounded-lg bg-gray-800 hover:bg-gray-700 text-white transition-colors duration-200 mr-4"
+              class="sidebar-toggle-btn p-2 rounded-lg bg-gray-800 hover:bg-gray-700 text-white transition-colors duration-200 mr-3 sm:mr-4 flex-shrink-0"
               [attr.aria-label]="
                 sidebarState.isSidebarCollapsed()
                   ? 'Expand sidebar'
@@ -75,60 +93,102 @@ import {
               ></lucide-angular>
             </button>
 
-            <!-- Page Title -->
+            <!-- Page Title - Responsive -->
             @switch (sidebarState.selectedContent()) {
               @case (ContentType.DASHBOARD) {
-                <div>
-                  <h1 class="text-2xl font-bold text-white">Dashboard</h1>
-                  <p class="text-gray-400 mt-1">
+                <div class="min-w-0">
+                  <h1
+                    class="text-lg sm:text-xl lg:text-2xl font-bold text-white truncate"
+                  >
+                    Dashboard
+                  </h1>
+                  <p
+                    class="text-gray-400 mt-1 text-xs sm:text-sm hidden sm:block"
+                  >
                     Welcome to your AI-powered workspace
                   </p>
                 </div>
               }
               @case (ContentType.REWRITE_MODEL) {
-                <div>
-                  <h1 class="text-2xl font-bold text-white">Rewrite Model</h1>
-                  <p class="text-gray-400 mt-1">
+                <div class="min-w-0">
+                  <h1
+                    class="text-lg sm:text-xl lg:text-2xl font-bold text-white truncate"
+                  >
+                    Rewrite Model
+                  </h1>
+                  <p
+                    class="text-gray-400 mt-1 text-xs sm:text-sm hidden sm:block"
+                  >
                     AI-powered text rewriting assistant
                   </p>
                 </div>
               }
               @case (ContentType.ESSAY_MODEL) {
-                <div>
-                  <h1 class="text-2xl font-bold text-white">Essay Model</h1>
-                  <p class="text-gray-400 mt-1">
+                <div class="min-w-0">
+                  <h1
+                    class="text-lg sm:text-xl lg:text-2xl font-bold text-white truncate"
+                  >
+                    Essay Model
+                  </h1>
+                  <p
+                    class="text-gray-400 mt-1 text-xs sm:text-sm hidden sm:block"
+                  >
                     Comprehensive essay writing assistance
                   </p>
                 </div>
               }
               @case (ContentType.REWRITE_HISTORY) {
-                <div>
-                  <h1 class="text-2xl font-bold text-white">Rewrite History</h1>
-                  <p class="text-gray-400 mt-1">
+                <div class="min-w-0">
+                  <h1
+                    class="text-lg sm:text-xl lg:text-2xl font-bold text-white truncate"
+                  >
+                    Rewrite History
+                  </h1>
+                  <p
+                    class="text-gray-400 mt-1 text-xs sm:text-sm hidden sm:block"
+                  >
                     Your rewrite conversation history
                   </p>
                 </div>
               }
               @case (ContentType.ESSAY_HISTORY) {
-                <div>
-                  <h1 class="text-2xl font-bold text-white">Essay History</h1>
-                  <p class="text-gray-400 mt-1">Your essay writing history</p>
+                <div class="min-w-0">
+                  <h1
+                    class="text-lg sm:text-xl lg:text-2xl font-bold text-white truncate"
+                  >
+                    Essay History
+                  </h1>
+                  <p
+                    class="text-gray-400 mt-1 text-xs sm:text-sm hidden sm:block"
+                  >
+                    Your essay writing history
+                  </p>
                 </div>
               }
               @case (ContentType.REWRITE_NEW) {
-                <div>
-                  <h1 class="text-2xl font-bold text-white">New Rewrite</h1>
-                  <p class="text-gray-400 mt-1">
+                <div class="min-w-0">
+                  <h1
+                    class="text-lg sm:text-xl lg:text-2xl font-bold text-white truncate"
+                  >
+                    New Rewrite
+                  </h1>
+                  <p
+                    class="text-gray-400 mt-1 text-xs sm:text-sm hidden sm:block"
+                  >
                     Start a new text rewriting session
                   </p>
                 </div>
               }
               @case (ContentType.ESSAY_NEW) {
-                <div>
-                  <h1 class="text-2xl font-bold text-white">
+                <div class="min-w-0">
+                  <h1
+                    class="text-lg sm:text-xl lg:text-2xl font-bold text-white truncate"
+                  >
                     {{ essayTitle() || "New Essay" }}
                   </h1>
-                  <p class="text-gray-400 mt-1">
+                  <p
+                    class="text-gray-400 mt-1 text-xs sm:text-sm hidden sm:block"
+                  >
                     Create a new essay with AI assistance
                   </p>
                 </div>
@@ -137,10 +197,12 @@ import {
           </div>
 
           <!-- User Menu -->
-          <app-user-menu
-            (changePassword)="showChangePasswordModal()"
-            (logout)="showLogoutConfirmation()"
-          ></app-user-menu>
+          <div class="flex-shrink-0">
+            <app-user-menu
+              (changePassword)="showChangePasswordModal()"
+              (logout)="showLogoutConfirmation()"
+            ></app-user-menu>
+          </div>
         </div>
 
         <!-- Content based on sidebar selection -->
@@ -148,14 +210,16 @@ import {
           @switch (sidebarState.selectedContent()) {
             @case (ContentType.DASHBOARD) {
               <div class="dashboard-welcome-container h-full bg-gray-900">
-                <div class="flex items-center justify-center h-full">
-                  <div class="text-center">
-                    <div class="mb-8">
+                <div
+                  class="flex items-center justify-center h-full p-4 sm:p-6 lg:p-8"
+                >
+                  <div class="text-center max-w-2xl">
+                    <div class="mb-6 sm:mb-8">
                       <div
-                        class="inline-flex items-center justify-center w-16 h-16 bg-green-500 rounded-full mb-4"
+                        class="inline-flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 bg-green-500 rounded-full mb-4"
                       >
                         <svg
-                          class="w-8 h-8 text-white"
+                          class="w-6 h-6 sm:w-8 sm:h-8 text-white"
                           fill="none"
                           stroke="currentColor"
                           viewBox="0 0 24 24"
@@ -175,10 +239,12 @@ import {
                         </svg>
                       </div>
                     </div>
-                    <h2 class="text-4xl font-bold text-white mb-4">
+                    <h2
+                      class="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-4"
+                    >
                       Welcome to our website
                     </h2>
-                    <p class="text-gray-400 text-lg max-w-md mx-auto">
+                    <p class="text-gray-400 text-base sm:text-lg px-4">
                       Your AI-powered content creation journey begins here.
                       Explore our powerful tools to enhance your writing
                       experience.
@@ -415,21 +481,49 @@ import {
       }
 
       /* Responsive adjustments */
-      @media (max-width: 768px) {
+      @media (max-width: 1024px) {
         .dashboard-container {
           flex-direction: column;
         }
 
         .sidebar-transition {
-          position: absolute;
+          position: fixed !important;
           top: 0;
           left: 0;
           z-index: 50;
           height: 100vh;
+          transform: translateX(0);
         }
 
         .main-content-area {
           width: 100%;
+        }
+
+        .content-wrapper {
+          height: calc(100vh - 80px);
+        }
+      }
+
+      /* Mobile-specific optimizations */
+      @media (max-width: 640px) {
+        .top-header {
+          padding-left: 12px;
+          padding-right: 12px;
+        }
+
+        .sidebar-toggle-btn {
+          padding: 8px;
+        }
+
+        .dashboard-welcome-container {
+          padding: 16px;
+        }
+      }
+
+      /* Tablet adjustments */
+      @media (min-width: 641px) and (max-width: 1024px) {
+        .content-wrapper {
+          padding: 16px;
         }
       }
     `,
@@ -510,6 +604,14 @@ export class DashboardComponent {
   // Toggle sidebar collapse/expand
   toggleSidebar(): void {
     this.sidebarState.toggleSidebarCollapse();
+  }
+
+  // Check if current view is mobile/tablet
+  isMobileView(): boolean {
+    if (typeof window !== "undefined") {
+      return window.innerWidth <= 1024;
+    }
+    return false;
   }
 
   showChangePasswordModal(): void {

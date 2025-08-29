@@ -1,75 +1,76 @@
 <div class="feature-card-wrapper">
   <div
-    class="feature-card h-20 bg-white/40 shadow-[0px_4px_4px_0px_rgba(0,0,0,0.05)] border-2 border-white backdrop-blur-[5px] flex items-center justify-between px-6"
-    style="margin-top: 2rem"
+    class="feature-card h-16 sm:h-20 bg-white/40 shadow-[0px_4px_4px_0px_rgba(0,0,0,0.05)] border-2 border-white backdrop-blur-[5px] flex items-center justify-between px-3 sm:px-4 lg:px-6 rounded-lg sm:margin-top: 2rem"
+    style="margin-top: 1rem"
     [ngClass]="featureCard.additionalClasses"
   >
     <!-- Left side: Icon, title, and star -->
-    <div class="flex items-center">
-      <div class="icon-container mr-3">
-        <div class="task-container mr-3">
+    <div class="flex items-center min-w-0 flex-1">
+      <div class="icon-container flex items-center gap-2 sm:gap-3 min-w-0">
+        <div class="task-container flex-shrink-0">
           <img
             [src]="featureCard.iconPath"
-            class="w-5"
+            class="w-4 sm:w-5"
             [alt]="featureCard.iconAlt"
           />
         </div>
-        <div
-          class="justify-start text-zinc-800 text-xl font-bold keywords-title"
-        >
-          {{ featureCard.title }}
+        <div class="title-container flex items-center gap-1 sm:gap-2 min-w-0">
+          <div
+            class="text-zinc-800 text-sm sm:text-lg lg:text-xl font-bold keywords-title truncate"
+          >
+            {{ featureCard.title }}
+          </div>
+          <img
+            src="/assets/images/icon/star.svg"
+            alt="Star"
+            class="w-4 h-4 sm:w-6 sm:h-6 flex-shrink-0"
+          />
         </div>
-        <img
-          src="/assets/images/icon/star.svg"
-          alt="Star"
-          class="w-6 h-6"
-          style="margin-bottom: 18px"
-        />
       </div>
     </div>
 
     <!-- Center: Green gradient indicator - initially hidden -->
     <div
-      class="gradient-indicator cursor-pointer flex items-center w-24 h-10 bg-[radial-gradient(ellipse_50.00%_50.00%_at_50.00%_50.00%,_#64E9A7_0%,_rgba(147,_238,_196,_0.50)_100%)]"
+      class="gradient-indicator cursor-pointer flex items-center w-16 sm:w-20 lg:w-24 h-8 sm:h-10 bg-[radial-gradient(ellipse_50.00%_50.00%_at_50.00%_50.00%,_#64E9A7_0%,_rgba(147,_238,_196,_0.50)_100%)] rounded-md"
       [class.visible]="cardState.showGradient"
     ></div>
 
     <!-- Right side: Expand button -->
     <div
-      class="expand expand-icon"
+      class="expand expand-icon flex-shrink-0 cursor-pointer"
       [class.expanded]="shouldShowExpandableContent"
       (click)="onExpandClick()"
       (mouseenter)="onExpandHoverStart()"
       (mouseleave)="onExpandHoverEnd()"
     >
-      <img
-        src="/assets/images/icon/expand-one.svg"
-        alt="Expand"
-        class="w-6 h-6 transition-transform duration-200"
-        [class.rotate-180]="shouldShowExpandableContent"
-      />
-      <div
-        class="justify-start text-stone-500 text-sm font-normal keywords-title"
-      >
-        {{ shouldShowExpandableContent ? "Collapse" : "Expand" }}
+      <div class="flex flex-col items-center gap-1">
+        <img
+          src="/assets/images/icon/expand-one.svg"
+          alt="Expand"
+          class="w-5 h-5 sm:w-6 sm:h-6 transition-transform duration-200"
+          [class.rotate-180]="shouldShowExpandableContent"
+        />
+        <div class="text-stone-500 text-xs sm:text-sm font-normal text-center">
+          {{ shouldShowExpandableContent ? "Collapse" : "Expand" }}
+        </div>
       </div>
     </div>
   </div>
 
   <!-- Loading State -->
-  <div style="padding-left: 2rem; padding-right: 2rem; position: relative">
+  <div class="px-4 sm:px-6 lg:px-8 relative">
     <div
       class="h-0 outline outline-1 outline-offset-[-0.50px] outline-gray-400/30"
     ></div>
     <img
       src="/assets/images/icon/arrow-right-01.svg"
       alt=""
-      style="position: absolute; top: -7px; left: 17px"
+      class="absolute -top-1.5 left-4 sm:left-6 w-3 h-3 sm:w-4 sm:h-4"
     />
     <img
       src="/assets/images/icon/arrow-left.svg"
       alt=""
-      style="position: absolute; top: -7px; right: 17px"
+      class="absolute -top-1.5 right-4 sm:right-6 w-3 h-3 sm:w-4 sm:h-4"
     />
   </div>
 

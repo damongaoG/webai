@@ -9,9 +9,11 @@ import { IconComponent } from "@/app/shared";
   imports: [CommonModule, IconComponent],
   template: `
     <div class="user-menu-container">
-      <!-- User info display -->
-      <div class="user-info">
-        <span class="user-email text-sm text-gray-300">
+      <!-- User info display - Hidden on small screens -->
+      <div class="user-info hidden sm:flex">
+        <span
+          class="user-email text-xs sm:text-sm text-gray-300 truncate max-w-32 lg:max-w-none"
+        >
           {{ userEmail$ | async }}
         </span>
       </div>
@@ -23,8 +25,9 @@ import { IconComponent } from "@/app/shared";
           class="menu-trigger"
           (click)="toggleMenu()"
           [class.active]="isMenuOpen"
+          aria-label="User menu"
         >
-          <app-icon name="menu" [size]="20"></app-icon>
+          <app-icon name="menu" [size]="isMobileView() ? 18 : 20"></app-icon>
         </button>
 
         <!-- Dropdown menu -->
@@ -33,6 +36,13 @@ import { IconComponent } from "@/app/shared";
           class="menu-dropdown"
           (click)="$event.stopPropagation()"
         >
+          <!-- Show user email on mobile at top of dropdown -->
+          <div class="sm:hidden user-email-mobile">
+            <span class="text-xs text-gray-400 truncate">
+              {{ userEmail$ | async }}
+            </span>
+          </div>
+
           <button
             type="button"
             class="menu-item"
@@ -66,8 +76,14 @@ import { IconComponent } from "@/app/shared";
       .user-menu-container {
         display: flex;
         align-items: center;
-        gap: 1rem;
+        gap: 0.5rem;
         position: relative;
+      }
+
+      @media (min-width: 640px) {
+        .user-menu-container {
+          gap: 1rem;
+        }
       }
 
       .user-info {
@@ -83,14 +99,21 @@ import { IconComponent } from "@/app/shared";
         display: flex;
         align-items: center;
         justify-content: center;
-        width: 40px;
-        height: 40px;
+        width: 36px;
+        height: 36px;
         border: 1px solid #374151;
         border-radius: 8px;
         background: transparent;
         color: #9ca3af;
         cursor: pointer;
         transition: all 0.2s ease;
+      }
+
+      @media (min-width: 640px) {
+        .menu-trigger {
+          width: 40px;
+          height: 40px;
+        }
       }
 
       .menu-trigger:hover {
@@ -109,7 +132,7 @@ import { IconComponent } from "@/app/shared";
         position: absolute;
         top: calc(100% + 8px);
         right: 0;
-        min-width: 180px;
+        min-width: 160px;
         background: #1f2937;
         border: 1px solid #374151;
         border-radius: 8px;
@@ -118,19 +141,39 @@ import { IconComponent } from "@/app/shared";
         overflow: hidden;
       }
 
+      @media (min-width: 640px) {
+        .menu-dropdown {
+          min-width: 180px;
+        }
+      }
+
+      .user-email-mobile {
+        padding: 0.75rem 1rem 0.5rem;
+        border-bottom: 1px solid #374151;
+        margin-bottom: 0.25rem;
+      }
+
       .menu-item {
         display: flex;
         align-items: center;
-        gap: 0.75rem;
+        gap: 0.5rem;
         width: 100%;
-        padding: 0.75rem 1rem;
+        padding: 0.625rem 1rem;
         border: none;
         background: transparent;
         color: #d1d5db;
-        font-size: 0.875rem;
+        font-size: 0.8125rem;
         text-align: left;
         cursor: pointer;
         transition: background-color 0.2s ease;
+      }
+
+      @media (min-width: 640px) {
+        .menu-item {
+          gap: 0.75rem;
+          padding: 0.75rem 1rem;
+          font-size: 0.875rem;
+        }
       }
 
       .menu-item:hover {
@@ -166,6 +209,14 @@ export class UserMenuComponent {
 
   // User email observable
   userEmail$ = this.authService.getUserEmail();
+
+  // Check if current view is mobile/tablet
+  isMobileView(): boolean {
+    if (typeof window !== "undefined") {
+      return window.innerWidth <= 640;
+    }
+    return false;
+  }
 
   toggleMenu(): void {
     this.isMenuOpen = !this.isMenuOpen;

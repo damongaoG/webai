@@ -19,23 +19,53 @@ import { DashboardSharedService } from "./dashboard-shared.service";
   providers: [DashboardSharedService],
   template: `
     <div
-      class="content-container h-full flex flex-row"
+      class="content-container h-full flex flex-col lg:flex-row gap-4 p-4 lg:p-6"
       style="background: #F3F6F8;"
     >
-      <!-- Left Sidebar -->
-      <app-sidebar class="w-1/6 mr-4"></app-sidebar>
+      <!-- Left Sidebar - Hidden on mobile, shown on large screens -->
+      <app-sidebar class="hidden lg:block lg:w-1/6 lg:min-w-48"></app-sidebar>
 
-      <!-- Main Content Area -->
-      <app-main-content class="w-3/6 mx-4"></app-main-content>
+      <!-- Main Content Area - Full width on mobile, adjusted on larger screens -->
+      <app-main-content
+        class="flex-1 lg:w-3/6 order-1 lg:order-none"
+      ></app-main-content>
 
-      <!-- Right Sample Essay Area -->
-      <app-sample-essay class="w-2/6 ml-4"></app-sample-essay>
+      <!-- Right Sample Essay Area - Full width on mobile, smaller on larger screens -->
+      <app-sample-essay
+        class="w-full lg:w-2/6 lg:min-w-80 order-2 lg:order-none"
+      ></app-sample-essay>
     </div>
   `,
   styles: [
     `
       .content-container {
         overflow-y: auto;
+        min-height: 0; /* Allow flexbox to shrink */
+      }
+
+      /* Mobile-first responsive styles */
+      @media (max-width: 1024px) {
+        .content-container {
+          flex-direction: column;
+          gap: 1rem;
+          padding: 1rem;
+        }
+      }
+
+      /* Tablet adjustments */
+      @media (min-width: 768px) and (max-width: 1024px) {
+        .content-container {
+          padding: 1.5rem;
+          gap: 1.5rem;
+        }
+      }
+
+      /* Desktop optimizations */
+      @media (min-width: 1025px) {
+        .content-container {
+          gap: 1.5rem;
+          padding: 1.5rem;
+        }
       }
     `,
   ],
