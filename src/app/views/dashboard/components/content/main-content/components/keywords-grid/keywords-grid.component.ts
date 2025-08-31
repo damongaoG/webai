@@ -15,13 +15,11 @@ import { KeywordTagComponent } from "../keyword-tag/keyword-tag.component";
   standalone: true,
   imports: [CommonModule, KeywordTagComponent],
   template: `
-    <div
-      class="keywords-grid-container"
-      [style.--grid-columns]="3"
-      [style.--grid-gap]="gridConfig.gap + 'px'"
-    >
+    <div class="keywords-grid-container">
       @if (keywords.length > 0) {
-        <div class="keywords-grid">
+        <div
+          class="keywords-grid grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4"
+        >
           @for (keyword of keywords; track keyword.id) {
             <app-keyword-tag
               [keyword]="keyword"
@@ -68,7 +66,6 @@ export class KeywordsGridComponent {
   @Output() keywordSelected = new EventEmitter<KeywordData>();
   @Output() keywordDeselected = new EventEmitter<KeywordData>();
 
-  // Signal for selected keywords count
   /**
    * Handle keyword tag click
    */

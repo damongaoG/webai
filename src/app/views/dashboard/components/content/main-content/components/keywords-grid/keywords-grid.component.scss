@@ -6,12 +6,19 @@
   backdrop-filter: blur(5px);
   border: 2px solid white;
   box-shadow: 0 4px 4px rgba(0, 0, 0, 0.05);
+
+  // Responsive padding adjustments
+  @media (max-width: 768px) {
+    padding: 16px;
+  }
+
+  @media (max-width: 480px) {
+    padding: 12px;
+  }
 }
 
 .keywords-grid {
-  display: grid;
-  grid-template-columns: repeat(var(--grid-columns, 5), 1fr);
-  gap: var(--grid-gap, 16px);
+  // Grid layout is now handled by Tailwind classes
   align-items: start;
   justify-items: center;
 
@@ -38,43 +45,16 @@
   }
 }
 
-// Responsive grid adjustments
-@media (max-width: 1200px) {
-  .keywords-grid {
-    grid-template-columns: repeat(4, 1fr);
-  }
-}
-
-@media (max-width: 992px) {
-  .keywords-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
-
-  .keywords-grid-container {
-    padding: 20px;
-  }
-}
-
+// Responsive gap adjustments for smaller screens
 @media (max-width: 768px) {
   .keywords-grid {
-    grid-template-columns: repeat(2, 1fr);
     gap: 12px;
-  }
-
-  .keywords-grid-container {
-    padding: 16px;
-    margin-top: 12px;
   }
 }
 
 @media (max-width: 480px) {
   .keywords-grid {
-    grid-template-columns: 1fr;
     gap: 10px;
-  }
-
-  .keywords-grid-container {
-    padding: 12px;
   }
 }
 
