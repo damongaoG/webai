@@ -70,6 +70,8 @@ export class KeywordsGridComponent {
    * Handle keyword tag click
    */
   onTagClicked(keyword: KeywordData): void {
+    console.log("Keyword clicked:", keyword);
+    keyword.isSelected = !keyword.isSelected;
     if (keyword.isSelected) {
       this.keywordDeselected.emit(keyword);
     } else {
