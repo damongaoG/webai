@@ -1,4 +1,11 @@
-import { Component, Input, Output, EventEmitter, inject } from "@angular/core";
+import {
+  Component,
+  Input,
+  Output,
+  EventEmitter,
+  inject,
+  signal,
+} from "@angular/core";
 import { CommonModule } from "@angular/common";
 import {
   FeatureCard,
@@ -9,6 +16,9 @@ import { KeywordData } from "../../interfaces/keyword.interface";
 import { TaskType } from "@/app/interfaces/task.interface";
 import { TaskSelectionService } from "@/app/services/task-selection.service";
 import { EssayStateService } from "@/app/services/essay-state.service";
+import { EssayService } from "@/app/services/essay.service";
+import { parseKeywordsToData } from "@/app/helper/utils";
+import { catchError, of } from "rxjs";
 
 @Component({
   selector: "app-feature-card",
@@ -33,21 +43,11 @@ export class FeatureCardComponent {
 
   private taskSelectionService = inject(TaskSelectionService);
   private readonly essayStateService = inject(EssayStateService);
+  private readonly essayService = inject(EssayService);
 
-  sampleKeywords: KeywordData[] = [
-    { id: "1", text: "keywords01", isSelected: true },
-    { id: "2", text: "keywords02", isSelected: false },
-    { id: "3", text: "keywords03", isSelected: false },
-    { id: "4", text: "keywords04", isSelected: false },
-    { id: "5", text: "keywords05", isSelected: false },
-    { id: "6", text: "keywords06", isSelected: false },
-    { id: "7", text: "keywords07", isSelected: false },
-    { id: "8", text: "keywords08", isSelected: false },
-    { id: "9", text: "keywords09", isSelected: false },
-    { id: "10", text: "keywords10", isSelected: false },
-    { id: "11", text: "keywords11", isSelected: false },
-    { id: "12", text: "keywords12", isSelected: false },
-  ];
+  // Signal to store fetched keywords
+  private readonly fetchedKeywords = signal<KeywordData[]>([]);
+  private readonly isLoadingKeywords = signal<boolean>(false);
 
   onExpandClick(): void {
     // Check if this card interaction is allowed
@@ -67,6 +67,11 @@ export class FeatureCardComponent {
         isExpanded,
         this.featureCard.id,
       );
+
+      // If expanding keywords card, fetch keywords from API
+      if (isExpanded && this.featureCard.id === "keywords") {
+        this.fetchKeywords();
+      }
     }
   }
 
@@ -95,12 +100,51 @@ export class FeatureCardComponent {
 
   get keywordsData(): KeywordData[] {
     if (this.featureCard.id === "keywords") {
-      return this.sampleKeywords;
+      // Return fetched keywords if available, otherwise return empty array
+      return this.fetchedKeywords();
     }
     return [];
   }
 
   get isInteractionAllowed(): boolean {
     return this.essayStateService.isInteractionAllowed(this.featureCard.id);
+  }
+
+  /**
+   * Fetch keywords from API for the current essay
+   */
+  private fetchKeywords(): void {
+    const essayId = this.essayStateService.essayId();
+
+    if (!essayId) {
+      console.warn("No essay ID available for fetching keywords");
+      return;
+    }
+
+    this.isLoadingKeywords.set(true);
+
+    this.essayService
+      .getKeywords(essayId)
+      .pipe(
+        catchError((error) => {
+          console.error("Error fetching keywords:", error);
+          this.isLoadingKeywords.set(false);
+          // Fall back to sample keywords on error
+          return of(null);
+        }),
+      )
+      .subscribe({
+        next: (response) => {
+          this.isLoadingKeywords.set(false);
+
+          if (response && response.code === 1 && response.data.keywords) {
+            // Parse keywords string into KeywordData array
+            const keywordsData = parseKeywordsToData(response.data.keywords);
+            this.fetchedKeywords.set(keywordsData);
+          } else {
+            console.warn("Invalid keywords response:", response);
+          }
+        },
+      });
   }
 }

@@ -12,6 +12,7 @@ export enum EssayCreationPhase {
 export interface EssayState {
   phase: EssayCreationPhase;
   title: string | null;
+  essayId: string | null;
   selectedKeywords: string[];
   isCreating: boolean;
   errorMessage: string | null;
@@ -35,6 +36,7 @@ export class EssayStateService {
   private readonly initialState: EssayState = {
     phase: EssayCreationPhase.NOT_STARTED,
     title: null,
+    essayId: null,
     selectedKeywords: [],
     isCreating: false,
     errorMessage: null,
@@ -57,6 +59,7 @@ export class EssayStateService {
   // Signal-based getters for reactive UI
   public readonly currentPhase = signal(this.initialState.phase);
   public readonly essayTitle = signal(this.initialState.title);
+  public readonly essayId = signal(this.initialState.essayId);
   public readonly isCreatingEssay = signal(this.initialState.isCreating);
 
   /**
@@ -75,13 +78,14 @@ export class EssayStateService {
   }
 
   /**
-   * Set essay title and move to TITLE_CREATED phase
+   * Set essay title and ID, move to TITLE_CREATED phase
    */
-  setEssayTitle(title: string): void {
+  setEssayTitle(title: string, essayId?: string): void {
     const currentState = this.essayStateSubject.value;
     const newState: EssayState = {
       ...currentState,
       title,
+      essayId: essayId || currentState.essayId,
       phase: EssayCreationPhase.TITLE_CREATED,
       isCreating: false,
       errorMessage: null,
@@ -90,6 +94,9 @@ export class EssayStateService {
 
     this.updateState(newState);
     this.essayTitle.set(title);
+    if (essayId) {
+      this.essayId.set(essayId);
+    }
     this.currentPhase.set(EssayCreationPhase.TITLE_CREATED);
     this.isCreatingEssay.set(false);
   }

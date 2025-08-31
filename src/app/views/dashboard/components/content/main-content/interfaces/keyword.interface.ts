@@ -6,7 +6,6 @@ export interface KeywordData {
 }
 
 export interface KeywordsGridConfig {
-  columns: number;
   gap: number;
   animationDuration: number;
 }

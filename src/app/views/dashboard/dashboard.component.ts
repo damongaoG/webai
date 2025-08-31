@@ -813,7 +813,7 @@ export class DashboardComponent {
             });
 
             // Update global essay state - essay title created successfully
-            this.essayStateService.setEssayTitle(title);
+            this.essayStateService.setEssayTitle(title, response.data.id);
 
             this.messageService.success(
               `Essay "${title}" created successfully!`,

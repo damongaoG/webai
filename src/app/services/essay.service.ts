@@ -5,6 +5,7 @@ import { environment } from "@environment/environment";
 import {
   CreateEssayDto,
   CreateEssayResponse,
+  KeywordsResponse,
 } from "../interfaces/essay-create.interface";
 
 @Injectable({
@@ -29,6 +30,18 @@ export class EssayService {
     return this.http.post<CreateEssayResponse>(
       `${this.apiUrl}/anon/paper`,
       createEssayDto,
+      { headers: this.headers },
+    );
+  }
+
+  /**
+   * Get keywords for a specific essay
+   * @param essayId - The ID of the essay
+   * @returns Observable<KeywordsResponse> - API response with keywords data
+   */
+  getKeywords(essayId: string): Observable<KeywordsResponse> {
+    return this.http.get<KeywordsResponse>(
+      `${this.apiUrl}/anon/model/paper/action/${essayId}/keywords`,
       { headers: this.headers },
     );
   }
