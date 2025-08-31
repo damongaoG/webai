@@ -65,19 +65,22 @@
   </div>
 
   <!-- Loading State -->
-  <div class="px-4 sm:px-6 lg:px-8 relative">
+  <div
+    class="px-4 sm:px-6 lg:px-8 relative"
+    [class.arrow-loading]="isLoadingKeywords()"
+  >
     <div
       class="h-0 outline outline-1 outline-offset-[-0.50px] outline-gray-400/30"
     ></div>
     <img
       src="/assets/images/icon/arrow-right-01.svg"
       alt=""
-      class="absolute -top-1.5 left-4 sm:left-6 w-3 h-3 sm:w-4 sm:h-4"
+      class="arrow-right absolute -top-1.5 left-4 sm:left-6 w-3 h-3 sm:w-4 sm:h-4"
     />
     <img
       src="/assets/images/icon/arrow-left.svg"
       alt=""
-      class="absolute -top-1.5 right-4 sm:right-6 w-3 h-3 sm:w-4 sm:h-4"
+      class="arrow-left absolute -top-1.5 right-4 sm:right-6 w-3 h-3 sm:w-4 sm:h-4"
     />
   </div>
 

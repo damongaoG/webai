@@ -102,6 +102,37 @@
   }
 }
 
+// Arrow loading animations
+.arrow-loading {
+  .arrow-right {
+    animation: moveRight 1.5s ease-in-out infinite;
+  }
+
+  .arrow-left {
+    animation: moveLeft 1.5s ease-in-out infinite;
+  }
+}
+
+@keyframes moveRight {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(200px);
+  }
+}
+
+@keyframes moveLeft {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(-200px);
+  }
+}
+
 // Responsive adjustments for the wrapper
 @media (max-width: 768px) {
   .feature-card-wrapper {

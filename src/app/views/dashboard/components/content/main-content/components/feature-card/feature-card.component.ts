@@ -47,7 +47,7 @@ export class FeatureCardComponent {
 
   // Signal to store fetched keywords
   private readonly fetchedKeywords = signal<KeywordData[]>([]);
-  private readonly isLoadingKeywords = signal<boolean>(false);
+  readonly isLoadingKeywords = signal<boolean>(false);
 
   onExpandClick(): void {
     // Check if this card interaction is allowed
@@ -92,6 +92,11 @@ export class FeatureCardComponent {
   }
 
   get shouldShowExpandableContent(): boolean {
+    // Don't show expandable content if keywords are loading
+    if (this.isLoadingKeywords()) {
+      return false;
+    }
+
     return (
       this.cardState.expandable.isExpanded &&
       this.cardState.expandable.contentType === this.featureCard.id

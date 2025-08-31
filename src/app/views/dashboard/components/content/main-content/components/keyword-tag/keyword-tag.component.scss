@@ -13,6 +13,7 @@
   user-select: none;
   min-height: 40px;
   width: 156px;
+  text-align: center;
 
   // Text styles
   .keyword-text {
@@ -21,7 +22,7 @@
     font-weight: 400;
     color: #333333;
     line-height: 1.2;
-    white-space: nowrap;
+    white-space: normal;
   }
 
   // Hover state
