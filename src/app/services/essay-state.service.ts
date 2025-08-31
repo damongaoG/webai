@@ -1,5 +1,4 @@
 import { Injectable, signal, computed } from "@angular/core";
-import { BehaviorSubject } from "rxjs";
 
 // Essay creation phases
 export enum EssayCreationPhase {
@@ -43,116 +42,105 @@ export class EssayStateService {
     created: false,
   };
 
-  // State management using BehaviorSubject for reactive patterns
-  private readonly essayStateSubject = new BehaviorSubject<EssayState>(
-    this.initialState,
+  // Signal-based state management for better reactivity
+  private readonly _currentPhase = signal(this.initialState.phase);
+  private readonly _essayTitle = signal(this.initialState.title);
+  private readonly _essayId = signal(this.initialState.essayId);
+  private readonly _selectedKeywords = signal(
+    this.initialState.selectedKeywords,
   );
+  private readonly _isCreating = signal(this.initialState.isCreating);
+  private readonly _errorMessage = signal(this.initialState.errorMessage);
+  private readonly _created = signal(this.initialState.created);
 
-  // Public observable for component consumption
-  // Computed permissions based on current state
+  // Public computed signals for component consumption
+  public readonly currentPhase = computed(() => this._currentPhase());
+  public readonly essayTitle = computed(() => this._essayTitle());
+  public readonly essayId = computed(() => this._essayId());
+  public readonly selectedKeywords = computed(() => this._selectedKeywords());
+  public readonly isCreatingEssay = computed(() => this._isCreating());
+  public readonly errorMessage = computed(() => this._errorMessage());
+  public readonly created = computed(() => this._created());
+
+  // Computed permissions based on current state - now properly reactive to phase changes
   public readonly interactionPermissions = computed(() => {
-    const currentState = this.essayStateSubject.value;
+    const currentState: EssayState = {
+      phase: this._currentPhase(),
+      title: this._essayTitle(),
+      essayId: this._essayId(),
+      selectedKeywords: this._selectedKeywords(),
+      isCreating: this._isCreating(),
+      errorMessage: this._errorMessage(),
+      created: this._created(),
+    };
     console.log("Current state:", currentState);
     return this.calculatePermissions(currentState);
   });
-
-  // Signal-based getters for reactive UI
-  public readonly currentPhase = signal(this.initialState.phase);
-  public readonly essayTitle = signal(this.initialState.title);
-  public readonly essayId = signal(this.initialState.essayId);
-  public readonly isCreatingEssay = signal(this.initialState.isCreating);
 
   /**
    * Set creating state for loading indicators
    */
   setCreating(isCreating: boolean): void {
-    const currentState = this.essayStateSubject.value;
-    const newState: EssayState = {
-      ...currentState,
-      isCreating,
-      errorMessage: isCreating ? null : currentState.errorMessage,
-    };
-
-    this.updateState(newState);
-    this.isCreatingEssay.set(isCreating);
+    this._isCreating.set(isCreating);
+    if (isCreating) {
+      this._errorMessage.set(null);
+    }
   }
 
   /**
    * Set essay title and ID, move to TITLE_CREATED phase
    */
   setEssayTitle(title: string, essayId?: string): void {
-    const currentState = this.essayStateSubject.value;
-    const newState: EssayState = {
-      ...currentState,
-      title,
-      essayId: essayId || currentState.essayId,
-      phase: EssayCreationPhase.TITLE_CREATED,
-      isCreating: false,
-      errorMessage: null,
-      created: true,
-    };
-
-    this.updateState(newState);
-    this.essayTitle.set(title);
+    this._essayTitle.set(title);
     if (essayId) {
-      this.essayId.set(essayId);
+      this._essayId.set(essayId);
     }
-    this.currentPhase.set(EssayCreationPhase.TITLE_CREATED);
-    this.isCreatingEssay.set(false);
+    this._currentPhase.set(EssayCreationPhase.TITLE_CREATED);
+    this._isCreating.set(false);
+    this._errorMessage.set(null);
+    this._created.set(true);
   }
 
   /**
    * Set selected keywords and move to KEYWORDS_SELECTED phase
    */
   setSelectedKeywords(keywords: string[]): void {
-    const currentState = this.essayStateSubject.value;
-
     // Only allow keyword selection if we're in TITLE_CREATED phase or later
-    if (currentState.phase === EssayCreationPhase.NOT_STARTED) {
+    if (this._currentPhase() === EssayCreationPhase.NOT_STARTED) {
       console.warn("Cannot select keywords before essay title is created");
       return;
     }
 
-    const newState: EssayState = {
-      ...currentState,
-      selectedKeywords: keywords,
-      phase:
-        keywords.length > 0
-          ? EssayCreationPhase.KEYWORDS_SELECTED
-          : EssayCreationPhase.TITLE_CREATED,
-    };
+    // Determine the new phase based on keywords length
+    const newPhase =
+      keywords.length > 0
+        ? EssayCreationPhase.KEYWORDS_SELECTED
+        : EssayCreationPhase.TITLE_CREATED;
 
-    this.updateState(newState);
-
-    if (keywords.length > 0) {
-      this.currentPhase.set(EssayCreationPhase.KEYWORDS_SELECTED);
-    }
+    this._selectedKeywords.set(keywords);
+    this._currentPhase.set(newPhase);
   }
 
   /**
    * Reset essay state to initial state
    */
   resetState(): void {
-    this.updateState(this.initialState);
-    this.currentPhase.set(this.initialState.phase);
-    this.essayTitle.set(this.initialState.title);
-    this.isCreatingEssay.set(this.initialState.isCreating);
+    this._currentPhase.set(this.initialState.phase);
+    this._essayTitle.set(this.initialState.title);
+    this._essayId.set(this.initialState.essayId);
+    this._selectedKeywords.set(this.initialState.selectedKeywords);
+    this._isCreating.set(this.initialState.isCreating);
+    this._errorMessage.set(this.initialState.errorMessage);
+    this._created.set(this.initialState.created);
   }
 
   /**
    * Set error state
    */
   setError(errorMessage: string): void {
-    const currentState = this.essayStateSubject.value;
-    const newState: EssayState = {
-      ...currentState,
-      isCreating: false,
-      errorMessage,
-      created: false,
-    };
-
-    this.updateState(newState);
-    this.isCreatingEssay.set(false);
+    this._isCreating.set(false);
+    this._errorMessage.set(errorMessage);
+    this._created.set(false);
   }
 
   /**
@@ -207,8 +195,8 @@ export class EssayStateService {
           allowKeywordsSelection: true,
           allowAssignmentInteraction: true,
           allowArgumentsInteraction: true,
-          allowReferencesInteraction: true,
-          allowCaseStudiesInteraction: true,
+          allowReferencesInteraction: false,
+          allowCaseStudiesInteraction: false,
         };
 
       default:
@@ -220,13 +208,5 @@ export class EssayStateService {
           allowCaseStudiesInteraction: true,
         };
     }
-  }
-
-  /**
-   * Update state and emit changes
-   */
-  private updateState(newState: EssayState): void {
-    console.log("Updating state:", newState);
-    this.essayStateSubject.next(newState);
   }
 }

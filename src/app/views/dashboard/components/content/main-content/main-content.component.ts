@@ -46,13 +46,13 @@ export class MainContentComponent implements OnInit {
       iconAlt: "Keywords icon",
       taskType: TaskType.KEYWORD,
     },
-    {
-      id: "assignment",
-      title: "Assignment task",
-      iconPath: "/assets/images/icon/dark-task.svg",
-      iconAlt: "Assignment task icon",
-      taskType: TaskType.CONTENT,
-    },
+    // {
+    //   id: "assignment",
+    //   title: "Assignment task",
+    //   iconPath: "/assets/images/icon/dark-task.svg",
+    //   iconAlt: "Assignment task icon",
+    //   taskType: TaskType.CONTENT,
+    // },
     {
       id: "arguments",
       title: "Use arguments",
@@ -79,15 +79,6 @@ export class MainContentComponent implements OnInit {
   // State management for each card's gradient visibility
   cardStates: Record<CardId, CardState> = {
     keywords: {
-      showGradient: false,
-      isPersistent: false,
-      expandable: {
-        isExpanded: false,
-        contentType: null,
-        animating: false,
-      },
-    },
-    assignment: {
       showGradient: false,
       isPersistent: false,
       expandable: {
@@ -132,7 +123,6 @@ export class MainContentComponent implements OnInit {
     // Map local card IDs to shared service task IDs
     const cardToTaskMap: Record<CardId, string> = {
       keywords: "keywords",
-      assignment: "topic",
       arguments: "arguments",
       references: "review",
       casestudies: "cases",
@@ -234,7 +224,6 @@ export class MainContentComponent implements OnInit {
       // Map shared service task IDs to local card IDs
       const taskToCardMap: Record<string, CardId> = {
         keywords: "keywords",
-        topic: "assignment",
         arguments: "arguments",
         review: "references",
         cases: "casestudies",

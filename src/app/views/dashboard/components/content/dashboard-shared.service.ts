@@ -29,12 +29,12 @@ export class DashboardSharedService {
       type: TaskType.KEYWORD,
       isSelected: false,
     },
-    {
-      id: "topic",
-      name: "Assignment task",
-      type: TaskType.CONTENT,
-      isSelected: false,
-    },
+    // {
+    //   id: "topic",
+    //   name: "Assignment task",
+    //   type: TaskType.CONTENT,
+    //   isSelected: false,
+    // },
     {
       id: "arguments",
       name: "Use arguments",
