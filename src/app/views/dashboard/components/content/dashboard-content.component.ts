@@ -19,7 +19,7 @@ import { DashboardSharedService } from "./dashboard-shared.service";
   providers: [DashboardSharedService],
   template: `
     <div
-      class="content-container h-full flex flex-col lg:flex-row gap-4 p-4 lg:p-6"
+      class="content-container h-full flex flex-col lg:flex-row gap-4"
       style="background: #F3F6F8;"
     >
       <!-- Left Sidebar - Hidden on mobile, shown on large screens -->
@@ -48,14 +48,12 @@ import { DashboardSharedService } from "./dashboard-shared.service";
         .content-container {
           flex-direction: column;
           gap: 1rem;
-          padding: 1rem;
         }
       }
 
       /* Tablet adjustments */
       @media (min-width: 768px) and (max-width: 1024px) {
         .content-container {
-          padding: 1.5rem;
           gap: 1.5rem;
         }
       }
@@ -64,7 +62,6 @@ import { DashboardSharedService } from "./dashboard-shared.service";
       @media (min-width: 1025px) {
         .content-container {
           gap: 1.5rem;
-          padding: 1.5rem;
         }
       }
     `,

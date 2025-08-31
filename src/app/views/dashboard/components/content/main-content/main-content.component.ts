@@ -10,6 +10,7 @@ import {
 } from "./interfaces/feature-card.interface";
 import { KeywordData } from "./interfaces/keyword.interface";
 import { TaskType } from "@/app/interfaces/task.interface";
+import { EssayStateService } from "@/app/services/essay-state.service";
 
 @Component({
   selector: "app-main-content",
@@ -20,6 +21,7 @@ import { TaskType } from "@/app/interfaces/task.interface";
 })
 export class MainContentComponent implements OnInit {
   dashboardService = inject(DashboardSharedService);
+  private readonly essayStateService = inject(EssayStateService);
 
   constructor() {
     // Listen to shared service expandable state changes
@@ -137,6 +139,15 @@ export class MainContentComponent implements OnInit {
     };
 
     const taskId = cardToTaskMap[typedCardId];
+
+    // Check if interaction is allowed based on essay state
+    const contentType = typedCardId;
+    if (!this.essayStateService.isInteractionAllowed(contentType)) {
+      console.warn(
+        `Interaction with ${contentType} is not allowed in current essay phase`,
+      );
+      return;
+    }
 
     // If the current card is already expanded, collapse it
     if (currentState.expandable.isExpanded) {

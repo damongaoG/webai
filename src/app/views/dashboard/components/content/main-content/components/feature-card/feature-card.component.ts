@@ -8,6 +8,7 @@ import { ExpandableContentComponent } from "../expandable-content/expandable-con
 import { KeywordData } from "../../interfaces/keyword.interface";
 import { TaskType } from "@/app/interfaces/task.interface";
 import { TaskSelectionService } from "@/app/services/task-selection.service";
+import { EssayStateService } from "@/app/services/essay-state.service";
 
 @Component({
   selector: "app-feature-card",
@@ -31,6 +32,7 @@ export class FeatureCardComponent {
   @Output() keywordDeselected = new EventEmitter<KeywordData>();
 
   private taskSelectionService = inject(TaskSelectionService);
+  private readonly essayStateService = inject(EssayStateService);
 
   sampleKeywords: KeywordData[] = [
     { id: "1", text: "keywords01", isSelected: true },
@@ -48,6 +50,14 @@ export class FeatureCardComponent {
   ];
 
   onExpandClick(): void {
+    // Check if this card interaction is allowed
+    if (!this.isInteractionAllowed) {
+      console.warn(
+        `Interaction with ${this.featureCard.id} is not allowed in current essay phase`,
+      );
+      return;
+    }
+
     this.expandClicked.emit(this.featureCard.id);
 
     if (this.taskType) {
@@ -88,5 +98,9 @@ export class FeatureCardComponent {
       return this.sampleKeywords;
     }
     return [];
+  }
+
+  get isInteractionAllowed(): boolean {
+    return this.essayStateService.isInteractionAllowed(this.featureCard.id);
   }
 }

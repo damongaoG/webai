@@ -2,7 +2,11 @@
   <div
     class="feature-card h-16 sm:h-20 bg-white/40 shadow-[0px_4px_4px_0px_rgba(0,0,0,0.05)] border-2 border-white backdrop-blur-[5px] flex items-center justify-between px-3 sm:px-4 lg:px-6 rounded-lg sm:margin-top: 2rem"
     style="margin-top: 1rem"
-    [ngClass]="featureCard.additionalClasses"
+    [ngClass]="{
+      'opacity-50 cursor-not-allowed': !isInteractionAllowed,
+      'hover:bg-white/50': isInteractionAllowed,
+    }"
+    [class]="featureCard.additionalClasses || ''"
   >
     <!-- Left side: Icon, title, and star -->
     <div class="flex items-center min-w-0 flex-1">
@@ -31,19 +35,22 @@
 
     <!-- Center: Green gradient indicator - initially hidden -->
     <div
-      class="gradient-indicator cursor-pointer flex items-center w-16 sm:w-20 lg:w-24 h-8 sm:h-10 bg-[radial-gradient(ellipse_50.00%_50.00%_at_50.00%_50.00%,_#64E9A7_0%,_rgba(147,_238,_196,_0.50)_100%)] rounded-md"
+      class="absolute right-0 gradient-indicator cursor-pointer flex items-center w-16 sm:w-20 lg:w-28 h-8 sm:h-10 bg-[radial-gradient(ellipse_50.00%_50.00%_at_50.00%_50.00%,_#64E9A7_0%,_rgba(147,_238,_196,_0.50)_100%)] rounded-md"
       [class.visible]="cardState.showGradient"
     ></div>
 
     <!-- Right side: Expand button -->
     <div
-      class="expand expand-icon flex-shrink-0 cursor-pointer"
+      class="expand expand-icon flex-shrink-0 z-10"
       [class.expanded]="shouldShowExpandableContent"
+      [class.cursor-pointer]="isInteractionAllowed"
+      [class.cursor-not-allowed]="!isInteractionAllowed"
+      [class.opacity-50]="!isInteractionAllowed"
       (click)="onExpandClick()"
-      (mouseenter)="onExpandHoverStart()"
-      (mouseleave)="onExpandHoverEnd()"
+      (mouseenter)="isInteractionAllowed ? onExpandHoverStart() : null"
+      (mouseleave)="isInteractionAllowed ? onExpandHoverEnd() : null"
     >
-      <div class="flex flex-col items-center gap-1">
+      <div class="flex flex-row items-center gap-1">
         <img
           src="/assets/images/icon/expand-one.svg"
           alt="Expand"

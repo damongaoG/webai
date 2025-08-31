@@ -6,19 +6,25 @@
     ) {
       <div
         [class]="
-          'task-item flex items-center justify-between p-4 rounded-lg cursor-pointer transition-colors ' +
+          'task-item flex items-center justify-between p-4 rounded-lg transition-colors ' +
+          (isTaskDisabled(task.id)
+            ? 'cursor-not-allowed opacity-50'
+            : 'cursor-pointer') +
+          ' ' +
           (task.isSelected || task.isHovered ? 'bg-[rgba(5,167,111,0.10)]' : '')
         "
         (click)="selectTask(task.id)"
-        (mouseenter)="setHoverState(task.id, true)"
-        (mouseleave)="setHoverState(task.id, false)"
+        (mouseenter)="!isTaskDisabled(task.id) && setHoverState(task.id, true)"
+        (mouseleave)="!isTaskDisabled(task.id) && setHoverState(task.id, false)"
       >
         <div class="flex items-center">
           <div
             class="icon-container mr-3"
             [ngStyle]="{
               'background-color':
-                task.isSelected || task.isHovered ? '#05a76f' : '',
+                !isTaskDisabled(task.id) && (task.isSelected || task.isHovered)
+                  ? '#05a76f'
+                  : '',
             }"
           >
             <img [src]="getIconPath(task)" class="w-5" alt="task icon" />
@@ -26,13 +32,21 @@
 
           <span
             class="task-name"
-            [ngStyle]="{ color: task.isSelected ? '#05A76F' : '#555' }"
+            [ngStyle]="{
+              color: isTaskDisabled(task.id)
+                ? '#999'
+                : task.isSelected
+                  ? '#05A76F'
+                  : '#555',
+            }"
             >{{ task.name }}</span
           >
         </div>
 
         <img
-          *ngIf="task.isSelected || task.isHovered"
+          *ngIf="
+            !isTaskDisabled(task.id) && (task.isSelected || task.isHovered)
+          "
           src="/assets/images/icon/dark-arrow.svg"
           class="w-5 h-4"
           alt="arrow icon"

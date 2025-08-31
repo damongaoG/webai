@@ -4,6 +4,7 @@ import {
   Output,
   EventEmitter,
   computed,
+  inject,
 } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import {
@@ -18,6 +19,11 @@ import {
   KeywordData,
 } from "../../interfaces/keyword.interface";
 import { KeywordsGridComponent } from "../keywords-grid/keywords-grid.component";
+import { EssayStateService } from "@/app/services/essay-state.service";
+import {
+  SidebarStateService,
+  ContentType,
+} from "@/app/services/sidebar-state.service";
 
 /**
  * Expandable content component that handles different types of expandable content
@@ -36,36 +42,151 @@ import { KeywordsGridComponent } from "../keywords-grid/keywords-grid.component"
     >
       <div class="expandable-content">
         @if (expandableState.contentType === "keywords" && isExpanded()) {
-          <app-keywords-grid
-            [keywords]="keywordsData"
-            [gridConfig]="keywordsGridConfig"
-            (keywordSelected)="onKeywordSelected($event)"
-            (keywordDeselected)="onKeywordDeselected($event)"
-          />
+          @if (isInteractionAllowed()) {
+            <app-keywords-grid
+              [keywords]="keywordsData"
+              [gridConfig]="keywordsGridConfig"
+              (keywordSelected)="onKeywordSelected($event)"
+              (keywordDeselected)="onKeywordDeselected($event)"
+            />
+          } @else {
+            <div class="disabled-content">
+              <div class="disabled-overlay">
+                <p class="disabled-message">
+                  <svg
+                    class="w-6 h-6 text-gray-400 mx-auto mb-2"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                    ></path>
+                  </svg>
+                  Complete the essay title creation first
+                </p>
+              </div>
+            </div>
+          }
         }
 
         @if (expandableState.contentType === "assignment" && isExpanded()) {
-          <div class="placeholder-content">
-            <p>Assignment content will be implemented here</p>
-          </div>
+          @if (isInteractionAllowed()) {
+            <div class="placeholder-content">
+              <p>Assignment content will be implemented here</p>
+            </div>
+          } @else {
+            <div class="disabled-content">
+              <div class="disabled-overlay">
+                <p class="disabled-message">
+                  <svg
+                    class="w-6 h-6 text-gray-400 mx-auto mb-2"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                    ></path>
+                  </svg>
+                  Select keywords first to unlock this feature
+                </p>
+              </div>
+            </div>
+          }
         }
 
         @if (expandableState.contentType === "arguments" && isExpanded()) {
-          <div class="placeholder-content">
-            <p>Arguments content will be implemented here</p>
-          </div>
+          @if (isInteractionAllowed()) {
+            <div class="placeholder-content">
+              <p>Arguments content will be implemented here</p>
+            </div>
+          } @else {
+            <div class="disabled-content">
+              <div class="disabled-overlay">
+                <p class="disabled-message">
+                  <svg
+                    class="w-6 h-6 text-gray-400 mx-auto mb-2"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                    ></path>
+                  </svg>
+                  Select keywords first to unlock this feature
+                </p>
+              </div>
+            </div>
+          }
         }
 
         @if (expandableState.contentType === "references" && isExpanded()) {
-          <div class="placeholder-content">
-            <p>References content will be implemented here</p>
-          </div>
+          @if (isInteractionAllowed()) {
+            <div class="placeholder-content">
+              <p>References content will be implemented here</p>
+            </div>
+          } @else {
+            <div class="disabled-content">
+              <div class="disabled-overlay">
+                <p class="disabled-message">
+                  <svg
+                    class="w-6 h-6 text-gray-400 mx-auto mb-2"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                    ></path>
+                  </svg>
+                  Select keywords first to unlock this feature
+                </p>
+              </div>
+            </div>
+          }
         }
 
         @if (expandableState.contentType === "casestudies" && isExpanded()) {
-          <div class="placeholder-content">
-            <p>Case studies content will be implemented here</p>
-          </div>
+          @if (isInteractionAllowed()) {
+            <div class="placeholder-content">
+              <p>Case studies content will be implemented here</p>
+            </div>
+          } @else {
+            <div class="disabled-content">
+              <div class="disabled-overlay">
+                <p class="disabled-message">
+                  <svg
+                    class="w-6 h-6 text-gray-400 mx-auto mb-2"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                    ></path>
+                  </svg>
+                  Select keywords first to unlock this feature
+                </p>
+              </div>
+            </div>
+          }
         }
       </div>
     </div>
@@ -109,14 +230,39 @@ export class ExpandableContentComponent {
   @Output() animationStart = new EventEmitter<void>();
   @Output() animationComplete = new EventEmitter<void>();
 
+  // Inject services
+  private readonly essayStateService = inject(EssayStateService);
+  private readonly sidebarStateService = inject(SidebarStateService);
+
   // Signal for expanded state
-  isExpanded = computed(() => this.expandableState.isExpanded);
+  isExpanded = computed(() => this.expandableState?.isExpanded ?? false);
+
+  // Computed signal to check if interaction is allowed based on essay state and context
+  isInteractionAllowed = computed(() => {
+    const currentContent = this.sidebarStateService.selectedContent();
+    const contentType = this.expandableState?.contentType;
+
+    // Only apply restrictions when in ESSAY_MODEL content type
+    if (currentContent !== ContentType.ESSAY_MODEL || !contentType) {
+      return true;
+    }
+
+    console.log(
+      "isInteractionAllowed",
+      this.essayStateService.isInteractionAllowed(contentType),
+    );
+    // Check if the specific content type interaction is allowed
+    return this.essayStateService.isInteractionAllowed(contentType);
+  });
 
   /**
    * Handle keyword selection
    */
   onKeywordSelected(keyword: KeywordData): void {
     this.keywordSelected.emit(keyword);
+
+    // Update global essay state with selected keywords
+    this.updateEssayKeywordsState();
   }
 
   /**
@@ -124,6 +270,20 @@ export class ExpandableContentComponent {
    */
   onKeywordDeselected(keyword: KeywordData): void {
     this.keywordDeselected.emit(keyword);
+
+    // Update global essay state with selected keywords
+    this.updateEssayKeywordsState();
+  }
+
+  /**
+   * Update the global essay state with currently selected keywords
+   */
+  private updateEssayKeywordsState(): void {
+    const selectedKeywords = (this.keywordsData || [])
+      .filter((keyword: KeywordData) => keyword.isSelected)
+      .map((keyword: KeywordData) => keyword.text);
+
+    this.essayStateService.setSelectedKeywords(selectedKeywords);
   }
 
   /**

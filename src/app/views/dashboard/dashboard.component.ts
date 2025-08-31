@@ -14,8 +14,9 @@ import { ChatStatusService } from "@components/rewrite-model/services/chat-statu
 import { ChatBotService } from "@components/rewrite-model/services/chat-bot.service";
 import { MessageService } from "../../shared";
 import { switchMap, of, catchError } from "rxjs";
-import { EssayService } from "../../services/essay.service";
+import { EssayService } from "@/app/services";
 import { CreateEssayDto } from "../../interfaces/essay-create.interface";
+import { EssayStateService } from "@/app/services";
 import {
   UserMenuComponent,
   ChangePasswordModalComponent,
@@ -538,6 +539,7 @@ export class DashboardComponent {
   private readonly chatBotService = inject(ChatBotService);
   private readonly messageService = inject(MessageService);
   private readonly essayService = inject(EssayService);
+  private readonly essayStateService = inject(EssayStateService);
 
   private lastContent: ContentType | null = null;
 
@@ -754,6 +756,9 @@ export class DashboardComponent {
       created: false,
       errorMessage: null,
     });
+
+    // Reset global essay state
+    this.essayStateService.resetState();
   }
 
   openEssayTitleModal(): void {
@@ -771,6 +776,9 @@ export class DashboardComponent {
       errorMessage: null,
     });
 
+    // Update global essay state - set creating state
+    this.essayStateService.setCreating(true);
+
     // Create essay request DTO
     const createEssayDto: CreateEssayDto = { title };
 
@@ -780,11 +788,17 @@ export class DashboardComponent {
       .pipe(
         catchError((error) => {
           console.error("Error creating essay:", error);
+          const errorMessage = "Failed to create essay. Please try again.";
+
           this.essayCreationStatus.set({
             isCreating: false,
             created: false,
-            errorMessage: "Failed to create essay. Please try again.",
+            errorMessage,
           });
+
+          // Update global essay state - set error
+          this.essayStateService.setError(errorMessage);
+
           return of(null);
         }),
       )
@@ -797,6 +811,10 @@ export class DashboardComponent {
               created: true,
               errorMessage: null,
             });
+
+            // Update global essay state - essay title created successfully
+            this.essayStateService.setEssayTitle(title);
+
             this.messageService.success(
               `Essay "${title}" created successfully!`,
             );
@@ -809,6 +827,9 @@ export class DashboardComponent {
               created: false,
               errorMessage,
             });
+
+            // Update global essay state - set error
+            this.essayStateService.setError(errorMessage);
           }
         },
       });

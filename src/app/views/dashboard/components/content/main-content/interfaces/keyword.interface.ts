@@ -19,6 +19,7 @@ export interface ExpandableState {
     | "arguments"
     | "references"
     | "casestudies"
+    | string
     | null;
-  animating: boolean;
+  animating?: boolean;
 }
