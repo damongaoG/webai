@@ -1,4 +1,5 @@
-import { Injectable, signal, computed } from "@angular/core";
+import { Injectable, signal, computed, inject } from "@angular/core";
+import { ToastService } from "@/app/shared/services";
 
 // Essay creation phases
 export enum EssayCreationPhase {
@@ -32,6 +33,7 @@ export interface EssayInteractionPermissions {
   providedIn: "root",
 })
 export class EssayStateService {
+  private readonly toastService = inject(ToastService);
   // Initial state
   private readonly initialState: EssayState = {
     phase: EssayCreationPhase.NOT_STARTED,
@@ -231,6 +233,7 @@ export class EssayStateService {
     this._isCreating.set(false);
     this._errorMessage.set(errorMessage);
     this._created.set(false);
+    this.toastService.error(errorMessage);
   }
 
   /**
