@@ -291,6 +291,7 @@ export class ExpandableContentComponent {
    */
   onArgumentSelected(argument: ArgumentData): void {
     this.argumentSelected.emit(argument);
+    this.essayStateService.addSelectedArgumentId(argument.id);
   }
 
   /**
@@ -298,6 +299,7 @@ export class ExpandableContentComponent {
    */
   onArgumentDeselected(argument: ArgumentData): void {
     this.argumentDeselected.emit(argument);
+    this.essayStateService.removeSelectedArgumentId(argument.id);
   }
 
   /**

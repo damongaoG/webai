@@ -14,6 +14,7 @@ export interface EssayState {
   title: string | null;
   essayId: string | null;
   selectedKeywords: string[];
+  selectedArgumentIds: string[];
   isCreating: boolean;
   errorMessage: string | null;
   created: boolean;
@@ -37,6 +38,7 @@ export class EssayStateService {
     title: null,
     essayId: null,
     selectedKeywords: [],
+    selectedArgumentIds: [],
     isCreating: false,
     errorMessage: null,
     created: false,
@@ -49,6 +51,9 @@ export class EssayStateService {
   private readonly _selectedKeywords = signal(
     this.initialState.selectedKeywords,
   );
+  private readonly _selectedArgumentIds = signal<string[]>(
+    this.initialState.selectedArgumentIds,
+  );
   private readonly _isCreating = signal(this.initialState.isCreating);
   private readonly _errorMessage = signal(this.initialState.errorMessage);
   private readonly _created = signal(this.initialState.created);
@@ -59,6 +64,9 @@ export class EssayStateService {
   public readonly essayTitle = computed(() => this._essayTitle());
   public readonly essayId = computed(() => this._essayId());
   public readonly selectedKeywords = computed(() => this._selectedKeywords());
+  public readonly selectedArgumentIds = computed(() =>
+    this._selectedArgumentIds(),
+  );
   public readonly isCreatingEssay = computed(() => this._isCreating());
   public readonly errorMessage = computed(() => this._errorMessage());
   public readonly created = computed(() => this._created());
@@ -73,6 +81,7 @@ export class EssayStateService {
       title: this._essayTitle(),
       essayId: this._essayId(),
       selectedKeywords: this._selectedKeywords(),
+      selectedArgumentIds: this._selectedArgumentIds(),
       isCreating: this._isCreating(),
       errorMessage: this._errorMessage(),
       created: this._created(),
@@ -133,11 +142,10 @@ export class EssayStateService {
   }
 
   /**
-   * Move to ARGUMENT_SELECTED phase
-   * This should be called when arguments have been selected/configured
+   * Set selected argument ids and update phase accordingly
    */
-  setArgumentSelected(): void {
-    // Only allow argument selection if we're in KEYWORDS_SELECTED phase or later
+  setSelectedArgumentIds(argumentIds: string[]): void {
+    // Only allow argument interaction if we're in KEYWORDS_SELECTED phase or later
     if (
       this._currentPhase() === EssayCreationPhase.NOT_STARTED ||
       this._currentPhase() === EssayCreationPhase.TITLE_CREATED
@@ -146,7 +154,13 @@ export class EssayStateService {
       return;
     }
 
-    this._currentPhase.set(EssayCreationPhase.ARGUMENT_SELECTED);
+    const newPhase =
+      argumentIds.length > 0
+        ? EssayCreationPhase.ARGUMENT_SELECTED
+        : EssayCreationPhase.KEYWORDS_SELECTED;
+
+    this._selectedArgumentIds.set(argumentIds);
+    this._currentPhase.set(newPhase);
   }
 
   /**
@@ -173,6 +187,29 @@ export class EssayStateService {
   }
 
   /**
+   * Add a single argument id to selectedArgumentIds immutably
+   */
+  addSelectedArgumentId(argumentId: string): void {
+    const current = this._selectedArgumentIds();
+    if (current.includes(argumentId)) {
+      return;
+    }
+    this.setSelectedArgumentIds([...current, argumentId]);
+  }
+
+  /**
+   * Remove a single argument id from selectedArgumentIds immutably
+   */
+  removeSelectedArgumentId(argumentId: string): void {
+    const current = this._selectedArgumentIds();
+    if (current.length === 0) {
+      return;
+    }
+    const next = current.filter((id) => id !== argumentId);
+    this.setSelectedArgumentIds(next);
+  }
+
+  /**
    * Reset essay state to initial state
    */
   resetState(): void {
@@ -180,6 +217,7 @@ export class EssayStateService {
     this._essayTitle.set(this.initialState.title);
     this._essayId.set(this.initialState.essayId);
     this._selectedKeywords.set(this.initialState.selectedKeywords);
+    this._selectedArgumentIds.set(this.initialState.selectedArgumentIds);
     this._isCreating.set(this.initialState.isCreating);
     this._errorMessage.set(this.initialState.errorMessage);
     this._created.set(this.initialState.created);
