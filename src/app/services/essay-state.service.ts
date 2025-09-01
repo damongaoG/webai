@@ -150,6 +150,29 @@ export class EssayStateService {
   }
 
   /**
+   * Add a single keyword to selectedKeywords immutably
+   */
+  addSelectedKeyword(keyword: string): void {
+    const current = this._selectedKeywords();
+    if (current.includes(keyword)) {
+      return;
+    }
+    this.setSelectedKeywords([...current, keyword]);
+  }
+
+  /**
+   * Remove a single keyword from selectedKeywords immutably
+   */
+  removeSelectedKeyword(keyword: string): void {
+    const current = this._selectedKeywords();
+    if (current.length === 0) {
+      return;
+    }
+    const next = current.filter((k) => k !== keyword);
+    this.setSelectedKeywords(next);
+  }
+
+  /**
    * Reset essay state to initial state
    */
   resetState(): void {

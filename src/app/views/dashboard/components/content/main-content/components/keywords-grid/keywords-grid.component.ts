@@ -55,7 +55,6 @@ export class KeywordsGridComponent {
    */
   onKeywordSelected(keyword: KeywordData): void {
     console.log("Keyword selected:", keyword);
-    keyword.isSelected = !keyword.isSelected;
     this.keywordSelected.emit(keyword);
   }
 

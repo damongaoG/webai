@@ -273,9 +273,8 @@ export class ExpandableContentComponent {
    */
   onKeywordSelected(keyword: KeywordData): void {
     this.keywordSelected.emit(keyword);
-
-    // Update global essay state with selected keywords
-    this.updateEssayKeywordsState();
+    // Single-source update: add the selected keyword to global state
+    this.essayStateService.addSelectedKeyword(keyword.text);
   }
 
   /**
@@ -283,9 +282,8 @@ export class ExpandableContentComponent {
    */
   onKeywordDeselected(keyword: KeywordData): void {
     this.keywordDeselected.emit(keyword);
-
-    // Update global essay state with selected keywords
-    this.updateEssayKeywordsState();
+    // Single-source update: remove the deselected keyword from global state
+    this.essayStateService.removeSelectedKeyword(keyword.text);
   }
 
   /**
@@ -300,17 +298,6 @@ export class ExpandableContentComponent {
    */
   onArgumentDeselected(argument: ArgumentData): void {
     this.argumentDeselected.emit(argument);
-  }
-
-  /**
-   * Update the global essay state with currently selected keywords
-   */
-  private updateEssayKeywordsState(): void {
-    const selectedKeywords = (this.keywordsData || [])
-      .filter((keyword: KeywordData) => keyword.isSelected)
-      .map((keyword: KeywordData) => keyword.text);
-
-    this.essayStateService.setSelectedKeywords(selectedKeywords);
   }
 
   /**
