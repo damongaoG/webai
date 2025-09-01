@@ -1,9 +1,5 @@
-export interface KeywordData {
-  id: string;
-  text: string;
-  isSelected?: boolean;
-  category?: string;
-}
+// KeywordData is now just an alias for GridItem since no additional properties are needed
+export type KeywordData = import("./grid.interface").GridItem;
 
 export interface KeywordsGridConfig {
   gap: number;

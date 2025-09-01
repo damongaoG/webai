@@ -19,6 +19,7 @@ import { EssayStateService } from "@/app/services/essay-state.service";
 import { EssayService } from "@/app/services/essay.service";
 import { parseKeywordsToData } from "@/app/helper/utils";
 import { catchError, of } from "rxjs";
+import { ArgumentData } from "@/app/interfaces/essay-create.interface";
 
 @Component({
   selector: "app-feature-card",
@@ -40,6 +41,8 @@ export class FeatureCardComponent {
   @Output() expandHoverEnd = new EventEmitter<string>();
   @Output() keywordSelected = new EventEmitter<KeywordData>();
   @Output() keywordDeselected = new EventEmitter<KeywordData>();
+  @Output() argumentSelected = new EventEmitter<ArgumentData>();
+  @Output() argumentDeselected = new EventEmitter<ArgumentData>();
 
   private taskSelectionService = inject(TaskSelectionService);
   private readonly essayStateService = inject(EssayStateService);
@@ -48,6 +51,10 @@ export class FeatureCardComponent {
   // Signal to store fetched keywords
   private readonly fetchedKeywords = signal<KeywordData[]>([]);
   readonly isLoadingKeywords = signal<boolean>(false);
+
+  // Signal to store fetched arguments
+  private readonly fetchedArguments = signal<ArgumentData[]>([]);
+  readonly isLoadingArguments = signal<boolean>(false);
 
   onExpandClick(): void {
     // Check if this card interaction is allowed
@@ -72,6 +79,11 @@ export class FeatureCardComponent {
       if (isExpanded && this.featureCard.id === "keywords") {
         this.fetchKeywords();
       }
+
+      // If expanding arguments card, fetch arguments from API
+      if (isExpanded && this.featureCard.id === "arguments") {
+        this.fetchArguments();
+      }
     }
   }
 
@@ -91,9 +103,17 @@ export class FeatureCardComponent {
     this.keywordDeselected.emit(keyword);
   }
 
+  onArgumentSelected(argument: ArgumentData): void {
+    this.argumentSelected.emit(argument);
+  }
+
+  onArgumentDeselected(argument: ArgumentData): void {
+    this.argumentDeselected.emit(argument);
+  }
+
   get shouldShowExpandableContent(): boolean {
-    // Don't show expandable content if keywords are loading
-    if (this.isLoadingKeywords()) {
+    // Don't show expandable content if keywords or arguments are loading
+    if (this.isLoadingKeywords() || this.isLoadingArguments()) {
       return false;
     }
 
@@ -111,8 +131,30 @@ export class FeatureCardComponent {
     return [];
   }
 
+  get argumentsData(): ArgumentData[] {
+    if (this.featureCard.id === "arguments") {
+      // Return fetched arguments if available, otherwise return empty array
+      return this.fetchedArguments();
+    }
+    return [];
+  }
+
   get isInteractionAllowed(): boolean {
     return this.essayStateService.isInteractionAllowed(this.featureCard.id);
+  }
+
+  /**
+   * Get loading state based on the specific feature card type
+   */
+  getLoadingState(): boolean {
+    switch (this.featureCard.id) {
+      case "keywords":
+        return this.isLoadingKeywords();
+      case "arguments":
+        return this.isLoadingArguments();
+      default:
+        return false;
+    }
   }
 
   /**
@@ -148,6 +190,54 @@ export class FeatureCardComponent {
             this.fetchedKeywords.set(keywordsData);
           } else {
             console.warn("Invalid keywords response:", response);
+          }
+        },
+      });
+  }
+
+  /**
+   * Fetch arguments from API for the current essay
+   */
+  private fetchArguments(): void {
+    const essayId = this.essayStateService.essayId();
+    const selectedKeywords = this.essayStateService.selectedKeywords();
+
+    if (!essayId) {
+      console.warn("No essay ID available for fetching arguments");
+      return;
+    }
+
+    if (selectedKeywords.length === 0) {
+      console.warn("No keywords selected for fetching arguments");
+      return;
+    }
+
+    // Convert keywords array to comma-separated string
+    const keywordsString = selectedKeywords.join(",");
+
+    this.isLoadingArguments.set(true);
+    this.essayStateService.setArgumentsLoading(true);
+
+    this.essayService
+      .getArguments(essayId, keywordsString)
+      .pipe(
+        catchError((error) => {
+          console.error("Error fetching arguments:", error);
+          this.isLoadingArguments.set(false);
+          this.essayStateService.setArgumentsLoading(false);
+          return of(null);
+        }),
+      )
+      .subscribe({
+        next: (response) => {
+          this.isLoadingArguments.set(false);
+          this.essayStateService.setArgumentsLoading(false);
+
+          if (response && response.code === 1 && response.data.arguments) {
+            // Store the fetched arguments
+            this.fetchedArguments.set(response.data.arguments);
+          } else {
+            console.warn("Invalid arguments response:", response);
           }
         },
       });

@@ -31,3 +31,27 @@ export interface KeywordsResponse {
   data: KeywordsData;
   code: number;
 }
+
+// Argument data structure
+export interface ArgumentData {
+  id: string;
+  text: string;
+  isSelected?: boolean;
+}
+
+// Data returned from arguments API
+export interface ArgumentsData {
+  id: string;
+  title: string;
+  keywords: string;
+  arguments: ArgumentData[];
+  scholars: any[];
+  cases: any[];
+}
+
+// Response from GET /model-processor-service/api/anon/model/paper/action/${id}/arguments
+export interface ArgumentsResponse {
+  timestamp: number;
+  data: ArgumentsData;
+  code: number;
+}

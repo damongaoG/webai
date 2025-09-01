@@ -6,6 +6,7 @@ import {
   CreateEssayDto,
   CreateEssayResponse,
   KeywordsResponse,
+  ArgumentsResponse,
 } from "../interfaces/essay-create.interface";
 
 @Injectable({
@@ -42,6 +43,22 @@ export class EssayService {
   getKeywords(essayId: string): Observable<KeywordsResponse> {
     return this.http.get<KeywordsResponse>(
       `${this.apiUrl}/anon/model/paper/action/${essayId}/keywords`,
+      { headers: this.headers },
+    );
+  }
+
+  /**
+   * Get arguments for a specific essay with keywords
+   * @param essayId - The ID of the essay
+   * @param keywords - Comma-separated keywords string
+   * @returns Observable<ArgumentsResponse> - API response with arguments data
+   */
+  getArguments(
+    essayId: string,
+    keywords: string,
+  ): Observable<ArgumentsResponse> {
+    return this.http.get<ArgumentsResponse>(
+      `${this.apiUrl}/anon/model/paper/action/${essayId}/arguments?keywords=${encodeURIComponent(keywords)}`,
       { headers: this.headers },
     );
   }

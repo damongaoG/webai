@@ -5,6 +5,7 @@ export enum EssayCreationPhase {
   NOT_STARTED = "not_started",
   TITLE_CREATED = "title_created",
   KEYWORDS_SELECTED = "keywords_selected",
+  ARGUMENT_SELECTED = "argument_selected",
 }
 
 // Essay state interface
@@ -21,7 +22,6 @@ export interface EssayState {
 // Essay interaction permissions
 export interface EssayInteractionPermissions {
   allowKeywordsSelection: boolean;
-  allowAssignmentInteraction: boolean;
   allowArgumentsInteraction: boolean;
   allowReferencesInteraction: boolean;
   allowCaseStudiesInteraction: boolean;
@@ -52,6 +52,7 @@ export class EssayStateService {
   private readonly _isCreating = signal(this.initialState.isCreating);
   private readonly _errorMessage = signal(this.initialState.errorMessage);
   private readonly _created = signal(this.initialState.created);
+  private readonly _isLoadingArguments = signal(false);
 
   // Public computed signals for component consumption
   public readonly currentPhase = computed(() => this._currentPhase());
@@ -61,6 +62,9 @@ export class EssayStateService {
   public readonly isCreatingEssay = computed(() => this._isCreating());
   public readonly errorMessage = computed(() => this._errorMessage());
   public readonly created = computed(() => this._created());
+  public readonly isLoadingArguments = computed(() =>
+    this._isLoadingArguments(),
+  );
 
   // Computed permissions based on current state - now properly reactive to phase changes
   public readonly interactionPermissions = computed(() => {
@@ -85,6 +89,13 @@ export class EssayStateService {
     if (isCreating) {
       this._errorMessage.set(null);
     }
+  }
+
+  /**
+   * Set arguments loading state
+   */
+  setArgumentsLoading(isLoading: boolean): void {
+    this._isLoadingArguments.set(isLoading);
   }
 
   /**
@@ -122,6 +133,23 @@ export class EssayStateService {
   }
 
   /**
+   * Move to ARGUMENT_SELECTED phase
+   * This should be called when arguments have been selected/configured
+   */
+  setArgumentSelected(): void {
+    // Only allow argument selection if we're in KEYWORDS_SELECTED phase or later
+    if (
+      this._currentPhase() === EssayCreationPhase.NOT_STARTED ||
+      this._currentPhase() === EssayCreationPhase.TITLE_CREATED
+    ) {
+      console.warn("Cannot select arguments before keywords are selected");
+      return;
+    }
+
+    this._currentPhase.set(EssayCreationPhase.ARGUMENT_SELECTED);
+  }
+
+  /**
    * Reset essay state to initial state
    */
   resetState(): void {
@@ -132,6 +160,7 @@ export class EssayStateService {
     this._isCreating.set(this.initialState.isCreating);
     this._errorMessage.set(this.initialState.errorMessage);
     this._created.set(this.initialState.created);
+    this._isLoadingArguments.set(false);
   }
 
   /**
@@ -152,8 +181,6 @@ export class EssayStateService {
     switch (contentType) {
       case "keywords":
         return permissions.allowKeywordsSelection;
-      case "assignment":
-        return permissions.allowAssignmentInteraction;
       case "arguments":
         return permissions.allowArgumentsInteraction;
       case "references":
@@ -175,7 +202,6 @@ export class EssayStateService {
       case EssayCreationPhase.NOT_STARTED:
         return {
           allowKeywordsSelection: false,
-          allowAssignmentInteraction: false,
           allowArgumentsInteraction: false,
           allowReferencesInteraction: false,
           allowCaseStudiesInteraction: false,
@@ -183,8 +209,7 @@ export class EssayStateService {
 
       case EssayCreationPhase.TITLE_CREATED:
         return {
-          allowKeywordsSelection: true, // Only allow if essay was successfully created
-          allowAssignmentInteraction: false,
+          allowKeywordsSelection: true,
           allowArgumentsInteraction: false,
           allowReferencesInteraction: false,
           allowCaseStudiesInteraction: false,
@@ -193,16 +218,22 @@ export class EssayStateService {
       case EssayCreationPhase.KEYWORDS_SELECTED:
         return {
           allowKeywordsSelection: true,
-          allowAssignmentInteraction: true,
           allowArgumentsInteraction: true,
           allowReferencesInteraction: false,
+          allowCaseStudiesInteraction: false,
+        };
+
+      case EssayCreationPhase.ARGUMENT_SELECTED:
+        return {
+          allowKeywordsSelection: true,
+          allowArgumentsInteraction: true,
+          allowReferencesInteraction: true,
           allowCaseStudiesInteraction: false,
         };
 
       default:
         return {
           allowKeywordsSelection: true,
-          allowAssignmentInteraction: true,
           allowArgumentsInteraction: true,
           allowReferencesInteraction: true,
           allowCaseStudiesInteraction: true,

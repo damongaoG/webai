@@ -19,11 +19,13 @@ import {
   KeywordData,
 } from "../../interfaces/keyword.interface";
 import { KeywordsGridComponent } from "../keywords-grid/keywords-grid.component";
+import { ArgumentsGridComponent } from "../arguments-grid/arguments-grid.component";
 import { EssayStateService } from "@/app/services/essay-state.service";
 import {
   SidebarStateService,
   ContentType,
 } from "@/app/services/sidebar-state.service";
+import { ArgumentData } from "@/app/interfaces/essay-create.interface";
 
 /**
  * Expandable content component that handles different types of expandable content
@@ -32,7 +34,7 @@ import {
 @Component({
   selector: "app-expandable-content",
   standalone: true,
-  imports: [CommonModule, KeywordsGridComponent],
+  imports: [CommonModule, KeywordsGridComponent, ArgumentsGridComponent],
   template: `
     <div
       class="expandable-container"
@@ -104,9 +106,12 @@ import {
 
         @if (expandableState.contentType === "arguments" && isExpanded()) {
           @if (isInteractionAllowed()) {
-            <div class="placeholder-content">
-              <p>Arguments content will be implemented here</p>
-            </div>
+            <app-arguments-grid
+              [arguments]="argumentsData"
+              [gridConfig]="argumentsGridConfig"
+              (argumentSelected)="onArgumentSelected($event)"
+              (argumentDeselected)="onArgumentDeselected($event)"
+            />
           } @else {
             <div class="disabled-content">
               <div class="disabled-overlay">
@@ -219,14 +224,22 @@ import {
 export class ExpandableContentComponent {
   @Input() expandableState!: ExpandableState;
   @Input() keywordsData: KeywordData[] = [];
+  @Input() argumentsData: ArgumentData[] = [];
   @Input() keywordsGridConfig = {
     columns: 5,
+    gap: 16,
+    animationDuration: 300,
+  };
+  @Input() argumentsGridConfig = {
+    columns: 3,
     gap: 16,
     animationDuration: 300,
   };
 
   @Output() keywordSelected = new EventEmitter<KeywordData>();
   @Output() keywordDeselected = new EventEmitter<KeywordData>();
+  @Output() argumentSelected = new EventEmitter<ArgumentData>();
+  @Output() argumentDeselected = new EventEmitter<ArgumentData>();
   @Output() animationStart = new EventEmitter<void>();
   @Output() animationComplete = new EventEmitter<void>();
 
@@ -273,6 +286,20 @@ export class ExpandableContentComponent {
 
     // Update global essay state with selected keywords
     this.updateEssayKeywordsState();
+  }
+
+  /**
+   * Handle argument selection
+   */
+  onArgumentSelected(argument: ArgumentData): void {
+    this.argumentSelected.emit(argument);
+  }
+
+  /**
+   * Handle argument deselection
+   */
+  onArgumentDeselected(argument: ArgumentData): void {
+    this.argumentDeselected.emit(argument);
   }
 
   /**

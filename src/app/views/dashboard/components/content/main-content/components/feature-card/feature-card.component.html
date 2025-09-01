@@ -67,7 +67,7 @@
   <!-- Loading State -->
   <div
     class="px-4 sm:px-6 lg:px-8 relative"
-    [class.arrow-loading]="isLoadingKeywords()"
+    [class.arrow-loading]="getLoadingState()"
   >
     <div
       class="h-0 outline outline-1 outline-offset-[-0.50px] outline-gray-400/30"
@@ -89,8 +89,11 @@
     <app-expandable-content
       [expandableState]="cardState.expandable"
       [keywordsData]="keywordsData"
+      [argumentsData]="argumentsData"
       (keywordSelected)="onKeywordSelected($event)"
       (keywordDeselected)="onKeywordDeselected($event)"
+      (argumentSelected)="onArgumentSelected($event)"
+      (argumentDeselected)="onArgumentDeselected($event)"
     />
   }
 </div>
