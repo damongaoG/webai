@@ -7,6 +7,7 @@ import {
   CreateEssayResponse,
   KeywordsResponse,
   ArgumentsResponse,
+  ScholarsResponse,
 } from "../interfaces/essay-create.interface";
 
 @Injectable({
@@ -59,6 +60,21 @@ export class EssayService {
   ): Observable<ArgumentsResponse> {
     return this.http.get<ArgumentsResponse>(
       `${this.apiUrl}/anon/model/paper/action/${essayId}/arguments?keywords=${encodeURIComponent(keywords)}`,
+      { headers: this.headers },
+    );
+  }
+
+  /**
+   * Get scholars (references) for a specific essay with selected argument ids
+   * @param essayId - The ID of the essay
+   * @param selectedArgumentIds - Comma-separated IDs
+   */
+  getScholars(
+    essayId: string,
+    selectedArgumentIds: string,
+  ): Observable<ScholarsResponse> {
+    return this.http.get<ScholarsResponse>(
+      `${this.apiUrl}/anon/model/paper/action/${essayId}/scholar?arguments=${encodeURIComponent(selectedArgumentIds)}`,
       { headers: this.headers },
     );
   }

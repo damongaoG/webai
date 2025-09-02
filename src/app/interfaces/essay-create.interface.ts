@@ -45,7 +45,7 @@ export interface ArgumentsData {
   title: string;
   keywords: string;
   arguments: ArgumentData[];
-  scholars: any[];
+  scholars: ScholarData[];
   cases: any[];
 }
 
@@ -53,5 +53,31 @@ export interface ArgumentsData {
 export interface ArgumentsResponse {
   timestamp: number;
   data: ArgumentsData;
+  code: number;
+}
+
+// Scholar data structure from references API
+export interface ScholarData {
+  id: string;
+  position: number;
+  title: string;
+  link: string;
+  source: string;
+  snippet: string;
+  createTime?: string;
+  updateTime?: string;
+}
+
+// Response from GET /model-processor-service/api/anon/model/paper/action/${id}/scholar
+export interface ScholarsResponse {
+  timestamp: number;
+  data: {
+    id: string;
+    title: string;
+    keywords: string;
+    arguments: ArgumentData[];
+    scholars: ScholarData[];
+    cases: any[];
+  };
   code: number;
 }

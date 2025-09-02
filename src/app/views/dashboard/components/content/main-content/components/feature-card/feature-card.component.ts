@@ -19,7 +19,11 @@ import { EssayStateService } from "@/app/services/essay-state.service";
 import { EssayService } from "@/app/services/essay.service";
 import { parseKeywordsToData } from "@/app/helper/utils";
 import { catchError, of } from "rxjs";
-import { ArgumentData } from "@/app/interfaces/essay-create.interface";
+import {
+  ArgumentData,
+  ScholarData,
+} from "@/app/interfaces/essay-create.interface";
+import { ToastService } from "@/app/shared";
 
 @Component({
   selector: "app-feature-card",
@@ -47,6 +51,7 @@ export class FeatureCardComponent {
   private taskSelectionService = inject(TaskSelectionService);
   private readonly essayStateService = inject(EssayStateService);
   private readonly essayService = inject(EssayService);
+  private readonly toastService = inject(ToastService);
 
   // Signal to store fetched keywords
   private readonly fetchedKeywords = signal<KeywordData[]>([]);
@@ -55,6 +60,10 @@ export class FeatureCardComponent {
   // Signal to store fetched arguments
   private readonly fetchedArguments = signal<ArgumentData[]>([]);
   readonly isLoadingArguments = signal<boolean>(false);
+
+  // Signal to store fetched scholars (references)
+  private readonly fetchedScholars = signal<ScholarData[]>([]);
+  readonly isLoadingScholars = signal<boolean>(false);
 
   onExpandClick(): void {
     // Check if this card interaction is allowed
@@ -83,6 +92,11 @@ export class FeatureCardComponent {
       // If expanding arguments card, fetch arguments from API
       if (isExpanded && this.featureCard.id === "arguments") {
         this.fetchArguments();
+      }
+
+      // If expanding references card, fetch scholars from API
+      if (isExpanded && this.featureCard.id === "references") {
+        this.fetchScholars();
       }
     }
   }
@@ -139,6 +153,13 @@ export class FeatureCardComponent {
     return [];
   }
 
+  get scholarsData(): ScholarData[] {
+    if (this.featureCard.id === "references") {
+      return this.fetchedScholars();
+    }
+    return [];
+  }
+
   get isInteractionAllowed(): boolean {
     return this.essayStateService.isInteractionAllowed(this.featureCard.id);
   }
@@ -152,6 +173,8 @@ export class FeatureCardComponent {
         return this.isLoadingKeywords();
       case "arguments":
         return this.isLoadingArguments();
+      case "references":
+        return this.isLoadingScholars();
       default:
         return false;
     }
@@ -165,6 +188,7 @@ export class FeatureCardComponent {
 
     if (!essayId) {
       console.warn("No essay ID available for fetching keywords");
+      this.toastService.error("Please create an essay first to fetch keywords");
       return;
     }
 
@@ -177,6 +201,9 @@ export class FeatureCardComponent {
           console.error("Error fetching keywords:", error);
           this.isLoadingKeywords.set(false);
           // Fall back to sample keywords on error
+          this.toastService.error(
+            "Failed to fetch keywords. Please try again.",
+          );
           return of(null);
         }),
       )
@@ -190,6 +217,7 @@ export class FeatureCardComponent {
             this.fetchedKeywords.set(keywordsData);
           } else {
             console.warn("Invalid keywords response:", response);
+            this.toastService.error("Invalid keywords response from server");
           }
         },
       });
@@ -204,11 +232,15 @@ export class FeatureCardComponent {
 
     if (!essayId) {
       console.warn("No essay ID available for fetching arguments");
+      this.toastService.error(
+        "Please create an essay first to fetch arguments",
+      );
       return;
     }
 
     if (selectedKeywords.length === 0) {
       console.warn("No keywords selected for fetching arguments");
+      this.toastService.error("Select at least one keyword to fetch arguments");
       return;
     }
 
@@ -225,6 +257,9 @@ export class FeatureCardComponent {
           console.error("Error fetching arguments:", error);
           this.isLoadingArguments.set(false);
           this.essayStateService.setArgumentsLoading(false);
+          this.toastService.error(
+            "Failed to fetch arguments. Please try again.",
+          );
           return of(null);
         }),
       )
@@ -238,6 +273,59 @@ export class FeatureCardComponent {
             this.fetchedArguments.set(response.data.arguments);
           } else {
             console.warn("Invalid arguments response:", response);
+            this.toastService.error("Invalid arguments response from server");
+          }
+        },
+      });
+  }
+
+  /**
+   * Fetch scholars (references) from API for the current essay and selected arguments
+   */
+  private fetchScholars(): void {
+    const essayId = this.essayStateService.essayId();
+    const selectedArgumentIds = this.essayStateService.selectedArgumentIds();
+
+    if (!essayId) {
+      console.warn("No essay ID available for fetching scholars");
+      this.toastService.error(
+        "Please create an essay first to fetch references",
+      );
+      return;
+    }
+
+    if (!selectedArgumentIds || selectedArgumentIds.length === 0) {
+      console.warn("No selected arguments available for fetching scholars");
+      this.toastService.error(
+        "Select at least one argument to fetch references",
+      );
+      return;
+    }
+
+    const argumentsParam = selectedArgumentIds.join(",");
+
+    this.isLoadingScholars.set(true);
+
+    this.essayService
+      .getScholars(essayId, argumentsParam)
+      .pipe(
+        catchError((error) => {
+          console.error("Error fetching scholars:", error);
+          this.isLoadingScholars.set(false);
+          this.toastService.error(
+            "Failed to fetch references. Please try again.",
+          );
+          return of(null);
+        }),
+      )
+      .subscribe({
+        next: (response) => {
+          this.isLoadingScholars.set(false);
+          if (response && response.code === 1 && response.data?.scholars) {
+            this.fetchedScholars.set(response.data.scholars);
+          } else {
+            console.warn("Invalid scholars response:", response);
+            this.toastService.error("Invalid references response from server");
           }
         },
       });

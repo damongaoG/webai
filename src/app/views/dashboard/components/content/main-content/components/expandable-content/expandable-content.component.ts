@@ -25,7 +25,10 @@ import {
   SidebarStateService,
   ContentType,
 } from "@/app/services/sidebar-state.service";
-import { ArgumentData } from "@/app/interfaces/essay-create.interface";
+import {
+  ArgumentData,
+  ScholarData,
+} from "@/app/interfaces/essay-create.interface";
 
 /**
  * Expandable content component that handles different types of expandable content
@@ -138,8 +141,43 @@ import { ArgumentData } from "@/app/interfaces/essay-create.interface";
 
         @if (expandableState.contentType === "references" && isExpanded()) {
           @if (isInteractionAllowed()) {
-            <div class="placeholder-content">
-              <p>References content will be implemented here</p>
+            <div class="references-list space-y-3">
+              @if (scholars.length === 0) {
+                <div class="text-sm text-gray-500">
+                  No references yet. Select one or more arguments above.
+                </div>
+              } @else {
+                <ul class="divide-y divide-gray-200/50">
+                  @for (scholar of scholars; track scholar.id) {
+                    <li class="py-2 flex items-start gap-3">
+                      <input
+                        type="checkbox"
+                        class="mt-1 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                        [checked]="isScholarSelected(scholar.id)"
+                        (change)="onScholarChange(scholar.id, $event)"
+                        aria-label="Select reference"
+                      />
+                      <div class="min-w-0 flex-1">
+                        <a
+                          class="text-sm sm:text-base font-medium text-blue-700 hover:underline break-words"
+                          [href]="scholar.link"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          >{{ scholar.title }}</a
+                        >
+                        <div
+                          class="text-xs sm:text-sm text-gray-500 mt-1 break-words"
+                        >
+                          {{ scholar.snippet }}
+                        </div>
+                        <div class="text-[11px] text-gray-400 mt-0.5">
+                          {{ scholar.source }}
+                        </div>
+                      </div>
+                    </li>
+                  }
+                </ul>
+              }
             </div>
           } @else {
             <div class="disabled-content">
@@ -225,6 +263,7 @@ export class ExpandableContentComponent {
   @Input() expandableState!: ExpandableState;
   @Input() keywordsData: KeywordData[] = [];
   @Input() argumentsData: ArgumentData[] = [];
+  @Input() scholars: ScholarData[] = [];
   @Input() keywordsGridConfig = {
     columns: 5,
     gap: 16,
@@ -314,5 +353,22 @@ export class ExpandableContentComponent {
    */
   onAnimationDone(): void {
     this.animationComplete.emit();
+  }
+
+  /**
+   * Scholar selection helpers
+   */
+  isScholarSelected(scholarId: string): boolean {
+    return this.essayStateService.selectedScholarIds().includes(scholarId);
+  }
+
+  onScholarChange(scholarId: string, event: Event): void {
+    const input = event.target as HTMLInputElement | null;
+    const isChecked = !!input?.checked;
+    if (isChecked) {
+      this.essayStateService.addSelectedScholarId(scholarId);
+    } else {
+      this.essayStateService.removeSelectedScholarId(scholarId);
+    }
   }
 }

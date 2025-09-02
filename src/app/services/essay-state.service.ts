@@ -7,6 +7,7 @@ export enum EssayCreationPhase {
   TITLE_CREATED = "title_created",
   KEYWORDS_SELECTED = "keywords_selected",
   ARGUMENT_SELECTED = "argument_selected",
+  SCHOLARS_SELECTED = "scholars_selected",
 }
 
 // Essay state interface
@@ -16,6 +17,7 @@ export interface EssayState {
   essayId: string | null;
   selectedKeywords: string[];
   selectedArgumentIds: string[];
+  selectedScholarIds: string[];
   isCreating: boolean;
   errorMessage: string | null;
   created: boolean;
@@ -41,6 +43,7 @@ export class EssayStateService {
     essayId: null,
     selectedKeywords: [],
     selectedArgumentIds: [],
+    selectedScholarIds: [],
     isCreating: false,
     errorMessage: null,
     created: false,
@@ -56,24 +59,22 @@ export class EssayStateService {
   private readonly _selectedArgumentIds = signal<string[]>(
     this.initialState.selectedArgumentIds,
   );
+  private readonly _selectedScholarIds = signal<string[]>(
+    this.initialState.selectedScholarIds,
+  );
   private readonly _isCreating = signal(this.initialState.isCreating);
   private readonly _errorMessage = signal(this.initialState.errorMessage);
   private readonly _created = signal(this.initialState.created);
   private readonly _isLoadingArguments = signal(false);
 
   // Public computed signals for component consumption
-  public readonly currentPhase = computed(() => this._currentPhase());
-  public readonly essayTitle = computed(() => this._essayTitle());
   public readonly essayId = computed(() => this._essayId());
   public readonly selectedKeywords = computed(() => this._selectedKeywords());
   public readonly selectedArgumentIds = computed(() =>
     this._selectedArgumentIds(),
   );
-  public readonly isCreatingEssay = computed(() => this._isCreating());
-  public readonly errorMessage = computed(() => this._errorMessage());
-  public readonly created = computed(() => this._created());
-  public readonly isLoadingArguments = computed(() =>
-    this._isLoadingArguments(),
+  public readonly selectedScholarIds = computed(() =>
+    this._selectedScholarIds(),
   );
 
   // Computed permissions based on current state - now properly reactive to phase changes
@@ -84,6 +85,7 @@ export class EssayStateService {
       essayId: this._essayId(),
       selectedKeywords: this._selectedKeywords(),
       selectedArgumentIds: this._selectedArgumentIds(),
+      selectedScholarIds: this._selectedScholarIds(),
       isCreating: this._isCreating(),
       errorMessage: this._errorMessage(),
       created: this._created(),
@@ -166,6 +168,34 @@ export class EssayStateService {
   }
 
   /**
+   * Set selected scholar ids and update phase accordingly
+   */
+  setSelectedScholarIds(scholarIds: string[]): void {
+    // References can only be interacted with once arguments have been selected
+    if (
+      this._currentPhase() === EssayCreationPhase.NOT_STARTED ||
+      this._currentPhase() === EssayCreationPhase.TITLE_CREATED
+    ) {
+      console.warn("Cannot select references before arguments are selected");
+      return;
+    }
+
+    const hasScholars = scholarIds.length > 0;
+    // Fallback phase if scholars cleared: depend on arguments selection
+    const fallbackPhase =
+      this._selectedArgumentIds().length > 0
+        ? EssayCreationPhase.ARGUMENT_SELECTED
+        : EssayCreationPhase.KEYWORDS_SELECTED;
+
+    const nextPhase = hasScholars
+      ? EssayCreationPhase.SCHOLARS_SELECTED
+      : fallbackPhase;
+
+    this._selectedScholarIds.set(scholarIds);
+    this._currentPhase.set(nextPhase);
+  }
+
+  /**
    * Add a single keyword to selectedKeywords immutably
    */
   addSelectedKeyword(keyword: string): void {
@@ -209,6 +239,29 @@ export class EssayStateService {
     }
     const next = current.filter((id) => id !== argumentId);
     this.setSelectedArgumentIds(next);
+  }
+
+  /**
+   * Add a single scholar id to selectedScholarIds immutably
+   */
+  addSelectedScholarId(scholarId: string): void {
+    const current = this._selectedScholarIds();
+    if (current.includes(scholarId)) {
+      return;
+    }
+    this.setSelectedScholarIds([...current, scholarId]);
+  }
+
+  /**
+   * Remove a single scholar id from selectedScholarIds immutably
+   */
+  removeSelectedScholarId(scholarId: string): void {
+    const current = this._selectedScholarIds();
+    if (current.length === 0) {
+      return;
+    }
+    const next = current.filter((id) => id !== scholarId);
+    this.setSelectedScholarIds(next);
   }
 
   /**
@@ -293,6 +346,15 @@ export class EssayStateService {
           allowArgumentsInteraction: true,
           allowReferencesInteraction: true,
           allowCaseStudiesInteraction: false,
+        };
+
+      case EssayCreationPhase.SCHOLARS_SELECTED:
+        return {
+          allowKeywordsSelection: true,
+          allowArgumentsInteraction: true,
+          allowReferencesInteraction: true,
+          // Keep case studies gated unless specified otherwise
+          allowCaseStudiesInteraction: true,
         };
 
       default:
