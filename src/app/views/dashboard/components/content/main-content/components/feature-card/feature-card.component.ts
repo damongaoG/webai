@@ -24,6 +24,8 @@ import {
   ScholarData,
 } from "@/app/interfaces/essay-create.interface";
 import { ToastService } from "@/app/shared";
+import { DashboardSharedService } from "../../../dashboard-shared.service";
+import { Result } from "@/app/interfaces/result";
 
 @Component({
   selector: "app-feature-card",
@@ -53,6 +55,7 @@ export class FeatureCardComponent {
   private readonly essayStateService = inject(EssayStateService);
   private readonly essayService = inject(EssayService);
   private readonly toastService = inject(ToastService);
+  private readonly dashboardSharedService = inject(DashboardSharedService);
 
   // Signal to store fetched keywords
   private readonly fetchedKeywords = signal<KeywordData[]>([]);
@@ -217,49 +220,62 @@ export class FeatureCardComponent {
           return of(null);
         }),
       )
-      .subscribe((response) => {
-        // Clear loading flags
-        this.isLoadingArguments.set(false);
-        this.isLoadingScholars.set(false);
-        this.essayStateService.setArgumentsLoading(false);
-        this.essayStateService.setScholarsLoading(false);
+      .subscribe(
+        (
+          response: Result<{
+            keywords?: string;
+            arguments?: ArgumentData[];
+          }> | null,
+        ) => {
+          // Clear loading flags
+          this.isLoadingArguments.set(false);
+          this.isLoadingScholars.set(false);
+          this.essayStateService.setArgumentsLoading(false);
+          this.essayStateService.setScholarsLoading(false);
 
-        if (!response || response.code !== 1 || !response.data) {
-          this.toastService.error("Invalid undo response from server");
-          return;
-        }
+          if (!response || response.code !== 1 || !response.data) {
+            this.toastService.error("Invalid undo response from server");
+            return;
+          }
 
-        const data = response.data;
+          // Capture phase before local state updates to decide UI transitions
+          const previousPhase = this.essayStateService.currentPhase();
 
-        // Update local data stores based on which card initiated undo
-        if (this.featureCard.id === "arguments") {
-          // Show keywords from the new API response
-          this.fetchedKeywords.set(parseKeywordsToData(data.keywords ?? ""));
-          // Reset selected argument ids in state since we moved back
-          this.essayStateService.setSelectedArgumentIds([]);
-          // Move phase back to keywords_selected by updating selected keywords
-          const parsedKeywords = (data.keywords ?? "")
-            .split(",")
-            .map((k) => k.trim())
-            .filter((k) => k.length > 0);
-          this.essayStateService.setSelectedKeywords(parsedKeywords);
-        } else if (this.featureCard.id === "references") {
-          // Move phase from scholars_selected -> argument_selected
-          // and show arguments from the new API response
-          const argumentsFromApi = Array.isArray(data.arguments)
-            ? data.arguments
-            : [];
-          this.fetchedArguments.set(argumentsFromApi);
-          // Clear selected scholars and revert to argument_selected
-          this.essayStateService.setSelectedScholarIds([]);
-          // Ensure we're at ARGUMENT_SELECTED without advancing beyond
-          const currentArgIds = this.essayStateService.selectedArgumentIds();
-          // Keep current argument selection if still valid; otherwise empty
-          const validIds = new Set(argumentsFromApi.map((a) => a.id));
-          const filtered = currentArgIds.filter((id) => validIds.has(id));
-          this.essayStateService.setSelectedArgumentIds(filtered);
-        }
-      });
+          const data = response.data;
+
+          // Update local data stores based on which card initiated undo
+          if (this.featureCard.id === "arguments") {
+            // Show keywords from the new API response
+            this.fetchedKeywords.set(parseKeywordsToData(data.keywords ?? ""));
+
+            this.essayStateService.setSelectedKeywords([]);
+
+            // Reset selected argument ids in state since we moved back
+            this.essayStateService.setSelectedArgumentIds([]);
+          } else if (this.featureCard.id === "references") {
+            // Move phase from scholars_selected -> argument_selected
+            // and show arguments from the new API response
+            const argumentsFromApi = Array.isArray(data.arguments)
+              ? data.arguments
+              : [];
+            this.fetchedArguments.set(argumentsFromApi);
+
+            this.essayStateService.setSelectedArgumentIds([]);
+            // Clear selected scholars and revert to argument_selected
+            this.essayStateService.setSelectedScholarIds([]);
+          }
+
+          // Expand/collapse feature cards based on the phase before undo completed
+          // Expanding a card via DashboardSharedService will collapse others via MainContent sync
+          if (previousPhase === "argument_selected") {
+            // Expand keywords, collapse arguments
+            this.dashboardSharedService.expandFeatureCard("keywords");
+          } else if (previousPhase === "scholars_selected") {
+            // Expand arguments, collapse references (review)
+            this.dashboardSharedService.expandFeatureCard("arguments");
+          }
+        },
+      );
   }
 
   /**
