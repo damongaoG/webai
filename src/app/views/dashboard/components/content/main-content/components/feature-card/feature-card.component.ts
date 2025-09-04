@@ -178,6 +178,7 @@ export class FeatureCardComponent {
     if (phase === "argument_selected" && this.featureCard.id === "arguments") {
       return true;
     }
+
     if (phase === "scholars_selected" && this.featureCard.id === "references") {
       return true;
     }
