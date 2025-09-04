@@ -81,6 +81,7 @@ export class EssayStateService {
     this._isLoadingArguments(),
   );
   public readonly isScholarsLoading = computed(() => this._isLoadingScholars());
+  public readonly currentPhase = computed(() => this._currentPhase());
 
   // Computed permissions based on current state - now properly reactive to phase changes
   public readonly interactionPermissions = computed(() => {

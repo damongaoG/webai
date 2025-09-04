@@ -47,6 +47,7 @@ export class FeatureCardComponent {
   @Output() keywordDeselected = new EventEmitter<KeywordData>();
   @Output() argumentSelected = new EventEmitter<ArgumentData>();
   @Output() argumentDeselected = new EventEmitter<ArgumentData>();
+  @Output() undoClicked = new EventEmitter<void>();
 
   private taskSelectionService = inject(TaskSelectionService);
   private readonly essayStateService = inject(EssayStateService);
@@ -168,6 +169,23 @@ export class FeatureCardComponent {
 
   get isInteractionAllowed(): boolean {
     return this.essayStateService.isInteractionAllowed(this.featureCard.id);
+  }
+
+  get shouldShowUndoButton(): boolean {
+    const phase = this.essayStateService.currentPhase();
+    if (this.isExpandDisabled) return false;
+
+    if (phase === "argument_selected" && this.featureCard.id === "arguments") {
+      return true;
+    }
+    if (phase === "scholars_selected" && this.featureCard.id === "references") {
+      return true;
+    }
+    return false;
+  }
+
+  onUndoClick(): void {
+    this.undoClicked.emit();
   }
 
   /**

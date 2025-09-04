@@ -39,26 +39,41 @@
       [class.visible]="cardState.showGradient"
     ></div>
 
-    <!-- Right side: Expand button -->
-    <div
-      class="expand expand-icon flex-shrink-0 z-10"
-      [class.expanded]="shouldShowExpandableContent"
-      [class.cursor-pointer]="!isExpandDisabled"
-      [class.cursor-not-allowed]="isExpandDisabled"
-      [class.opacity-50]="isExpandDisabled"
-      (click)="onExpandClick()"
-      (mouseenter)="onExpandHoverStart()"
-      (mouseleave)="onExpandHoverEnd()"
-    >
-      <div class="flex flex-row items-center gap-1">
-        <img
-          src="/assets/images/icon/expand-one.svg"
-          alt="Expand"
-          class="w-5 h-5 sm:w-6 sm:h-6 transition-transform duration-200"
-          [class.rotate-180]="shouldShowExpandableContent"
-        />
-        <div class="text-stone-500 text-xs sm:text-sm font-normal text-center">
-          {{ shouldShowExpandableContent ? "Collapse" : "Expand" }}
+    <!-- Right side: Undo (conditional) and Expand button -->
+    <div class="flex items-center gap-3 flex-shrink-0 z-10">
+      @if (shouldShowUndoButton) {
+        <button
+          type="button"
+          class="undo-btn flex items-center gap-1 text-stone-600 text-xs sm:text-sm px-2 py-1 rounded hover:bg-white/60"
+          (click)="onUndoClick()"
+        >
+          <i class="mdi mdi-undo text-base sm:text-lg"></i>
+          <span>Undo</span>
+        </button>
+      }
+
+      <div
+        class="expand expand-icon"
+        [class.expanded]="shouldShowExpandableContent"
+        [class.cursor-pointer]="!isExpandDisabled"
+        [class.cursor-not-allowed]="isExpandDisabled"
+        [class.opacity-50]="isExpandDisabled"
+        (click)="onExpandClick()"
+        (mouseenter)="onExpandHoverStart()"
+        (mouseleave)="onExpandHoverEnd()"
+      >
+        <div class="flex flex-row items-center gap-1">
+          <img
+            src="/assets/images/icon/expand-one.svg"
+            alt="Expand"
+            class="w-5 h-5 sm:w-6 sm:h-6 transition-transform duration-200"
+            [class.rotate-180]="shouldShowExpandableContent"
+          />
+          <div
+            class="text-stone-500 text-xs sm:text-sm font-normal text-center"
+          >
+            {{ shouldShowExpandableContent ? "Collapse" : "Expand" }}
+          </div>
         </div>
       </div>
     </div>
