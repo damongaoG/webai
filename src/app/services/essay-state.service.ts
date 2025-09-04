@@ -66,6 +66,7 @@ export class EssayStateService {
   private readonly _errorMessage = signal(this.initialState.errorMessage);
   private readonly _created = signal(this.initialState.created);
   private readonly _isLoadingArguments = signal(false);
+  private readonly _isLoadingScholars = signal(false);
 
   // Public computed signals for component consumption
   public readonly essayId = computed(() => this._essayId());
@@ -76,6 +77,10 @@ export class EssayStateService {
   public readonly selectedScholarIds = computed(() =>
     this._selectedScholarIds(),
   );
+  public readonly isArgumentsLoading = computed(() =>
+    this._isLoadingArguments(),
+  );
+  public readonly isScholarsLoading = computed(() => this._isLoadingScholars());
 
   // Computed permissions based on current state - now properly reactive to phase changes
   public readonly interactionPermissions = computed(() => {
@@ -112,10 +117,30 @@ export class EssayStateService {
   }
 
   /**
-   * Set current creation phase explicitly
+   * Set scholars loading state
    */
-  setPhase(phase: EssayCreationPhase): void {
-    this._currentPhase.set(phase);
+  setScholarsLoading(isLoading: boolean): void {
+    this._isLoadingScholars.set(isLoading);
+  }
+
+  /**
+   * Advance to ARGUMENT_SELECTED after successful arguments fetch
+   * Locks keywords interactions as required by the flow.
+   */
+  advancePhaseAfterArgumentsFetchSuccess(): void {
+    if (this._currentPhase() === EssayCreationPhase.KEYWORDS_SELECTED) {
+      this._currentPhase.set(EssayCreationPhase.ARGUMENT_SELECTED);
+    }
+  }
+
+  /**
+   * Advance to SCHOLARS_SELECTED after successful scholars fetch
+   * Locks arguments interactions as required by the flow.
+   */
+  advancePhaseAfterScholarsFetchSuccess(): void {
+    if (this._currentPhase() === EssayCreationPhase.ARGUMENT_SELECTED) {
+      this._currentPhase.set(EssayCreationPhase.SCHOLARS_SELECTED);
+    }
   }
 
   /**
@@ -165,8 +190,30 @@ export class EssayStateService {
       return;
     }
 
+    // Always update the selected argument ids
     this._selectedArgumentIds.set(argumentIds);
-    this._currentPhase.set(EssayCreationPhase.ARGUMENT_SELECTED);
+
+    const currentPhase = this._currentPhase();
+
+    // Do not move backwards once we've advanced beyond arguments
+    if (currentPhase === EssayCreationPhase.SCHOLARS_SELECTED) {
+      return;
+    }
+
+    // If we are still at keywords stage and user selects arguments, advance
+    if (
+      currentPhase === EssayCreationPhase.KEYWORDS_SELECTED &&
+      argumentIds.length > 0
+    ) {
+      this._currentPhase.set(EssayCreationPhase.ARGUMENT_SELECTED);
+      return;
+    }
+
+    // If already at ARGUMENT_SELECTED, keep phase even if selection becomes empty
+    // Permissions will gate access to references based on selection length.
+    if (currentPhase === EssayCreationPhase.ARGUMENT_SELECTED) {
+      return;
+    }
   }
 
   /**
@@ -182,8 +229,15 @@ export class EssayStateService {
       return;
     }
 
+    const hasScholars = scholarIds.length > 0;
+    const fallbackPhase = EssayCreationPhase.ARGUMENT_SELECTED;
+
+    const nextPhase = hasScholars
+      ? EssayCreationPhase.SCHOLARS_SELECTED
+      : fallbackPhase;
+
     this._selectedScholarIds.set(scholarIds);
-    this._currentPhase.set(EssayCreationPhase.SCHOLARS_SELECTED);
+    this._currentPhase.set(nextPhase);
   }
 
   /**
@@ -268,6 +322,7 @@ export class EssayStateService {
     this._errorMessage.set(this.initialState.errorMessage);
     this._created.set(this.initialState.created);
     this._isLoadingArguments.set(false);
+    this._isLoadingScholars.set(false);
   }
 
   /**
@@ -334,17 +389,20 @@ export class EssayStateService {
       case EssayCreationPhase.ARGUMENT_SELECTED:
         return {
           allowKeywordsSelection: false,
+          // Keep arguments interaction enabled until scholars are successfully fetched
           allowArgumentsInteraction: true,
-          allowReferencesInteraction: true,
+          // Only allow references once user selected at least one argument
+          allowReferencesInteraction: state.selectedArgumentIds.length > 0,
           allowCaseStudiesInteraction: false,
         };
 
       case EssayCreationPhase.SCHOLARS_SELECTED:
         return {
           allowKeywordsSelection: false,
+          // After scholars fetched, prevent interacting with arguments
           allowArgumentsInteraction: false,
-          allowReferencesInteraction: false,
-          // Keep case studies gated unless specified otherwise
+          // Keep references accessible for review
+          allowReferencesInteraction: true,
           allowCaseStudiesInteraction: true,
         };
 

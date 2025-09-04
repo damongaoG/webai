@@ -43,12 +43,12 @@
     <div
       class="expand expand-icon flex-shrink-0 z-10"
       [class.expanded]="shouldShowExpandableContent"
-      [class.cursor-pointer]="isInteractionAllowed"
-      [class.cursor-not-allowed]="!isInteractionAllowed"
-      [class.opacity-50]="!isInteractionAllowed"
+      [class.cursor-pointer]="!isExpandDisabled"
+      [class.cursor-not-allowed]="isExpandDisabled"
+      [class.opacity-50]="isExpandDisabled"
       (click)="onExpandClick()"
-      (mouseenter)="isInteractionAllowed ? onExpandHoverStart() : null"
-      (mouseleave)="isInteractionAllowed ? onExpandHoverEnd() : null"
+      (mouseenter)="onExpandHoverStart()"
+      (mouseleave)="onExpandHoverEnd()"
     >
       <div class="flex flex-row items-center gap-1">
         <img

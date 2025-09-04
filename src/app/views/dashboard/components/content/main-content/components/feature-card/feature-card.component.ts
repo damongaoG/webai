@@ -15,10 +15,7 @@ import { ExpandableContentComponent } from "../expandable-content/expandable-con
 import { KeywordData } from "../../interfaces/keyword.interface";
 import { TaskType } from "@/app/interfaces/task.interface";
 import { TaskSelectionService } from "@/app/services/task-selection.service";
-import {
-  EssayStateService,
-  EssayCreationPhase,
-} from "@/app/services/essay-state.service";
+import { EssayStateService } from "@/app/services/essay-state.service";
 import { EssayService } from "@/app/services/essay.service";
 import { parseKeywordsToData } from "@/app/helper/utils";
 import { catchError, of } from "rxjs";
@@ -69,8 +66,8 @@ export class FeatureCardComponent {
   readonly isLoadingScholars = signal<boolean>(false);
 
   onExpandClick(): void {
-    // Check if this card interaction is allowed
-    if (!this.isInteractionAllowed) {
+    // Block interaction when not allowed or while any content is loading
+    if (this.isExpandDisabled) {
       console.warn(
         `Interaction with ${this.featureCard.id} is not allowed in current essay phase`,
       );
@@ -105,10 +102,16 @@ export class FeatureCardComponent {
   }
 
   onExpandHoverStart(): void {
+    if (this.isExpandDisabled) {
+      return;
+    }
     this.expandHoverStart.emit(this.featureCard.id);
   }
 
   onExpandHoverEnd(): void {
+    if (this.isExpandDisabled) {
+      return;
+    }
     this.expandHoverEnd.emit(this.featureCard.id);
   }
 
@@ -168,6 +171,21 @@ export class FeatureCardComponent {
   }
 
   /**
+   * Disable expand interaction when interaction is not allowed
+   * or when any of the async data loads are in progress.
+   */
+  get isExpandDisabled(): boolean {
+    return (
+      !this.isInteractionAllowed ||
+      this.isLoadingKeywords() ||
+      this.isLoadingArguments() ||
+      this.essayStateService.isArgumentsLoading() ||
+      this.isLoadingScholars() ||
+      this.essayStateService.isScholarsLoading()
+    );
+  }
+
+  /**
    * Get loading state based on the specific feature card type
    */
   getLoadingState(): boolean {
@@ -218,10 +236,6 @@ export class FeatureCardComponent {
             // Parse keywords string into KeywordData array
             const keywordsData = parseKeywordsToData(response.data.keywords);
             this.fetchedKeywords.set(keywordsData);
-            // Update phase per guide: keywords fetched successfully
-            this.essayStateService.setPhase(
-              EssayCreationPhase.KEYWORDS_SELECTED,
-            );
           } else {
             console.warn("Invalid keywords response:", response);
             this.toastService.error("Invalid keywords response from server");
@@ -278,10 +292,8 @@ export class FeatureCardComponent {
           if (response && response.code === 1 && response.data.arguments) {
             // Store the fetched arguments
             this.fetchedArguments.set(response.data.arguments);
-            // Update phase per guide: arguments fetched successfully
-            this.essayStateService.setPhase(
-              EssayCreationPhase.ARGUMENT_SELECTED,
-            );
+            // Advance phase to ARGUMENT_SELECTED to lock keywords and allow references
+            this.essayStateService.advancePhaseAfterArgumentsFetchSuccess();
           } else {
             console.warn("Invalid arguments response:", response);
             this.toastService.error("Invalid arguments response from server");
@@ -316,6 +328,7 @@ export class FeatureCardComponent {
     const argumentsParam = selectedArgumentIds.join(",");
 
     this.isLoadingScholars.set(true);
+    this.essayStateService.setScholarsLoading(true);
 
     this.essayService
       .getScholars(essayId, argumentsParam)
@@ -323,6 +336,7 @@ export class FeatureCardComponent {
         catchError((error) => {
           console.error("Error fetching scholars:", error);
           this.isLoadingScholars.set(false);
+          this.essayStateService.setScholarsLoading(false);
           this.toastService.error(
             "Failed to fetch references. Please try again.",
           );
@@ -332,12 +346,11 @@ export class FeatureCardComponent {
       .subscribe({
         next: (response) => {
           this.isLoadingScholars.set(false);
+          this.essayStateService.setScholarsLoading(false);
           if (response && response.code === 1 && response.data?.scholars) {
             this.fetchedScholars.set(response.data.scholars);
-            // Update phase per guide: scholars fetched successfully
-            this.essayStateService.setPhase(
-              EssayCreationPhase.SCHOLARS_SELECTED,
-            );
+            // Advance phase to SCHOLARS_SELECTED to lock arguments
+            this.essayStateService.advancePhaseAfterScholarsFetchSuccess();
           } else {
             console.warn("Invalid scholars response:", response);
             this.toastService.error("Invalid references response from server");
