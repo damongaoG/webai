@@ -8,6 +8,7 @@ import {
   KeywordsResponse,
   ArgumentsResponse,
   ScholarsResponse,
+  UndoResponse,
 } from "../interfaces/essay-create.interface";
 
 @Injectable({
@@ -75,6 +76,18 @@ export class EssayService {
   ): Observable<ScholarsResponse> {
     return this.http.get<ScholarsResponse>(
       `${this.apiUrl}/anon/model/paper/action/${essayId}/scholar?arguments=${encodeURIComponent(selectedArgumentIds)}`,
+      { headers: this.headers },
+    );
+  }
+
+  /**
+   * Undo the last action for the essay
+   * POST /model-processor-service/api/anon/model/paper/action/${id}/undo
+   */
+  undoAction(essayId: string): Observable<UndoResponse> {
+    return this.http.post<UndoResponse>(
+      `${this.apiUrl}/anon/model/paper/action/${essayId}/undo`,
+      {},
       { headers: this.headers },
     );
   }

@@ -81,3 +81,19 @@ export interface ScholarsResponse {
   };
   code: number;
 }
+
+// Response from POST /model-processor-service/api/anon/model/paper/action/${id}/undo
+export interface UndoResponse {
+  timestamp: number;
+  data: {
+    id: string;
+    title: string;
+    keywords: string;
+    arguments: ArgumentData[];
+    scholars: ScholarData[];
+    cases: any[];
+    createTime?: string;
+    updateTime?: string;
+  };
+  code: number;
+}

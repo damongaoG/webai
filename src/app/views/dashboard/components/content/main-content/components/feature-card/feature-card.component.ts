@@ -186,7 +186,80 @@ export class FeatureCardComponent {
   }
 
   onUndoClick(): void {
+    // Emit for parent listeners if any
     this.undoClicked.emit();
+
+    const essayId = this.essayStateService.essayId();
+    if (!essayId) {
+      this.toastService.error("Please create an essay first to undo");
+      return;
+    }
+
+    // Determine which card we're undoing and set loading accordingly
+    if (this.featureCard.id === "arguments") {
+      this.isLoadingArguments.set(true);
+      this.essayStateService.setArgumentsLoading(true);
+    } else if (this.featureCard.id === "references") {
+      this.isLoadingScholars.set(true);
+      this.essayStateService.setScholarsLoading(true);
+    }
+
+    this.essayService
+      .undoAction(essayId)
+      .pipe(
+        catchError((error) => {
+          console.error("Error performing undo:", error);
+          this.isLoadingArguments.set(false);
+          this.isLoadingScholars.set(false);
+          this.essayStateService.setArgumentsLoading(false);
+          this.essayStateService.setScholarsLoading(false);
+          this.toastService.error("Failed to undo. Please try again.");
+          return of(null);
+        }),
+      )
+      .subscribe((response) => {
+        // Clear loading flags
+        this.isLoadingArguments.set(false);
+        this.isLoadingScholars.set(false);
+        this.essayStateService.setArgumentsLoading(false);
+        this.essayStateService.setScholarsLoading(false);
+
+        if (!response || response.code !== 1 || !response.data) {
+          this.toastService.error("Invalid undo response from server");
+          return;
+        }
+
+        const data = response.data;
+
+        // Update local data stores based on which card initiated undo
+        if (this.featureCard.id === "arguments") {
+          // Show keywords from the new API response
+          this.fetchedKeywords.set(parseKeywordsToData(data.keywords ?? ""));
+          // Reset selected argument ids in state since we moved back
+          this.essayStateService.setSelectedArgumentIds([]);
+          // Move phase back to keywords_selected by updating selected keywords
+          const parsedKeywords = (data.keywords ?? "")
+            .split(",")
+            .map((k) => k.trim())
+            .filter((k) => k.length > 0);
+          this.essayStateService.setSelectedKeywords(parsedKeywords);
+        } else if (this.featureCard.id === "references") {
+          // Move phase from scholars_selected -> argument_selected
+          // and show arguments from the new API response
+          const argumentsFromApi = Array.isArray(data.arguments)
+            ? data.arguments
+            : [];
+          this.fetchedArguments.set(argumentsFromApi);
+          // Clear selected scholars and revert to argument_selected
+          this.essayStateService.setSelectedScholarIds([]);
+          // Ensure we're at ARGUMENT_SELECTED without advancing beyond
+          const currentArgIds = this.essayStateService.selectedArgumentIds();
+          // Keep current argument selection if still valid; otherwise empty
+          const validIds = new Set(argumentsFromApi.map((a) => a.id));
+          const filtered = currentArgIds.filter((id) => validIds.has(id));
+          this.essayStateService.setSelectedArgumentIds(filtered);
+        }
+      });
   }
 
   /**
