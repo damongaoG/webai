@@ -15,7 +15,10 @@ import { ExpandableContentComponent } from "../expandable-content/expandable-con
 import { KeywordData } from "../../interfaces/keyword.interface";
 import { TaskType } from "@/app/interfaces/task.interface";
 import { TaskSelectionService } from "@/app/services/task-selection.service";
-import { EssayStateService } from "@/app/services/essay-state.service";
+import {
+  EssayStateService,
+  EssayCreationPhase,
+} from "@/app/services/essay-state.service";
 import { EssayService } from "@/app/services/essay.service";
 import { parseKeywordsToData } from "@/app/helper/utils";
 import { catchError, of } from "rxjs";
@@ -215,6 +218,10 @@ export class FeatureCardComponent {
             // Parse keywords string into KeywordData array
             const keywordsData = parseKeywordsToData(response.data.keywords);
             this.fetchedKeywords.set(keywordsData);
+            // Update phase per guide: keywords fetched successfully
+            this.essayStateService.setPhase(
+              EssayCreationPhase.KEYWORDS_SELECTED,
+            );
           } else {
             console.warn("Invalid keywords response:", response);
             this.toastService.error("Invalid keywords response from server");
@@ -271,6 +278,10 @@ export class FeatureCardComponent {
           if (response && response.code === 1 && response.data.arguments) {
             // Store the fetched arguments
             this.fetchedArguments.set(response.data.arguments);
+            // Update phase per guide: arguments fetched successfully
+            this.essayStateService.setPhase(
+              EssayCreationPhase.ARGUMENT_SELECTED,
+            );
           } else {
             console.warn("Invalid arguments response:", response);
             this.toastService.error("Invalid arguments response from server");
@@ -323,6 +334,10 @@ export class FeatureCardComponent {
           this.isLoadingScholars.set(false);
           if (response && response.code === 1 && response.data?.scholars) {
             this.fetchedScholars.set(response.data.scholars);
+            // Update phase per guide: scholars fetched successfully
+            this.essayStateService.setPhase(
+              EssayCreationPhase.SCHOLARS_SELECTED,
+            );
           } else {
             console.warn("Invalid scholars response:", response);
             this.toastService.error("Invalid references response from server");

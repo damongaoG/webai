@@ -112,6 +112,13 @@ export class EssayStateService {
   }
 
   /**
+   * Set current creation phase explicitly
+   */
+  setPhase(phase: EssayCreationPhase): void {
+    this._currentPhase.set(phase);
+  }
+
+  /**
    * Set essay title and ID, move to TITLE_CREATED phase
    */
   setEssayTitle(title: string, essayId?: string): void {
@@ -158,13 +165,8 @@ export class EssayStateService {
       return;
     }
 
-    const newPhase =
-      argumentIds.length > 0
-        ? EssayCreationPhase.ARGUMENT_SELECTED
-        : EssayCreationPhase.KEYWORDS_SELECTED;
-
     this._selectedArgumentIds.set(argumentIds);
-    this._currentPhase.set(newPhase);
+    this._currentPhase.set(EssayCreationPhase.ARGUMENT_SELECTED);
   }
 
   /**
@@ -180,19 +182,8 @@ export class EssayStateService {
       return;
     }
 
-    const hasScholars = scholarIds.length > 0;
-    // Fallback phase if scholars cleared: depend on arguments selection
-    const fallbackPhase =
-      this._selectedArgumentIds().length > 0
-        ? EssayCreationPhase.ARGUMENT_SELECTED
-        : EssayCreationPhase.KEYWORDS_SELECTED;
-
-    const nextPhase = hasScholars
-      ? EssayCreationPhase.SCHOLARS_SELECTED
-      : fallbackPhase;
-
     this._selectedScholarIds.set(scholarIds);
-    this._currentPhase.set(nextPhase);
+    this._currentPhase.set(EssayCreationPhase.SCHOLARS_SELECTED);
   }
 
   /**
@@ -342,7 +333,7 @@ export class EssayStateService {
 
       case EssayCreationPhase.ARGUMENT_SELECTED:
         return {
-          allowKeywordsSelection: true,
+          allowKeywordsSelection: false,
           allowArgumentsInteraction: true,
           allowReferencesInteraction: true,
           allowCaseStudiesInteraction: false,
@@ -350,9 +341,9 @@ export class EssayStateService {
 
       case EssayCreationPhase.SCHOLARS_SELECTED:
         return {
-          allowKeywordsSelection: true,
-          allowArgumentsInteraction: true,
-          allowReferencesInteraction: true,
+          allowKeywordsSelection: false,
+          allowArgumentsInteraction: false,
+          allowReferencesInteraction: false,
           // Keep case studies gated unless specified otherwise
           allowCaseStudiesInteraction: true,
         };
