@@ -120,12 +120,12 @@ export class MainContentComponent implements OnInit {
     const typedCardId = cardId as CardId;
     const currentState = this.cardStates[typedCardId];
 
-    // Map local card IDs to shared service task IDs
+    // Map local card IDs to shared service task IDs (now canonical)
     const cardToTaskMap: Record<CardId, string> = {
       keywords: "keywords",
       arguments: "arguments",
-      references: "review",
-      casestudies: "cases",
+      references: "references",
+      casestudies: "casestudies",
     };
 
     const taskId = cardToTaskMap[typedCardId];
@@ -221,12 +221,12 @@ export class MainContentComponent implements OnInit {
     contentType: string;
   }): void {
     if (sharedState.isExpanded && sharedState.contentType) {
-      // Map shared service task IDs to local card IDs
+      // Map shared service task IDs to local card IDs (now canonical)
       const taskToCardMap: Record<string, CardId> = {
         keywords: "keywords",
         arguments: "arguments",
-        review: "references",
-        cases: "casestudies",
+        references: "references",
+        casestudies: "casestudies",
         examples: "casestudies", // Fallback mapping
       };
 

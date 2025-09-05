@@ -42,13 +42,13 @@ export class DashboardSharedService {
       isSelected: false,
     },
     {
-      id: "review",
+      id: "references",
       name: "References",
       type: TaskType.GRAMMAR,
       isSelected: false,
     },
     {
-      id: "cases",
+      id: "casestudies",
       name: "Relevant case studies",
       type: TaskType.TONE,
       isSelected: false,

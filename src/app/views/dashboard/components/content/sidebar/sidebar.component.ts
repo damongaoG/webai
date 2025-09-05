@@ -69,8 +69,8 @@ export class SidebarComponent implements OnInit, OnDestroy {
       keywords: `/assets/images/icon/${prefix}-keyword.svg`,
       // topic: `/assets/images/icon/${prefix}-task.svg`,
       arguments: `/assets/images/icon/${prefix}-argument-point.svg`,
-      review: `/assets/images/icon/${prefix}-review.svg`,
-      cases: `/assets/images/icon/${prefix}-case.svg`,
+      references: `/assets/images/icon/${prefix}-review.svg`,
+      casestudies: `/assets/images/icon/${prefix}-case.svg`,
       examples: `/assets/images/icon/${prefix}-essay.svg`,
     };
 
