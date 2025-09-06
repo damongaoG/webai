@@ -50,6 +50,7 @@ export class FeatureCardComponent {
   @Output() argumentSelected = new EventEmitter<ArgumentData>();
   @Output() argumentDeselected = new EventEmitter<ArgumentData>();
   @Output() undoClicked = new EventEmitter<void>();
+  @Output() redoClicked = new EventEmitter<void>();
 
   private taskSelectionService = inject(TaskSelectionService);
   private readonly essayStateService = inject(EssayStateService);
@@ -68,6 +69,9 @@ export class FeatureCardComponent {
   // Signal to store fetched scholars (references)
   private readonly fetchedScholars = signal<ScholarData[]>([]);
   readonly isLoadingScholars = signal<boolean>(false);
+
+  // Local redo state (kept minimal; global source of truth is EssayStateService)
+  private readonly lastUndoneCardId = signal<string | null>(null);
 
   onExpandClick(): void {
     // Block interaction when not allowed or while any content is loading
@@ -188,6 +192,16 @@ export class FeatureCardComponent {
     return false;
   }
 
+  get shouldShowRedoButton(): boolean {
+    if (this.isExpandDisabled) return false;
+    // Prefer global redo availability so the redo button shows on previous phase card
+    if (this.essayStateService.isRedoAvailableForCard(this.featureCard.id)) {
+      return true;
+    }
+    // Fallback to local marker if set within this component lifecycle
+    return this.lastUndoneCardId() === this.featureCard.id;
+  }
+
   onUndoClick(): void {
     // Emit for parent listeners if any
     this.undoClicked.emit();
@@ -252,6 +266,8 @@ export class FeatureCardComponent {
 
             // Reset selected argument ids in state since we moved back
             this.essayStateService.setSelectedArgumentIds([]);
+            // Revert phase ARGUMENT_SELECTED -> KEYWORDS_SELECTED
+            this.essayStateService.revertToKeywordsSelectedAfterUndo();
           } else if (this.featureCard.id === "references") {
             // Move phase from scholars_selected -> argument_selected
             // and show arguments from the new API response
@@ -263,7 +279,17 @@ export class FeatureCardComponent {
             this.essayStateService.setSelectedArgumentIds([]);
             // Clear selected scholars and revert to argument_selected
             this.essayStateService.setSelectedScholarIds([]);
+            // Revert phase SCHOLARS_SELECTED -> ARGUMENT_SELECTED
+            this.essayStateService.revertToArgumentSelectedAfterUndo();
           }
+
+          // Enable redo on the previous-phase feature card globally
+          // If undoing from arguments -> redo appears on keywords card
+          // If undoing from references -> redo appears on arguments card
+          const redoTarget =
+            this.featureCard.id === "arguments" ? "keywords" : "arguments";
+          this.essayStateService.setRedoState(redoTarget);
+          this.lastUndoneCardId.set(redoTarget);
 
           // Expand/collapse feature cards based on the phase before undo completed
           // Expanding a card via DashboardSharedService will collapse others via MainContent sync
@@ -274,6 +300,86 @@ export class FeatureCardComponent {
             // Expand arguments, collapse references (review)
             this.dashboardSharedService.expandFeatureCard("arguments");
           }
+        },
+      );
+  }
+
+  onRedoClick(): void {
+    this.redoClicked.emit();
+
+    const essayId = this.essayStateService.essayId();
+    if (!essayId) {
+      this.toastService.error("Please create an essay first to redo");
+      return;
+    }
+
+    // Determine redo target from global state (previous-phase card)
+    const redoTarget = this.essayStateService.redoTargetCardId();
+
+    // Set loading flags based on what we're redoing to
+    if (redoTarget === "keywords") {
+      // We are moving forward to arguments
+      this.isLoadingArguments.set(true);
+      this.essayStateService.setArgumentsLoading(true);
+    } else if (redoTarget === "arguments") {
+      // We are moving forward to scholars
+      this.isLoadingScholars.set(true);
+      this.essayStateService.setScholarsLoading(true);
+    }
+
+    this.essayService
+      .redoAction(essayId)
+      .pipe(
+        catchError((error) => {
+          console.error("Error performing redo:", error);
+          this.isLoadingArguments.set(false);
+          this.isLoadingScholars.set(false);
+          this.essayStateService.setArgumentsLoading(false);
+          this.essayStateService.setScholarsLoading(false);
+          this.toastService.error("Failed to redo. Please try again.");
+          return of(null);
+        }),
+      )
+      .subscribe(
+        (
+          response: Result<{
+            keywords?: string;
+            arguments?: ArgumentData[];
+          }> | null,
+        ) => {
+          this.isLoadingArguments.set(false);
+          this.isLoadingScholars.set(false);
+          this.essayStateService.setArgumentsLoading(false);
+          this.essayStateService.setScholarsLoading(false);
+
+          if (!response || response.code !== 1 || !response.data) {
+            this.toastService.error("Invalid redo response from server");
+            return;
+          }
+
+          const data = response.data;
+
+          // Update local data based on redo target rather than current card id
+          if (redoTarget === "keywords") {
+            // Move forward to arguments available again
+            const argumentsFromApi = Array.isArray(data.arguments)
+              ? data.arguments
+              : [];
+            this.fetchedArguments.set(argumentsFromApi);
+            this.essayStateService.advancePhaseAfterArgumentsFetchSuccess();
+            // Optionally expand arguments card for better UX
+            this.dashboardSharedService.expandFeatureCard("arguments");
+          } else if (redoTarget === "arguments") {
+            // Move forward to scholars available again
+            this.fetchedScholars.set([]);
+            this.essayStateService.advancePhaseAfterScholarsFetchSuccess();
+            // Optionally expand references card
+            this.dashboardSharedService.expandFeatureCard("references");
+          }
+
+          // consume redo state globally and locally
+          this.essayStateService.clearRedoState();
+          this.lastUndoneCardId.set(null);
         },
       );
   }

@@ -91,4 +91,16 @@ export class EssayService {
       { headers: this.headers },
     );
   }
+
+  /**
+   * Redo the last undone action for the essay
+   * POST /model-processor-service/api/anon/model/paper/action/${id}/redo
+   */
+  redoAction(essayId: string): Observable<UndoResponse> {
+    return this.http.post<UndoResponse>(
+      `${this.apiUrl}/anon/model/paper/action/${essayId}/redo`,
+      {},
+      { headers: this.headers },
+    );
+  }
 }

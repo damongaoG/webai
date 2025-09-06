@@ -39,7 +39,7 @@
       [class.visible]="cardState.showGradient"
     ></div>
 
-    <!-- Right side: Undo (conditional) and Expand button -->
+    <!-- Right side: Undo/Redo (conditional) and Expand button -->
     <div class="flex items-center gap-3 flex-shrink-0 z-10">
       @if (shouldShowUndoButton) {
         <button
@@ -49,6 +49,17 @@
         >
           <i class="mdi mdi-undo text-base sm:text-lg"></i>
           <span>Undo</span>
+        </button>
+      }
+
+      @if (shouldShowRedoButton) {
+        <button
+          type="button"
+          class="redo-btn flex items-center gap-1 text-stone-600 text-xs sm:text-sm px-2 py-1 rounded hover:bg-white/60"
+          (click)="onRedoClick()"
+        >
+          <i class="mdi mdi-redo text-base sm:text-lg"></i>
+          <span>Redo</span>
         </button>
       }
 

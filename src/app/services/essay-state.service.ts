@@ -67,6 +67,8 @@ export class EssayStateService {
   private readonly _created = signal(this.initialState.created);
   private readonly _isLoadingArguments = signal(false);
   private readonly _isLoadingScholars = signal(false);
+  private readonly _redoAvailable = signal(false);
+  private readonly _redoTargetCardId = signal<string | null>(null);
 
   // Public computed signals for component consumption
   public readonly essayId = computed(() => this._essayId());
@@ -82,6 +84,7 @@ export class EssayStateService {
   );
   public readonly isScholarsLoading = computed(() => this._isLoadingScholars());
   public readonly currentPhase = computed(() => this._currentPhase());
+  public readonly redoTargetCardId = computed(() => this._redoTargetCardId());
 
   // Computed permissions based on current state - now properly reactive to phase changes
   public readonly interactionPermissions = computed(() => {
@@ -122,6 +125,48 @@ export class EssayStateService {
    */
   setScholarsLoading(isLoading: boolean): void {
     this._isLoadingScholars.set(isLoading);
+  }
+
+  /**
+   * Revert phase from ARGUMENT_SELECTED -> KEYWORDS_SELECTED (used on undo)
+   */
+  revertToKeywordsSelectedAfterUndo(): void {
+    if (this._currentPhase() === EssayCreationPhase.ARGUMENT_SELECTED) {
+      this._currentPhase.set(EssayCreationPhase.KEYWORDS_SELECTED);
+    }
+  }
+
+  /**
+   * Revert phase from SCHOLARS_SELECTED -> ARGUMENT_SELECTED (used on undo)
+   */
+  revertToArgumentSelectedAfterUndo(): void {
+    if (this._currentPhase() === EssayCreationPhase.SCHOLARS_SELECTED) {
+      this._currentPhase.set(EssayCreationPhase.ARGUMENT_SELECTED);
+    }
+  }
+
+  /**
+   * Configure redo availability for a specific feature card id
+   * (e.g., "keywords" when undoing from arguments, or "arguments" when undoing from references)
+   */
+  setRedoState(targetCardId: string): void {
+    this._redoTargetCardId.set(targetCardId);
+    this._redoAvailable.set(true);
+  }
+
+  /**
+   * Clear redo availability
+   */
+  clearRedoState(): void {
+    this._redoTargetCardId.set(null);
+    this._redoAvailable.set(false);
+  }
+
+  /**
+   * Whether redo is available for a given feature card id
+   */
+  isRedoAvailableForCard(cardId: string): boolean {
+    return this._redoAvailable() && this._redoTargetCardId() === cardId;
   }
 
   /**
@@ -324,6 +369,8 @@ export class EssayStateService {
     this._created.set(this.initialState.created);
     this._isLoadingArguments.set(false);
     this._isLoadingScholars.set(false);
+    this._redoTargetCardId.set(null);
+    this._redoAvailable.set(false);
   }
 
   /**
