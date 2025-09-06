@@ -146,6 +146,28 @@ export class EssayStateService {
   }
 
   /**
+   * Pre-advance phase when performing a redo action.
+   * - TITLE_CREATED -> KEYWORDS_SELECTED
+   * - KEYWORDS_SELECTED -> ARGUMENT_SELECTED
+   * Other phases are left unchanged here on purpose.
+   */
+  preAdvancePhaseForRedo(): void {
+    const phase = this._currentPhase();
+    switch (phase) {
+      case EssayCreationPhase.TITLE_CREATED: {
+        this._currentPhase.set(EssayCreationPhase.KEYWORDS_SELECTED);
+        break;
+      }
+      case EssayCreationPhase.KEYWORDS_SELECTED: {
+        this._currentPhase.set(EssayCreationPhase.ARGUMENT_SELECTED);
+        break;
+      }
+      default:
+        break;
+    }
+  }
+
+  /**
    * Configure redo availability for a specific feature card id
    * (e.g., "keywords" when undoing from arguments, or "arguments" when undoing from references)
    */

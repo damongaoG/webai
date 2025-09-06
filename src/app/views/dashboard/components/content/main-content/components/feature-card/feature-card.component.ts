@@ -313,6 +313,16 @@ export class FeatureCardComponent {
       return;
     }
 
+    // Capture the phase at the moment redo is initiated
+    const phaseAtRedo = this.essayStateService.currentPhase();
+
+    // Pre-advance the phase before calling API as required
+    // - title_created -> keywords_selected
+    // - keywords_selected -> argument_selected
+    this.essayStateService.preAdvancePhaseForRedo();
+
+    console.log("Phase at redo:", phaseAtRedo);
+
     // Determine redo target from global state (previous-phase card)
     const redoTarget = this.essayStateService.redoTargetCardId();
 
@@ -358,6 +368,30 @@ export class FeatureCardComponent {
           }
 
           const data = response.data;
+
+          // Restore selection state based on the phase when redo was performed
+          if (phaseAtRedo === "title_created") {
+            const keywordsFromApi = (data.keywords ?? "")
+              .split(",")
+              .map((k) => k.trim())
+              .filter((k) => k.length > 0);
+            this.essayStateService.setSelectedKeywords(keywordsFromApi);
+          } else if (phaseAtRedo === "keywords_selected") {
+            const keywordsFromApi = (data.keywords ?? "")
+              .split(",")
+              .map((k) => k.trim())
+              .filter((k) => k.length > 0);
+            this.essayStateService.setSelectedKeywords(keywordsFromApi);
+          } else if (phaseAtRedo === "argument_selected") {
+            const selectedArgumentIdsFromApi = Array.isArray(data.arguments)
+              ? data.arguments
+                  .filter((arg) => !!arg.isSelected)
+                  .map((arg) => arg.id)
+              : [];
+            this.essayStateService.setSelectedArgumentIds(
+              selectedArgumentIdsFromApi,
+            );
+          }
 
           // Update local data based on redo target rather than current card id
           if (redoTarget === "keywords") {
