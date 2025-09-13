@@ -141,7 +141,24 @@ import {
 
         @if (expandableState.contentType === "references" && isExpanded()) {
           @if (isInteractionAllowed()) {
-            <div class="references-list space-y-3">
+            <div class="references-list space-y-3" style="padding: 1rem">
+              <div class="grid-toolbar" *ngIf="scholars.length > 0">
+                <label
+                  class="select-all flex items-center gap-2 text-sm text-gray-700"
+                >
+                  <input
+                    type="checkbox"
+                    [checked]="areAllSelected"
+                    [indeterminate]="isPartiallySelected"
+                    (change)="onToggleSelectAll($event)"
+                    aria-label="Select all references"
+                  />
+                  <span>Select all</span>
+                  <span class="opacity-70"
+                    >({{ selectedCount }}/{{ scholars.length }})</span
+                  >
+                </label>
+              </div>
               <ul class="divide-y divide-gray-200/50">
                 @for (scholar of scholars; track scholar.id) {
                   <li class="py-2 flex items-start gap-3">
@@ -363,6 +380,57 @@ export class ExpandableContentComponent {
       this.essayStateService.addSelectedScholarId(scholarId);
     } else {
       this.essayStateService.removeSelectedScholarId(scholarId);
+    }
+  }
+
+  get selectedCount(): number {
+    const selectedIds = new Set(this.essayStateService.selectedScholarIds());
+    if (!this.scholars || this.scholars.length === 0) return 0;
+    let count = 0;
+    for (const s of this.scholars) if (selectedIds.has(s.id)) count++;
+    return count;
+  }
+
+  get areAllSelected(): boolean {
+    const total = this.scholars?.length ?? 0;
+    return total > 0 && this.selectedCount === total;
+  }
+
+  get isPartiallySelected(): boolean {
+    const total = this.scholars?.length ?? 0;
+    const size = this.selectedCount;
+    return size > 0 && size < total;
+  }
+
+  onToggleSelectAll(event: Event): void {
+    event.stopPropagation();
+    this.toggleSelectAll();
+  }
+
+  toggleSelectAll(): void {
+    if (this.areAllSelected) this.clearSelection();
+    else this.selectAll();
+  }
+
+  selectAll(): void {
+    if (!this.scholars || this.scholars.length === 0) return;
+    const previouslySelected = new Set(
+      this.essayStateService.selectedScholarIds(),
+    );
+    for (const scholar of this.scholars) {
+      if (!previouslySelected.has(scholar.id)) {
+        this.essayStateService.addSelectedScholarId(scholar.id);
+      }
+    }
+  }
+
+  clearSelection(): void {
+    if (!this.scholars || this.scholars.length === 0) return;
+    const visibleIds = new Set(this.scholars.map((s) => s.id));
+    for (const id of this.essayStateService.selectedScholarIds()) {
+      if (visibleIds.has(id)) {
+        this.essayStateService.removeSelectedScholarId(id);
+      }
     }
   }
 }
