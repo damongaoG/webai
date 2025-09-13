@@ -170,7 +170,6 @@ export class MainContentComponent implements OnInit {
     };
 
     // After marking expanded, trigger external fetch on the matching card instance
-    // Use macrotask to ensure Angular has applied input changes to children
     setTimeout(() => this.triggerExternalFetchFor(cardId));
   }
   private collapseAllCards(): void {

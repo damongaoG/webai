@@ -123,24 +123,15 @@ export class FeatureCardComponent {
     }
 
     if (this.featureCard.id === "keywords") {
-      if (this.fetchedKeywords().length === 0) {
-        this.fetchKeywords();
-      }
-      return;
+      this.fetchKeywords();
     }
 
     if (this.featureCard.id === "arguments") {
-      if (this.fetchedArguments().length === 0) {
-        this.fetchArguments();
-      }
-      return;
+      this.fetchArguments();
     }
 
     if (this.featureCard.id === "references") {
-      if (this.fetchedScholars().length === 0) {
-        this.fetchScholars();
-      }
-      return;
+      this.fetchScholars();
     }
   }
 
