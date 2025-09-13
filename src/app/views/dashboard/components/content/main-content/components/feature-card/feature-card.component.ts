@@ -109,6 +109,41 @@ export class FeatureCardComponent {
     }
   }
 
+  /**
+   * Trigger data fetch when the card is expanded externally (e.g., via sidebar selection).
+   * Does not toggle expand state or emit events; only performs the same fetch side-effects as expand.
+   */
+  triggerExpandFetchIfNeeded(): void {
+    if (this.isExpandDisabled) {
+      return;
+    }
+
+    if (!this.shouldShowExpandableContent) {
+      return;
+    }
+
+    if (this.featureCard.id === "keywords") {
+      if (this.fetchedKeywords().length === 0) {
+        this.fetchKeywords();
+      }
+      return;
+    }
+
+    if (this.featureCard.id === "arguments") {
+      if (this.fetchedArguments().length === 0) {
+        this.fetchArguments();
+      }
+      return;
+    }
+
+    if (this.featureCard.id === "references") {
+      if (this.fetchedScholars().length === 0) {
+        this.fetchScholars();
+      }
+      return;
+    }
+  }
+
   onExpandHoverStart(): void {
     if (this.isExpandDisabled) {
       return;
@@ -292,13 +327,13 @@ export class FeatureCardComponent {
           this.lastUndoneCardId.set(redoTarget);
 
           // Expand/collapse feature cards based on the phase before undo completed
-          // Expanding a card via DashboardSharedService will collapse others via MainContent sync
+          // Also update sidebar selection to keep UI state consistent
           if (previousPhase === "argument_selected") {
-            // Expand keywords, collapse arguments
-            this.dashboardSharedService.expandFeatureCard("keywords");
+            // Move back to keywords
+            this.dashboardSharedService.selectTask("keywords");
           } else if (previousPhase === "scholars_selected") {
-            // Expand arguments, collapse references (review)
-            this.dashboardSharedService.expandFeatureCard("arguments");
+            // Move back to arguments
+            this.dashboardSharedService.selectTask("arguments");
           }
         },
       );
@@ -401,14 +436,14 @@ export class FeatureCardComponent {
               : [];
             this.fetchedArguments.set(argumentsFromApi);
             this.essayStateService.advancePhaseAfterArgumentsFetchSuccess();
-            // Optionally expand arguments card for better UX
-            this.dashboardSharedService.expandFeatureCard("arguments");
+            // Select arguments so sidebar reflects the forward step
+            this.dashboardSharedService.selectTask("arguments");
           } else if (redoTarget === "arguments") {
             // Move forward to scholars available again
             this.fetchedScholars.set([]);
             this.essayStateService.advancePhaseAfterScholarsFetchSuccess();
-            // Optionally expand references card
-            this.dashboardSharedService.expandFeatureCard("references");
+            // Select references so sidebar reflects the forward step
+            this.dashboardSharedService.selectTask("references");
           }
 
           // consume redo state globally and locally

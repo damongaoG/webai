@@ -1,4 +1,11 @@
-import { Component, effect, inject, OnInit } from "@angular/core";
+import {
+  Component,
+  effect,
+  inject,
+  OnInit,
+  ViewChildren,
+  QueryList,
+} from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { LucideAngularModule } from "lucide-angular";
 import { DashboardSharedService } from "../dashboard-shared.service";
@@ -22,6 +29,8 @@ import { EssayStateService } from "@/app/services/essay-state.service";
 export class MainContentComponent implements OnInit {
   dashboardService = inject(DashboardSharedService);
   private readonly essayStateService = inject(EssayStateService);
+  @ViewChildren(FeatureCardComponent)
+  featureCardComponents!: QueryList<FeatureCardComponent>;
 
   constructor() {
     // Listen to shared service expandable state changes
@@ -159,6 +168,10 @@ export class MainContentComponent implements OnInit {
         animating: true,
       },
     };
+
+    // After marking expanded, trigger external fetch on the matching card instance
+    // Use macrotask to ensure Angular has applied input changes to children
+    setTimeout(() => this.triggerExternalFetchFor(cardId));
   }
   private collapseAllCards(): void {
     Object.keys(this.cardStates).forEach((cardId) => {
@@ -241,5 +254,15 @@ export class MainContentComponent implements OnInit {
       // Collapse all cards if nothing is expanded
       this.collapseAllCards();
     }
+  }
+
+  private triggerExternalFetchFor(cardId: CardId): void {
+    if (!this.featureCardComponents) {
+      return;
+    }
+    const target = this.featureCardComponents.find(
+      (comp) => comp.featureCard?.id === cardId,
+    );
+    target?.triggerExpandFetchIfNeeded();
   }
 }
