@@ -29,6 +29,7 @@ import {
   ArgumentData,
   ScholarData,
 } from "@/app/interfaces/essay-create.interface";
+import { type ModelCaseVO } from "@/app/interfaces/model-case.interface";
 
 /**
  * Expandable content component that handles different types of expandable content
@@ -216,9 +217,57 @@ import {
 
         @if (expandableState.contentType === "casestudies" && isExpanded()) {
           @if (isInteractionAllowed()) {
-            <div class="placeholder-content">
-              <p>Case studies content will be implemented here</p>
-            </div>
+            @if (visibleCaseItems.length > 0) {
+              <div class="casestudies-list space-y-3" style="padding: 1rem">
+                @for (item of visibleCaseItems; track item.index) {
+                  <div
+                    class="case-item rounded-md border border-gray-200/70 p-3 sm:p-4 bg-white/60"
+                  >
+                    @if (item.results?.length) {
+                      <ul class="case-results list-disc pl-5 space-y-1">
+                        @for (r of item.results; track r.title) {
+                          <li>
+                            <span class="font-medium">{{ r.title }}</span>
+                            @if (r.timePeriod) {
+                              <span class="opacity-70">
+                                ({{ r.timePeriod }})</span
+                              >
+                            }
+                            @if (r.background) {
+                              <div class="text-gray-600 text-xs">
+                                {{ r.background }}
+                              </div>
+                            }
+                            @if (r.methodology) {
+                              <div class="text-gray-600 text-xs">
+                                {{ r.methodology }}
+                              </div>
+                            }
+                            @if (r.findings) {
+                              <div class="text-gray-600 text-xs">
+                                {{ r.findings }}
+                              </div>
+                            }
+                          </li>
+                        }
+                      </ul>
+                    }
+                    @if (!item.results?.length && !item.error) {
+                      <div class="text-gray-500 text-xs">
+                        Awaiting details...
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+            } @else {
+              <div
+                class="cases-empty text-gray-500 text-sm"
+                style="padding: 1rem"
+              >
+                No case studies yet.
+              </div>
+            }
           } @else {
             <div class="disabled-content">
               <div class="disabled-overlay">
@@ -275,6 +324,7 @@ export class ExpandableContentComponent {
   @Input() keywordsData: KeywordData[] = [];
   @Input() argumentsData: ArgumentData[] = [];
   @Input() scholars: ScholarData[] = [];
+  @Input() caseItems: ReadonlyArray<ModelCaseVO> = [];
   @Input() keywordsGridConfig = {
     columns: 5,
     gap: 16,
@@ -432,5 +482,14 @@ export class ExpandableContentComponent {
         this.essayStateService.removeSelectedScholarId(id);
       }
     }
+  }
+
+  /**
+   * Filtered case items without errors
+   */
+  get visibleCaseItems(): ReadonlyArray<ModelCaseVO> {
+    const items = this.caseItems ?? [];
+    if (!Array.isArray(items) || items.length === 0) return items;
+    return items.filter((i) => !i.error && (i.results?.length ?? 0) > 0);
   }
 }

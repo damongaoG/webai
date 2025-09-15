@@ -27,6 +27,7 @@ import {
 import { ToastService } from "@/app/shared";
 import { DashboardSharedService } from "../../../dashboard-shared.service";
 import { Result } from "@/app/interfaces/result";
+import { type ModelCaseVO } from "@/app/interfaces/model-case.interface";
 
 @Component({
   selector: "app-feature-card",
@@ -77,6 +78,13 @@ export class FeatureCardComponent implements OnDestroy {
   // Hold SSE subscription for casestudies stream (Task 1: trigger only)
   private caseStreamSub?: Subscription;
 
+  // Loading state for casestudies stream (until first payload arrives)
+  readonly isLoadingCases = signal<boolean>(false);
+  private readonly hasReceivedFirstCasePayload = signal<boolean>(false);
+
+  // Accumulated stream items for case studies (appended upon each valid payload)
+  private readonly caseItems = signal<ReadonlyArray<ModelCaseVO>>([]);
+
   onExpandClick(): void {
     // Block interaction when not allowed or while any content is loading
     if (this.isExpandDisabled) {
@@ -125,24 +133,39 @@ export class FeatureCardComponent implements OnDestroy {
           this.caseStreamSub.unsubscribe();
           this.caseStreamSub = undefined;
         }
+        // Set loading until first payload arrives
+        this.isLoadingCases.set(true);
+        this.hasReceivedFirstCasePayload.set(false);
         // Start streaming ModelCaseVO items; minimal trigger, add error/complete handling
         this.caseStreamSub = this.essayService
           .streamModelCases(essayId)
           .subscribe({
-            next: () => {
-              // No-op for now; UI wiring is out of current task scope
+            next: (vo) => {
+              // Append incoming payload to local items store
+              try {
+                const current = this.caseItems();
+                this.caseItems.set([...current, vo as ModelCaseVO]);
+              } catch (e) {
+                // Keep stream resilient: ignore append errors
+              }
+              if (!this.hasReceivedFirstCasePayload()) {
+                this.hasReceivedFirstCasePayload.set(true);
+                this.isLoadingCases.set(false);
+              }
             },
             error: (err) => {
               console.error("Error while streaming case studies:", err);
               this.toastService.error(
                 "Failed to stream case studies. Please try again.",
               );
+              this.isLoadingCases.set(false);
               if (this.caseStreamSub) {
                 this.caseStreamSub.unsubscribe();
                 this.caseStreamSub = undefined;
               }
             },
             complete: () => {
+              this.isLoadingCases.set(false);
               if (this.caseStreamSub) {
                 this.caseStreamSub.unsubscribe();
                 this.caseStreamSub = undefined;
@@ -157,6 +180,9 @@ export class FeatureCardComponent implements OnDestroy {
           this.caseStreamSub.unsubscribe();
           this.caseStreamSub = undefined;
         }
+        this.isLoadingCases.set(false);
+        this.hasReceivedFirstCasePayload.set(false);
+        this.caseItems.set([]);
       }
     }
   }
@@ -166,6 +192,9 @@ export class FeatureCardComponent implements OnDestroy {
       this.caseStreamSub.unsubscribe();
       this.caseStreamSub = undefined;
     }
+    this.isLoadingCases.set(false);
+    this.hasReceivedFirstCasePayload.set(false);
+    this.caseItems.set([]);
   }
 
   /**
@@ -529,9 +558,21 @@ export class FeatureCardComponent implements OnDestroy {
         return this.isLoadingArguments();
       case "references":
         return this.isLoadingScholars();
+      case "casestudies":
+        return this.isLoadingCases();
       default:
         return false;
     }
+  }
+
+  /**
+   * Provide case items for expandable-content
+   */
+  get caseItemsData(): ReadonlyArray<ModelCaseVO> {
+    if (this.featureCard.id === "casestudies") {
+      return this.caseItems();
+    }
+    return [];
   }
 
   /**

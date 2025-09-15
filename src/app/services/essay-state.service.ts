@@ -482,7 +482,7 @@ export class EssayStateService {
         return {
           allowKeywordsSelection: false,
           allowArgumentsInteraction: false,
-          allowReferencesInteraction: true,
+          allowReferencesInteraction: false,
           allowCaseStudiesInteraction: true,
         };
 

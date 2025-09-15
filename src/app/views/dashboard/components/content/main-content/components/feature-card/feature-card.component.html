@@ -112,11 +112,39 @@
 
   <!-- Expandable Content Section -->
   @if (shouldShowExpandableContent) {
+    @if (
+      cardState.expandable.contentType === "casestudies" && isLoadingCases()
+    ) {
+      <div
+        class="casestudies-inline-loading px-4 sm:px-6 lg:px-8 py-3 text-sm text-stone-600"
+      >
+        <span class="inline-flex items-center gap-2">
+          <svg class="animate-spin h-4 w-4 text-stone-500" viewBox="0 0 24 24">
+            <circle
+              class="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              stroke-width="4"
+              fill="none"
+            ></circle>
+            <path
+              class="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+            ></path>
+          </svg>
+          Loading case studies...
+        </span>
+      </div>
+    }
     <app-expandable-content
       [expandableState]="cardState.expandable"
       [keywordsData]="keywordsData"
       [argumentsData]="argumentsData"
       [scholars]="scholarsData"
+      [caseItems]="caseItemsData"
       (keywordSelected)="onKeywordSelected($event)"
       (keywordDeselected)="onKeywordDeselected($event)"
       (argumentSelected)="onArgumentSelected($event)"
