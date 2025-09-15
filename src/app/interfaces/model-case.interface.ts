@@ -8,8 +8,6 @@ export interface ModelCaseResultItem {
   findings?: string;
 }
 
-export type ModelCaseState = "RUNNING" | "DONE" | "ERROR" | string;
-
 export interface ModelCaseVO {
   index: number;
   total?: number;
@@ -19,5 +17,4 @@ export interface ModelCaseVO {
   linkStatusCode?: number;
   error?: string | null;
   elapsedMs?: number;
-  state?: ModelCaseState;
 }

@@ -80,7 +80,6 @@ export class FeatureCardComponent implements OnDestroy {
 
   // Loading state for casestudies stream (until first payload arrives)
   readonly isLoadingCases = signal<boolean>(false);
-  private readonly hasReceivedFirstCasePayload = signal<boolean>(false);
 
   // Accumulated stream items for case studies (appended upon each valid payload)
   private readonly caseItems = signal<ReadonlyArray<ModelCaseVO>>([]);
@@ -135,7 +134,6 @@ export class FeatureCardComponent implements OnDestroy {
         }
         // Set loading until first payload arrives
         this.isLoadingCases.set(true);
-        this.hasReceivedFirstCasePayload.set(false);
         // Start streaming ModelCaseVO items; minimal trigger, add error/complete handling
         this.caseStreamSub = this.essayService
           .streamModelCases(essayId)
@@ -147,10 +145,6 @@ export class FeatureCardComponent implements OnDestroy {
                 this.caseItems.set([...current, vo as ModelCaseVO]);
               } catch (e) {
                 // Keep stream resilient: ignore append errors
-              }
-              if (!this.hasReceivedFirstCasePayload()) {
-                this.hasReceivedFirstCasePayload.set(true);
-                this.isLoadingCases.set(false);
               }
             },
             error: (err) => {
@@ -181,7 +175,6 @@ export class FeatureCardComponent implements OnDestroy {
           this.caseStreamSub = undefined;
         }
         this.isLoadingCases.set(false);
-        this.hasReceivedFirstCasePayload.set(false);
         this.caseItems.set([]);
       }
     }
@@ -193,7 +186,6 @@ export class FeatureCardComponent implements OnDestroy {
       this.caseStreamSub = undefined;
     }
     this.isLoadingCases.set(false);
-    this.hasReceivedFirstCasePayload.set(false);
     this.caseItems.set([]);
   }
 

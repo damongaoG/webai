@@ -206,4 +206,67 @@ describe("EssayService.streamModelCases", () => {
       });
     });
   });
+
+  it("completes when stream ends without terminal event (after some RUNNING events)", async () => {
+    const sseText = [
+      "event: case\n",
+      'data: {"index":0,"state":"RUNNING"}\n',
+      "\n",
+      "event: case\n",
+      'data: {"index":1,"state":"RUNNING"}\n',
+      "\n",
+      // EOF without terminal DONE
+    ];
+
+    global.fetch = jasmine.createSpy("fetch").and.callFake(async () => {
+      return {
+        ok: true,
+        status: 200,
+        body: createReadableStreamFromStrings(sseText),
+      } as any;
+    });
+
+    const received: any[] = [];
+    await new Promise<void>((resolve, reject) => {
+      service.streamModelCases("abc").subscribe({
+        next: (v) => received.push(v),
+        error: reject,
+        complete: () => {
+          try {
+            expect(received.length).toBe(2);
+            expect(received[1].index).toBe(1);
+            resolve();
+          } catch (e) {
+            reject(e);
+          }
+        },
+      });
+    });
+  });
+
+  it("completes when stream ends immediately with no events", async () => {
+    global.fetch = jasmine.createSpy("fetch").and.callFake(async () => {
+      return {
+        ok: true,
+        status: 200,
+        body: createReadableStreamFromStrings([]),
+      } as any;
+    });
+
+    const received: any[] = [];
+    await new Promise<void>((resolve, reject) => {
+      service.streamModelCases("abc").subscribe({
+        next: (v) => received.push(v),
+        error: reject,
+        complete: () => {
+          try {
+            expect(received.length).toBe(0);
+            resolve();
+          } catch (e) {
+            reject(e);
+          }
+        },
+      });
+    });
+  });
 });
