@@ -5,6 +5,7 @@ import {
   EventEmitter,
   inject,
   signal,
+  OnDestroy,
 } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import {
@@ -18,7 +19,7 @@ import { TaskSelectionService } from "@/app/services/task-selection.service";
 import { EssayStateService } from "@/app/services/essay-state.service";
 import { EssayService } from "@/app/services/essay.service";
 import { parseKeywordsToData } from "@/app/helper/utils";
-import { catchError, of } from "rxjs";
+import { catchError, of, Subscription } from "rxjs";
 import {
   ArgumentData,
   ScholarData,
@@ -34,7 +35,7 @@ import { Result } from "@/app/interfaces/result";
   templateUrl: "./feature-card.component.html",
   styleUrl: "./feature-card.component.scss",
 })
-export class FeatureCardComponent {
+export class FeatureCardComponent implements OnDestroy {
   @Input() featureCard!: FeatureCard;
 
   @Input() cardState!: CardState;
@@ -73,6 +74,9 @@ export class FeatureCardComponent {
   // Local redo state (kept minimal; global source of truth is EssayStateService)
   private readonly lastUndoneCardId = signal<string | null>(null);
 
+  // Hold SSE subscription for casestudies stream (Task 1: trigger only)
+  private caseStreamSub?: Subscription;
+
   onExpandClick(): void {
     // Block interaction when not allowed or while any content is loading
     if (this.isExpandDisabled) {
@@ -106,6 +110,61 @@ export class FeatureCardComponent {
       if (isExpanded && this.featureCard.id === "references") {
         this.fetchScholars();
       }
+
+      // If expanding casestudies card, start SSE stream
+      if (isExpanded && this.featureCard.id === "casestudies") {
+        const essayId = this.essayStateService.essayId();
+        if (!essayId) {
+          this.toastService.error(
+            "Please create an essay first to start case studies",
+          );
+          return;
+        }
+        // Clean up previous stream before starting a new one
+        if (this.caseStreamSub) {
+          this.caseStreamSub.unsubscribe();
+          this.caseStreamSub = undefined;
+        }
+        // Start streaming ModelCaseVO items; minimal trigger, add error/complete handling
+        this.caseStreamSub = this.essayService
+          .streamModelCases(essayId)
+          .subscribe({
+            next: () => {
+              // No-op for now; UI wiring is out of current task scope
+            },
+            error: (err) => {
+              console.error("Error while streaming case studies:", err);
+              this.toastService.error(
+                "Failed to stream case studies. Please try again.",
+              );
+              if (this.caseStreamSub) {
+                this.caseStreamSub.unsubscribe();
+                this.caseStreamSub = undefined;
+              }
+            },
+            complete: () => {
+              if (this.caseStreamSub) {
+                this.caseStreamSub.unsubscribe();
+                this.caseStreamSub = undefined;
+              }
+            },
+          });
+      }
+
+      // If collapsing casestudies card, stop SSE stream
+      if (!isExpanded && this.featureCard.id === "casestudies") {
+        if (this.caseStreamSub) {
+          this.caseStreamSub.unsubscribe();
+          this.caseStreamSub = undefined;
+        }
+      }
+    }
+  }
+
+  ngOnDestroy(): void {
+    if (this.caseStreamSub) {
+      this.caseStreamSub.unsubscribe();
+      this.caseStreamSub = undefined;
     }
   }
 

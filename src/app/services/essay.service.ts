@@ -129,7 +129,8 @@ export class EssayService {
       const url = `${this.apiUrl}/anon/model/paper/sse/${encodeURIComponent(essayId)}/case`;
 
       const headers = new Headers({
-        Accept: "text/event-stream",
+        "Content-Type": "application/json",
+        Accept: "application/json",
       });
 
       let carry = "";
@@ -138,7 +139,7 @@ export class EssayService {
       (async () => {
         try {
           const response = await fetch(url, {
-            method: "POST",
+            method: "GET",
             headers,
             signal: controller.signal,
           });
