@@ -8,6 +8,7 @@ export enum EssayCreationPhase {
   KEYWORDS_SELECTED = "keywords_selected",
   ARGUMENT_SELECTED = "argument_selected",
   SCHOLARS_SELECTED = "scholars_selected",
+  CASE_SELECTED = "case_selected",
 }
 
 // Essay state interface
@@ -301,7 +302,7 @@ export class EssayStateService {
     const fallbackPhase = EssayCreationPhase.ARGUMENT_SELECTED;
 
     const nextPhase = hasScholars
-      ? EssayCreationPhase.SCHOLARS_SELECTED
+      ? EssayCreationPhase.CASE_SELECTED
       : fallbackPhase;
 
     this._selectedScholarIds.set(scholarIds);
@@ -472,6 +473,15 @@ export class EssayStateService {
           // After scholars fetched, prevent interacting with arguments
           allowArgumentsInteraction: false,
           // Keep references accessible for review
+          allowReferencesInteraction: true,
+          // Allow case studies only when there is at least one selected scholar
+          allowCaseStudiesInteraction: state.selectedScholarIds.length > 0,
+        };
+
+      case EssayCreationPhase.CASE_SELECTED:
+        return {
+          allowKeywordsSelection: false,
+          allowArgumentsInteraction: false,
           allowReferencesInteraction: true,
           allowCaseStudiesInteraction: true,
         };

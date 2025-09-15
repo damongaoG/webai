@@ -10,6 +10,12 @@ import {
   ScholarsResponse,
   UndoResponse,
 } from "../interfaces/essay-create.interface";
+import { parseSseStreamChunk, safeJsonParse } from "../helper/sse-parser";
+import { isTerminalCase } from "../helper/sse-util";
+import {
+  SseCaseEventName,
+  type ModelCaseVO,
+} from "../interfaces/model-case.interface";
 
 @Injectable({
   providedIn: "root",
@@ -102,5 +108,100 @@ export class EssayService {
       {},
       { headers: this.headers },
     );
+  }
+
+  /**
+   * Stream ModelCaseVO items via SSE using POST.
+   * Endpoint: POST /anon/model/paper/sse/{essayId}/case
+   * Emits parsed ModelCaseVO objects for event "case".
+   * Auto-completes when a terminal message is received (index === -1 && state === 'DONE').
+   */
+  streamModelCases(essayId: string): Observable<Readonly<ModelCaseVO>> {
+    return new Observable<Readonly<ModelCaseVO>>((subscriber) => {
+      if (typeof window === "undefined") {
+        subscriber.error(
+          new Error("SSE is only supported in browser environment"),
+        );
+        return undefined;
+      }
+
+      const controller = new AbortController();
+      const url = `${this.apiUrl}/anon/model/paper/sse/${encodeURIComponent(essayId)}/case`;
+
+      const headers = new Headers({
+        Accept: "text/event-stream",
+      });
+
+      let carry = "";
+      let completed = false;
+
+      (async () => {
+        try {
+          const response = await fetch(url, {
+            method: "POST",
+            headers,
+            signal: controller.signal,
+          });
+
+          if (!response.ok) {
+            throw new Error(
+              `SSE request failed with status ${response.status}`,
+            );
+          }
+
+          const body = response.body;
+          if (!body) {
+            throw new Error("SSE response has no body");
+          }
+
+          const reader = body.getReader();
+          const decoder = new TextDecoder();
+          while (true) {
+            const { value, done } = await reader.read();
+            if (done) {
+              break;
+            }
+            const text = decoder.decode(value, { stream: true });
+            const parsed = parseSseStreamChunk(text, carry);
+            carry = parsed.carry;
+            for (const evt of parsed.events) {
+              if (evt.event !== SseCaseEventName) {
+                continue;
+              }
+              const vo = safeJsonParse<ModelCaseVO>(evt.data);
+              if (!vo) {
+                // Skip bad JSON but keep stream going (robustness requirement)
+                continue;
+              }
+              subscriber.next(vo);
+              if (isTerminalCase(vo)) {
+                completed = true;
+                controller.abort();
+                subscriber.complete();
+                return;
+              }
+            }
+          }
+
+          // If stream finishes without explicit terminal message, complete gracefully
+          if (!completed) {
+            subscriber.complete();
+          }
+        } catch (err) {
+          if ((err as any)?.name === "AbortError") {
+            // normal shutdown
+            if (!completed) {
+              subscriber.complete();
+            }
+            return;
+          }
+          subscriber.error(err);
+        }
+      })();
+
+      return () => {
+        controller.abort();
+      };
+    });
   }
 }
