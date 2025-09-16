@@ -146,63 +146,23 @@ export class FeatureCardComponent implements OnDestroy {
         }
       }
 
-      // If expanding casestudies card, start SSE stream
+      // If expanding casestudies card, start SSE stream only once per session
       if (isExpanded && this.featureCard.id === "casestudies") {
-        const essayId = this.essayStateService.essayId();
-        if (!essayId) {
-          this.toastService.error(
-            "Please create an essay first to start case studies",
-          );
-          return;
+        if (!this.hasLoadedContent) {
+          this.startCaseStudiesStream();
+        } else {
+          // Already loaded in this session; just mark as opened for UI/undo visibility
+          this.hasOpenedCases.set(true);
         }
-        // Clean up previous stream before starting a new one
-        if (this.caseStreamSub) {
-          this.caseStreamSub.unsubscribe();
-          this.caseStreamSub = undefined;
-        }
-        // Set loading until first payload arrives
-        this.isLoadingCases.set(true);
-        // Mark cases as opened to allow Undo visibility for casestudies
-        this.hasOpenedCases.set(true);
-        // Start streaming ModelCaseVO items; minimal trigger, add error/complete handling
-        this.caseStreamSub = this.essayService
-          .streamModelCases(essayId)
-          .subscribe({
-            next: (vo) => {
-              // Append incoming payload to local items store
-              const current = this.caseItems();
-              this.caseItems.set([...current, vo as ModelCaseVO]);
-            },
-            error: (err) => {
-              console.error("Error while streaming case studies:", err);
-              this.toastService.error(
-                "Failed to stream case studies. Please try again.",
-              );
-              this.isLoadingCases.set(false);
-              this.hasOpenedCases.set(false);
-              if (this.caseStreamSub) {
-                this.caseStreamSub.unsubscribe();
-                this.caseStreamSub = undefined;
-              }
-            },
-            complete: () => {
-              this.isLoadingCases.set(false);
-              if (this.caseStreamSub) {
-                this.caseStreamSub.unsubscribe();
-                this.caseStreamSub = undefined;
-              }
-            },
-          });
       }
 
-      // If collapsing casestudies card, stop SSE stream
+      // If collapsing casestudies card, stop SSE stream (do not clear items to preserve once-per-session data)
       if (!isExpanded && this.featureCard.id === "casestudies") {
         if (this.caseStreamSub) {
           this.caseStreamSub.unsubscribe();
           this.caseStreamSub = undefined;
         }
         this.isLoadingCases.set(false);
-        this.caseItems.set([]);
       }
     }
   }
@@ -245,6 +205,10 @@ export class FeatureCardComponent implements OnDestroy {
       if (phase === EssayCreationPhase.ARGUMENT_SELECTED || !hasLocalScholars) {
         this.fetchScholars();
       }
+    }
+
+    if (this.featureCard.id === "casestudies" && !this.hasLoadedContent) {
+      this.startCaseStudiesStream();
     }
   }
 
@@ -798,5 +762,54 @@ export class FeatureCardComponent implements OnDestroy {
           }
         },
       });
+  }
+
+  /**
+   * Start the case studies SSE stream once per session.
+   * Marks loading until first payload arrives, then sets hasLoadedContent to guard subsequent calls.
+   */
+  private startCaseStudiesStream(): void {
+    const essayId = this.essayStateService.essayId();
+    if (!essayId) {
+      this.toastService.error(
+        "Please create an essay first to start case studies",
+      );
+      return;
+    }
+    // Clean up any previous stream before starting a new one
+    if (this.caseStreamSub) {
+      this.caseStreamSub.unsubscribe();
+      this.caseStreamSub = undefined;
+    }
+    // Set loading until first payload arrives
+    this.isLoadingCases.set(true);
+    // Mark cases as opened to allow Undo visibility for casestudies
+    this.hasOpenedCases.set(true);
+    this.caseStreamSub = this.essayService.streamModelCases(essayId).subscribe({
+      next: (vo) => {
+        this.hasLoadedContent = true;
+        const current = this.caseItems();
+        this.caseItems.set([...current, vo as ModelCaseVO]);
+      },
+      error: (err) => {
+        console.error("Error while streaming case studies:", err);
+        this.toastService.error(
+          "Failed to stream case studies. Please try again.",
+        );
+        this.isLoadingCases.set(false);
+        this.hasOpenedCases.set(false);
+        if (this.caseStreamSub) {
+          this.caseStreamSub.unsubscribe();
+          this.caseStreamSub = undefined;
+        }
+      },
+      complete: () => {
+        this.isLoadingCases.set(false);
+        if (this.caseStreamSub) {
+          this.caseStreamSub.unsubscribe();
+          this.caseStreamSub = undefined;
+        }
+      },
+    });
   }
 }
