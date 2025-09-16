@@ -78,6 +78,9 @@ export class FeatureCardComponent implements OnDestroy {
   // Local redo state (kept minimal; global source of truth is EssayStateService)
   private readonly lastUndoneCardId = signal<string | null>(null);
 
+  // Track whether this card has already successfully loaded its data once
+  private hasLoadedContent = false;
+
   // Hold SSE subscription for casestudies stream (Task 1: trigger only)
   private caseStreamSub?: Subscription;
 
@@ -108,18 +111,30 @@ export class FeatureCardComponent implements OnDestroy {
         this.featureCard.id,
       );
 
-      // If expanding keywords card, fetch keywords from API
-      if (isExpanded && this.featureCard.id === "keywords") {
+      // If expanding keywords card, fetch keywords from API (only first time per session)
+      if (
+        isExpanded &&
+        this.featureCard.id === "keywords" &&
+        !this.hasLoadedContent
+      ) {
         this.fetchKeywords();
       }
 
-      // If expanding arguments card, fetch arguments from API
-      if (isExpanded && this.featureCard.id === "arguments") {
+      // If expanding arguments card, fetch arguments from API (only first time per session)
+      if (
+        isExpanded &&
+        this.featureCard.id === "arguments" &&
+        !this.hasLoadedContent
+      ) {
         this.fetchArguments();
       }
 
-      // If expanding references card, conditionally fetch scholars from API
-      if (isExpanded && this.featureCard.id === "references") {
+      // If expanding references card, conditionally fetch scholars from API (only first time per session)
+      if (
+        isExpanded &&
+        this.featureCard.id === "references" &&
+        !this.hasLoadedContent
+      ) {
         const phase = this.essayStateService.currentPhase();
         const hasLocalScholars = this.fetchedScholars().length > 0;
         // Only fetch when moving forward from arguments, or when no local data exists
@@ -215,15 +230,15 @@ export class FeatureCardComponent implements OnDestroy {
       return;
     }
 
-    if (this.featureCard.id === "keywords") {
+    if (this.featureCard.id === "keywords" && !this.hasLoadedContent) {
       this.fetchKeywords();
     }
 
-    if (this.featureCard.id === "arguments") {
+    if (this.featureCard.id === "arguments" && !this.hasLoadedContent) {
       this.fetchArguments();
     }
 
-    if (this.featureCard.id === "references") {
+    if (this.featureCard.id === "references" && !this.hasLoadedContent) {
       const phase = this.essayStateService.currentPhase();
       const hasLocalScholars = this.fetchedScholars().length > 0;
       // Avoid re-fetch on undo-driven navigation back to references when data already exists
@@ -416,6 +431,10 @@ export class FeatureCardComponent implements OnDestroy {
             // Clear local opened flag when undoing out of case studies
             this.hasOpenedCases.set(false);
           }
+
+          // Clear the loaded flag for the card we are undoing from,
+          // so that when the user returns to it and expands again, it re-fetches.
+          this.hasLoadedContent = false;
 
           // Enable redo on the previous-phase feature card globally
           // If undoing from arguments -> redo appears on keywords card
@@ -645,6 +664,7 @@ export class FeatureCardComponent implements OnDestroy {
             // Parse keywords string into KeywordData array
             const keywordsData = parseKeywordsToData(response.data.keywords);
             this.fetchedKeywords.set(keywordsData);
+            this.hasLoadedContent = true;
           } else {
             console.warn("Invalid keywords response:", response);
             this.toastService.error("Invalid keywords response from server");
@@ -703,6 +723,7 @@ export class FeatureCardComponent implements OnDestroy {
             this.fetchedArguments.set(response.data.arguments);
             // Advance phase to ARGUMENT_SELECTED to lock keywords and allow references
             this.essayStateService.advancePhaseAfterArgumentsFetchSuccess();
+            this.hasLoadedContent = true;
           } else {
             console.warn("Invalid arguments response:", response);
             this.toastService.error("Invalid arguments response from server");
@@ -768,6 +789,7 @@ export class FeatureCardComponent implements OnDestroy {
             this.fetchedScholars.set(response.data.scholars);
             // Advance phase to SCHOLARS_SELECTED to lock arguments
             this.essayStateService.advancePhaseAfterScholarsFetchSuccess();
+            this.hasLoadedContent = true;
           } else {
             console.warn("Invalid scholars response:", response);
             this.toastService.error("Invalid references response from server");

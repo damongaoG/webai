@@ -274,3 +274,8 @@
     }
   }
 }
+
+/* Remove unintended clipboard emoji from empty state only */
+.sample-essay-container .empty-state::before {
+  content: none !important;
+}
