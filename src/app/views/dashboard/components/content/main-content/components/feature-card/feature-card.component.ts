@@ -597,7 +597,9 @@ export class FeatureCardComponent implements OnDestroy {
       this.isLoadingArguments() ||
       this.essayStateService.isArgumentsLoading() ||
       this.isLoadingScholars() ||
-      this.essayStateService.isScholarsLoading()
+      this.essayStateService.isScholarsLoading() ||
+      // When case studies stream is loading, collapse/expand must be disabled
+      this.isLoadingCases()
     );
   }
 
