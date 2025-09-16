@@ -86,6 +86,8 @@ export class FeatureCardComponent implements OnDestroy {
 
   // Accumulated stream items for case studies (appended upon each valid payload)
   private readonly caseItems = signal<ReadonlyArray<ModelCaseVO>>([]);
+  // Track whether casestudies has been opened via stream or redo success
+  private readonly hasOpenedCases = signal<boolean>(false);
 
   onExpandClick(): void {
     // Block interaction when not allowed or while any content is loading
@@ -145,6 +147,8 @@ export class FeatureCardComponent implements OnDestroy {
         }
         // Set loading until first payload arrives
         this.isLoadingCases.set(true);
+        // Mark cases as opened to allow Undo visibility for casestudies
+        this.hasOpenedCases.set(true);
         // Start streaming ModelCaseVO items; minimal trigger, add error/complete handling
         this.caseStreamSub = this.essayService
           .streamModelCases(essayId)
@@ -160,6 +164,7 @@ export class FeatureCardComponent implements OnDestroy {
                 "Failed to stream case studies. Please try again.",
               );
               this.isLoadingCases.set(false);
+              this.hasOpenedCases.set(false);
               if (this.caseStreamSub) {
                 this.caseStreamSub.unsubscribe();
                 this.caseStreamSub = undefined;
@@ -194,6 +199,7 @@ export class FeatureCardComponent implements OnDestroy {
     }
     this.isLoadingCases.set(false);
     this.caseItems.set([]);
+    this.hasOpenedCases.set(false);
   }
 
   /**
@@ -307,8 +313,8 @@ export class FeatureCardComponent implements OnDestroy {
     if (phase === "scholars_selected" && this.featureCard.id === "references") {
       return true;
     }
-    if (phase === "case_selected" && this.featureCard.id === "casestudies") {
-      return true;
+    if (this.featureCard.id === "casestudies") {
+      return phase === "case_selected" && this.hasOpenedCases();
     }
     return false;
   }
@@ -407,6 +413,8 @@ export class FeatureCardComponent implements OnDestroy {
           } else if (this.featureCard.id === "casestudies") {
             // Revert phase CASE_SELECTED -> SCHOLARS_SELECTED
             this.essayStateService.revertToScholarsSelectedAfterUndo();
+            // Clear local opened flag when undoing out of case studies
+            this.hasOpenedCases.set(false);
           }
 
           // Enable redo on the previous-phase feature card globally
@@ -548,6 +556,8 @@ export class FeatureCardComponent implements OnDestroy {
             // Move forward to case studies
             this.essayStateService.advancePhaseAfterCaseOpen();
             this.dashboardSharedService.selectTask("casestudies");
+            // Mark cases as opened due to successful redo
+            this.hasOpenedCases.set(true);
           }
 
           // consume redo state globally and locally

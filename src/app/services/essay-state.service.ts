@@ -317,7 +317,7 @@ export class EssayStateService {
     }
 
     const hasScholars = scholarIds.length > 0;
-    const fallbackPhase = EssayCreationPhase.ARGUMENT_SELECTED;
+    const fallbackPhase = EssayCreationPhase.SCHOLARS_SELECTED;
 
     const nextPhase = hasScholars
       ? EssayCreationPhase.CASE_SELECTED
