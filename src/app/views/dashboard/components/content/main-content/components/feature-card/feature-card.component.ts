@@ -394,6 +394,7 @@ export class FeatureCardComponent implements OnDestroy {
             this.essayStateService.revertToScholarsSelectedAfterUndo();
             // Clear local opened flag when undoing out of case studies
             this.hasOpenedCases.set(false);
+            this.caseItems.set([]);
           }
 
           // Clear the loaded flag for the card we are undoing from,
