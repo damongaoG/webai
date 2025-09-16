@@ -147,6 +147,15 @@ export class EssayStateService {
   }
 
   /**
+   * Revert phase from CASE_SELECTED -> SCHOLARS_SELECTED (used on undo from casestudies)
+   */
+  revertToScholarsSelectedAfterUndo(): void {
+    if (this._currentPhase() === EssayCreationPhase.CASE_SELECTED) {
+      this._currentPhase.set(EssayCreationPhase.SCHOLARS_SELECTED);
+    }
+  }
+
+  /**
    * Pre-advance phase when performing a redo action.
    * - TITLE_CREATED -> KEYWORDS_SELECTED
    * - KEYWORDS_SELECTED -> ARGUMENT_SELECTED
@@ -165,6 +174,15 @@ export class EssayStateService {
       }
       default:
         break;
+    }
+  }
+
+  /**
+   * Advance to CASE_SELECTED after opening/continuing case studies (used on redo to casestudies)
+   */
+  advancePhaseAfterCaseOpen(): void {
+    if (this._currentPhase() === EssayCreationPhase.SCHOLARS_SELECTED) {
+      this._currentPhase.set(EssayCreationPhase.CASE_SELECTED);
     }
   }
 

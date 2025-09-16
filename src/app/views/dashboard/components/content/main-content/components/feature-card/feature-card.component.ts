@@ -16,7 +16,10 @@ import { ExpandableContentComponent } from "../expandable-content/expandable-con
 import { KeywordData } from "../../interfaces/keyword.interface";
 import { TaskType } from "@/app/interfaces/task.interface";
 import { TaskSelectionService } from "@/app/services/task-selection.service";
-import { EssayStateService } from "@/app/services/essay-state.service";
+import {
+  EssayCreationPhase,
+  EssayStateService,
+} from "@/app/services/essay-state.service";
 import { EssayService } from "@/app/services/essay.service";
 import { parseKeywordsToData } from "@/app/helper/utils";
 import { catchError, of, Subscription } from "rxjs";
@@ -113,9 +116,17 @@ export class FeatureCardComponent implements OnDestroy {
         this.fetchArguments();
       }
 
-      // If expanding references card, fetch scholars from API
+      // If expanding references card, conditionally fetch scholars from API
       if (isExpanded && this.featureCard.id === "references") {
-        this.fetchScholars();
+        const phase = this.essayStateService.currentPhase();
+        const hasLocalScholars = this.fetchedScholars().length > 0;
+        // Only fetch when moving forward from arguments, or when no local data exists
+        if (
+          phase === EssayCreationPhase.ARGUMENT_SELECTED ||
+          !hasLocalScholars
+        ) {
+          this.fetchScholars();
+        }
       }
 
       // If expanding casestudies card, start SSE stream
@@ -140,12 +151,8 @@ export class FeatureCardComponent implements OnDestroy {
           .subscribe({
             next: (vo) => {
               // Append incoming payload to local items store
-              try {
-                const current = this.caseItems();
-                this.caseItems.set([...current, vo as ModelCaseVO]);
-              } catch (e) {
-                // Keep stream resilient: ignore append errors
-              }
+              const current = this.caseItems();
+              this.caseItems.set([...current, vo as ModelCaseVO]);
             },
             error: (err) => {
               console.error("Error while streaming case studies:", err);
@@ -211,7 +218,12 @@ export class FeatureCardComponent implements OnDestroy {
     }
 
     if (this.featureCard.id === "references") {
-      this.fetchScholars();
+      const phase = this.essayStateService.currentPhase();
+      const hasLocalScholars = this.fetchedScholars().length > 0;
+      // Avoid re-fetch on undo-driven navigation back to references when data already exists
+      if (phase === EssayCreationPhase.ARGUMENT_SELECTED || !hasLocalScholars) {
+        this.fetchScholars();
+      }
     }
   }
 
@@ -295,6 +307,9 @@ export class FeatureCardComponent implements OnDestroy {
     if (phase === "scholars_selected" && this.featureCard.id === "references") {
       return true;
     }
+    if (phase === "case_selected" && this.featureCard.id === "casestudies") {
+      return true;
+    }
     return false;
   }
 
@@ -325,6 +340,8 @@ export class FeatureCardComponent implements OnDestroy {
     } else if (this.featureCard.id === "references") {
       this.isLoadingScholars.set(true);
       this.essayStateService.setScholarsLoading(true);
+    } else if (this.featureCard.id === "casestudies") {
+      // No loading flags needed for undoing case studies -> references
     }
 
     this.essayService
@@ -387,13 +404,20 @@ export class FeatureCardComponent implements OnDestroy {
             this.essayStateService.setSelectedScholarIds([]);
             // Revert phase SCHOLARS_SELECTED -> ARGUMENT_SELECTED
             this.essayStateService.revertToArgumentSelectedAfterUndo();
+          } else if (this.featureCard.id === "casestudies") {
+            // Revert phase CASE_SELECTED -> SCHOLARS_SELECTED
+            this.essayStateService.revertToScholarsSelectedAfterUndo();
           }
 
           // Enable redo on the previous-phase feature card globally
           // If undoing from arguments -> redo appears on keywords card
           // If undoing from references -> redo appears on arguments card
           const redoTarget =
-            this.featureCard.id === "arguments" ? "keywords" : "arguments";
+            this.featureCard.id === "arguments"
+              ? "keywords"
+              : this.featureCard.id === "references"
+                ? "arguments"
+                : "references";
           this.essayStateService.setRedoState(redoTarget);
           this.lastUndoneCardId.set(redoTarget);
 
@@ -405,6 +429,9 @@ export class FeatureCardComponent implements OnDestroy {
           } else if (previousPhase === "scholars_selected") {
             // Move back to arguments
             this.dashboardSharedService.selectTask("arguments");
+          } else if (previousPhase === "case_selected") {
+            // Move back to references
+            this.dashboardSharedService.selectTask("references");
           }
         },
       );
@@ -441,6 +468,8 @@ export class FeatureCardComponent implements OnDestroy {
       // We are moving forward to scholars
       this.isLoadingScholars.set(true);
       this.essayStateService.setScholarsLoading(true);
+    } else if (redoTarget === "references") {
+      // Moving forward to casestudies does not require pre-loading flags
     }
 
     this.essayService
@@ -515,6 +544,10 @@ export class FeatureCardComponent implements OnDestroy {
             this.essayStateService.advancePhaseAfterScholarsFetchSuccess();
             // Select references so sidebar reflects the forward step
             this.dashboardSharedService.selectTask("references");
+          } else if (redoTarget === "references") {
+            // Move forward to case studies
+            this.essayStateService.advancePhaseAfterCaseOpen();
+            this.dashboardSharedService.selectTask("casestudies");
           }
 
           // consume redo state globally and locally
@@ -692,6 +725,14 @@ export class FeatureCardComponent implements OnDestroy {
     }
 
     const argumentsParam = selectedArgumentIds.join(",");
+
+    // Prevent duplicate requests while a fetch is in progress
+    if (
+      this.isLoadingScholars() ||
+      this.essayStateService.isScholarsLoading()
+    ) {
+      return;
+    }
 
     this.isLoadingScholars.set(true);
     this.essayStateService.setScholarsLoading(true);
