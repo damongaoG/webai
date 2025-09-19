@@ -19,6 +19,7 @@ export interface EssayState {
   selectedKeywords: string[];
   selectedArgumentIds: string[];
   selectedScholarIds: string[];
+  selectedCaseItemIds: string[];
   isCreating: boolean;
   errorMessage: string | null;
   created: boolean;
@@ -45,6 +46,7 @@ export class EssayStateService {
     selectedKeywords: [],
     selectedArgumentIds: [],
     selectedScholarIds: [],
+    selectedCaseItemIds: [],
     isCreating: false,
     errorMessage: null,
     created: false,
@@ -63,6 +65,9 @@ export class EssayStateService {
   private readonly _selectedScholarIds = signal<string[]>(
     this.initialState.selectedScholarIds,
   );
+  private readonly _selectedCaseItemIds = signal<string[]>(
+    this.initialState.selectedCaseItemIds,
+  );
   private readonly _isCreating = signal(this.initialState.isCreating);
   private readonly _errorMessage = signal(this.initialState.errorMessage);
   private readonly _created = signal(this.initialState.created);
@@ -80,6 +85,9 @@ export class EssayStateService {
   public readonly selectedScholarIds = computed(() =>
     this._selectedScholarIds(),
   );
+  public readonly selectedCaseItemIds = computed(() =>
+    this._selectedCaseItemIds(),
+  );
   public readonly isArgumentsLoading = computed(() =>
     this._isLoadingArguments(),
   );
@@ -96,6 +104,7 @@ export class EssayStateService {
       selectedKeywords: this._selectedKeywords(),
       selectedArgumentIds: this._selectedArgumentIds(),
       selectedScholarIds: this._selectedScholarIds(),
+      selectedCaseItemIds: this._selectedCaseItemIds(),
       isCreating: this._isCreating(),
       errorMessage: this._errorMessage(),
       created: this._created(),
@@ -328,6 +337,46 @@ export class EssayStateService {
   }
 
   /**
+   * Set selected case item indexes and keep phase at CASE_SELECTED when any selected
+   */
+  setSelectedCaseItemIds(ids: string[]): void {
+    // Cases can only be interacted with once scholars have been selected
+    if (
+      this._currentPhase() === EssayCreationPhase.NOT_STARTED ||
+      this._currentPhase() === EssayCreationPhase.TITLE_CREATED ||
+      this._currentPhase() === EssayCreationPhase.KEYWORDS_SELECTED ||
+      this._currentPhase() === EssayCreationPhase.ARGUMENT_SELECTED
+    ) {
+      console.warn("Cannot select case studies before references are selected");
+      return;
+    }
+
+    const hasCases = ids.length > 0;
+    // const nextPhase = hasCases
+    //   ? EssayCreationPhase.CASE_SELECTED
+    //   : EssayCreationPhase.SCHOLARS_SELECTED;
+
+    this._selectedCaseItemIds.set(ids);
+    // this._currentPhase.set(nextPhase);
+    this._currentPhase.set(EssayCreationPhase.CASE_SELECTED);
+  }
+
+  /** Add a single case id immutably */
+  addSelectedCaseItemId(id: string): void {
+    const current = this._selectedCaseItemIds();
+    if (current.includes(id)) return;
+    this.setSelectedCaseItemIds([...current, id]);
+  }
+
+  /** Remove a single case id immutably */
+  removeSelectedCaseItemId(id: string): void {
+    const current = this._selectedCaseItemIds();
+    if (current.length === 0) return;
+    const next = current.filter((i) => i !== id);
+    this.setSelectedCaseItemIds(next);
+  }
+
+  /**
    * Add a single keyword to selectedKeywords immutably
    */
   addSelectedKeyword(keyword: string): void {
@@ -405,6 +454,8 @@ export class EssayStateService {
     this._essayId.set(this.initialState.essayId);
     this._selectedKeywords.set(this.initialState.selectedKeywords);
     this._selectedArgumentIds.set(this.initialState.selectedArgumentIds);
+    this._selectedScholarIds.set(this.initialState.selectedScholarIds);
+    this._selectedCaseItemIds.set(this.initialState.selectedCaseItemIds);
     this._isCreating.set(this.initialState.isCreating);
     this._errorMessage.set(this.initialState.errorMessage);
     this._created.set(this.initialState.created);

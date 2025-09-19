@@ -130,7 +130,7 @@ export class EssayService {
 
       const headers = new Headers({
         "Content-Type": "application/json",
-        Accept: "application/json",
+        Accept: "text/event-stream, application/json",
       });
 
       let carry = "";

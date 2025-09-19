@@ -249,10 +249,55 @@ import { type ModelCaseVO } from "@/app/interfaces/model-case.interface";
             }
             @if (visibleCaseItems.length > 0) {
               <div class="casestudies-list space-y-3" style="padding: 1rem">
-                @for (item of visibleCaseItems; track item.index) {
+                <div class="grid-toolbar" *ngIf="visibleCaseItems.length > 0">
+                  <label
+                    class="select-all flex items-center gap-2 text-sm text-gray-700"
+                  >
+                    <input
+                      type="checkbox"
+                      [checked]="areAllCasesSelected"
+                      [indeterminate]="isPartiallyCasesSelected"
+                      (change)="onToggleSelectAllCases($event)"
+                      aria-label="Select all case studies"
+                    />
+                    <span>Select all</span>
+                    <span class="opacity-70"
+                      >({{ selectedCaseCount }}/{{
+                        visibleCaseItems.length
+                      }})</span
+                    >
+                  </label>
+                </div>
+                @for (item of visibleCaseItems; track item.id) {
                   <div
                     class="case-item rounded-md border border-gray-200/70 p-3 sm:p-4 bg-white/60"
                   >
+                    <div class="flex items-start gap-3 mb-2">
+                      <input
+                        type="checkbox"
+                        class="mt-1 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                        [checked]="isCaseItemSelected(item.id)"
+                        (change)="onCaseItemChange(item.id, $event)"
+                        aria-label="Select case study"
+                      />
+                      <div class="min-w-0 flex-1">
+                        @if (item.link) {
+                          <a
+                            class="text-sm sm:text-base font-medium text-blue-700 hover:underline break-words"
+                            [href]="item.link"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            >Case #{{ item.index + 1 }}</a
+                          >
+                        } @else {
+                          <div
+                            class="text-sm sm:text-base font-medium text-gray-800"
+                          >
+                            Case #{{ item.index + 1 }}
+                          </div>
+                        }
+                      </div>
+                    </div>
                     @if (item.results?.length) {
                       <ul class="case-results list-disc pl-5 space-y-1">
                         @for (r of item.results; track r.title) {
@@ -265,17 +310,17 @@ import { type ModelCaseVO } from "@/app/interfaces/model-case.interface";
                             }
                             @if (r.background) {
                               <div class="text-gray-600 text-xs">
-                                {{ r.background }}
+                                Background: {{ r.background }}
                               </div>
                             }
                             @if (r.methodology) {
                               <div class="text-gray-600 text-xs">
-                                {{ r.methodology }}
+                                Methodology: {{ r.methodology }}
                               </div>
                             }
                             @if (r.findings) {
                               <div class="text-gray-600 text-xs">
-                                {{ r.findings }}
+                                Findings: {{ r.findings }}
                               </div>
                             }
                           </li>
@@ -519,5 +564,76 @@ export class ExpandableContentComponent {
     const items = this.caseItems ?? [];
     if (!Array.isArray(items) || items.length === 0) return items;
     return items.filter((i) => !i.error && (i.results?.length ?? 0) > 0);
+  }
+
+  /**
+   * Case selection helpers (mirror references)
+   */
+  get selectedCaseCount(): number {
+    const selected = new Set(this.essayStateService.selectedCaseItemIds());
+    const items = this.visibleCaseItems;
+    if (!items || items.length === 0) return 0;
+    let count = 0;
+    for (const it of items) if (selected.has(it.id as string)) count++;
+    return count;
+  }
+
+  get areAllCasesSelected(): boolean {
+    const total = this.visibleCaseItems.length;
+    return total > 0 && this.selectedCaseCount === total;
+  }
+
+  get isPartiallyCasesSelected(): boolean {
+    const total = this.visibleCaseItems.length;
+    const size = this.selectedCaseCount;
+    return size > 0 && size < total;
+  }
+
+  isCaseItemSelected(id: string | undefined): boolean {
+    if (!id) return false;
+    return this.essayStateService.selectedCaseItemIds().includes(id);
+  }
+
+  onCaseItemChange(id: string | undefined, event: Event): void {
+    const input = event.target as HTMLInputElement | null;
+    const isChecked = !!input?.checked;
+    if (!id) return;
+    if (isChecked) this.essayStateService.addSelectedCaseItemId(id);
+    else this.essayStateService.removeSelectedCaseItemId(id);
+  }
+
+  onToggleSelectAllCases(event: Event): void {
+    event.stopPropagation();
+    this.toggleSelectAllCases();
+  }
+
+  toggleSelectAllCases(): void {
+    if (this.areAllCasesSelected) this.clearCaseSelection();
+    else this.selectAllCases();
+  }
+
+  selectAllCases(): void {
+    const items = this.visibleCaseItems;
+    if (!items || items.length === 0) return;
+    const previously = new Set(this.essayStateService.selectedCaseItemIds());
+    for (const it of items) {
+      const id = it.id as string | undefined;
+      if (id && !previously.has(id)) {
+        this.essayStateService.addSelectedCaseItemId(id);
+      }
+    }
+  }
+
+  clearCaseSelection(): void {
+    const items = this.visibleCaseItems;
+    if (!items || items.length === 0) return;
+    const visibleIds = new Set(
+      items.map((i) => i.id).filter(Boolean) as string[],
+    );
+    for (const cid of this.essayStateService.selectedCaseItemIds()) {
+      if (visibleIds.has(cid)) {
+        this.essayStateService.removeSelectedCaseItemId(cid);
+      }
+    }
   }
 }

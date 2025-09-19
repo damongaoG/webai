@@ -9,6 +9,7 @@ export interface ModelCaseResultItem {
 }
 
 export interface ModelCaseVO {
+  id?: string;
   index: number;
   total?: number;
   link?: string;
