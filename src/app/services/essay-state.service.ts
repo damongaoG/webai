@@ -9,6 +9,7 @@ export enum EssayCreationPhase {
   ARGUMENT_SELECTED = "argument_selected",
   SCHOLARS_SELECTED = "scholars_selected",
   CASE_SELECTED = "case_selected",
+  SUMMARY_CONFIRMED = "summary_confirmed",
 }
 
 // Essay state interface
@@ -337,7 +338,8 @@ export class EssayStateService {
   }
 
   /**
-   * Set selected case item indexes and keep phase at CASE_SELECTED when any selected
+   * Set selected case item ids and advance to SUMMARY when any selected;
+   * otherwise stay/return to CASE_SELECTED.
    */
   setSelectedCaseItemIds(ids: string[]): void {
     // Cases can only be interacted with once scholars have been selected
@@ -352,13 +354,12 @@ export class EssayStateService {
     }
 
     const hasCases = ids.length > 0;
-    // const nextPhase = hasCases
-    //   ? EssayCreationPhase.CASE_SELECTED
-    //   : EssayCreationPhase.SCHOLARS_SELECTED;
+    const nextPhase = hasCases
+      ? EssayCreationPhase.SUMMARY_CONFIRMED
+      : EssayCreationPhase.CASE_SELECTED;
 
     this._selectedCaseItemIds.set(ids);
-    // this._currentPhase.set(nextPhase);
-    this._currentPhase.set(EssayCreationPhase.CASE_SELECTED);
+    this._currentPhase.set(nextPhase);
   }
 
   /** Add a single case id immutably */
@@ -490,6 +491,9 @@ export class EssayStateService {
         return permissions.allowReferencesInteraction;
       case "casestudies":
         return permissions.allowCaseStudiesInteraction;
+      case "summary":
+        // Summary interaction should only be available when the flow reaches summary_confirmed
+        return this._currentPhase() === EssayCreationPhase.SUMMARY_CONFIRMED;
       default:
         return false;
     }
@@ -553,6 +557,14 @@ export class EssayStateService {
           allowArgumentsInteraction: false,
           allowReferencesInteraction: false,
           allowCaseStudiesInteraction: true,
+        };
+
+      case EssayCreationPhase.SUMMARY_CONFIRMED:
+        return {
+          allowKeywordsSelection: false,
+          allowArgumentsInteraction: false,
+          allowReferencesInteraction: false,
+          allowCaseStudiesInteraction: false,
         };
 
       default:

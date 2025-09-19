@@ -83,6 +83,13 @@ export class MainContentComponent implements OnInit {
       iconAlt: "Case studies icon",
       taskType: TaskType.TONE,
     },
+    {
+      id: "summary",
+      title: "Summary",
+      iconPath: "/assets/images/icon/dark-essay.svg",
+      iconAlt: "Summary icon",
+      taskType: TaskType.LENGTH,
+    },
   ];
 
   // State management for each card's gradient visibility
@@ -123,6 +130,15 @@ export class MainContentComponent implements OnInit {
         animating: false,
       },
     },
+    summary: {
+      showGradient: false,
+      isPersistent: false,
+      expandable: {
+        isExpanded: false,
+        contentType: null,
+        animating: false,
+      },
+    },
   };
 
   toggleGradient(cardId: string): void {
@@ -135,6 +151,7 @@ export class MainContentComponent implements OnInit {
       arguments: "arguments",
       references: "references",
       casestudies: "casestudies",
+      summary: "summary",
     };
 
     const taskId = cardToTaskMap[typedCardId];
@@ -240,6 +257,7 @@ export class MainContentComponent implements OnInit {
         references: "references",
         casestudies: "casestudies",
         examples: "casestudies", // Fallback mapping
+        summary: "summary",
       };
 
       const cardId = taskToCardMap[sharedState.contentType];

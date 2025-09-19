@@ -71,7 +71,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
       arguments: `/assets/images/icon/${prefix}-argument-point.svg`,
       references: `/assets/images/icon/${prefix}-review.svg`,
       casestudies: `/assets/images/icon/${prefix}-case.svg`,
-      examples: `/assets/images/icon/${prefix}-essay.svg`,
+      summary: `/assets/images/icon/${prefix}-essay.svg`,
     };
 
     return iconMap[task.id] || "";

@@ -54,7 +54,7 @@ export class DashboardSharedService {
       isSelected: false,
     },
     {
-      id: "examples",
+      id: "summary",
       name: "Summary",
       type: TaskType.LENGTH,
       isSelected: false,

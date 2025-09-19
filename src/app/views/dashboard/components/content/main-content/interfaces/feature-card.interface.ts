@@ -15,4 +15,9 @@ export interface CardState {
   expandable: ExpandableState;
 }
 
-export type CardId = "keywords" | "arguments" | "references" | "casestudies";
+export type CardId =
+  | "keywords"
+  | "arguments"
+  | "references"
+  | "casestudies"
+  | "summary";
