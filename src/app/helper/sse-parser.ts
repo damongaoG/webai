@@ -79,6 +79,67 @@ export function parseSseStreamChunk(
   return { events, carry: newCarry };
 }
 
+/**
+ * Parse a chunk of SSE text and return ALL events (no event-name filtering).
+ * This is useful for endpoints that use different event names (e.g., "summary")
+ * or default "message" events.
+ */
+export function parseSseStreamChunkAll(
+  buffer: string,
+  carry: string,
+): { events: ReadonlyArray<ParsedSseEvent>; carry: string } {
+  const combined = (carry ?? "") + (buffer ?? "");
+
+  if (combined.length === 0) {
+    return { events: [], carry: "" };
+  }
+
+  const events: ParsedSseEvent[] = [];
+
+  let currentEventName: string | undefined;
+  let currentDataLines: string[] = [];
+  let processedIndex = 0;
+
+  let i = 0;
+  let lineStart = 0;
+  while (i < combined.length) {
+    const ch = combined.charCodeAt(i);
+    if (ch === 10 /* \n */) {
+      let line = combined.slice(lineStart, i);
+      if (line.endsWith("\r")) {
+        line = line.slice(0, -1);
+      }
+
+      if (line === "") {
+        const data =
+          currentDataLines.length > 0 ? currentDataLines.join("\n") : "";
+        const eventName = currentEventName ?? "message";
+        events.push({ event: eventName, data });
+        currentEventName = undefined;
+        currentDataLines = [];
+        processedIndex = i + 1;
+      } else {
+        if (line.startsWith(":")) {
+          // heartbeat/comment
+        } else if (line.startsWith("event:")) {
+          currentEventName = line.slice(6).trimStart();
+        } else if (line.startsWith("data:")) {
+          const value = line.slice(5).trimStart();
+          currentDataLines.push(value);
+        }
+      }
+
+      i += 1;
+      lineStart = i;
+      continue;
+    }
+    i += 1;
+  }
+
+  const newCarry = combined.slice(processedIndex);
+  return { events, carry: newCarry };
+}
+
 /** Safe JSON parse that never throws. */
 export function safeJsonParse<T>(text: string): T | undefined {
   try {

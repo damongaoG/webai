@@ -79,35 +79,6 @@ import { type ModelCaseVO } from "@/app/interfaces/model-case.interface";
           }
         }
 
-        <!--        @if (expandableState.contentType === "assignment" && isExpanded()) {-->
-        <!--          @if (isInteractionAllowed()) {-->
-        <!--            <div class="placeholder-content">-->
-        <!--              <p>Assignment content will be implemented here</p>-->
-        <!--            </div>-->
-        <!--          } @else {-->
-        <!--            <div class="disabled-content">-->
-        <!--              <div class="disabled-overlay">-->
-        <!--                <p class="disabled-message">-->
-        <!--                  <svg-->
-        <!--                    class="w-6 h-6 text-gray-400 mx-auto mb-2"-->
-        <!--                    fill="none"-->
-        <!--                    stroke="currentColor"-->
-        <!--                    viewBox="0 0 24 24"-->
-        <!--                  >-->
-        <!--                    <path-->
-        <!--                      stroke-linecap="round"-->
-        <!--                      stroke-linejoin="round"-->
-        <!--                      stroke-width="2"-->
-        <!--                      d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"-->
-        <!--                    ></path>-->
-        <!--                  </svg>-->
-        <!--                  Select keywords first to unlock this feature-->
-        <!--                </p>-->
-        <!--              </div>-->
-        <!--            </div>-->
-        <!--          }-->
-        <!--        }-->
-
         @if (expandableState.contentType === "arguments" && isExpanded()) {
           @if (isInteractionAllowed()) {
             <app-arguments-grid
@@ -363,6 +334,82 @@ import { type ModelCaseVO } from "@/app/interfaces/model-case.interface";
             </div>
           }
         }
+
+        @if (expandableState.contentType === "summary" && isExpanded()) {
+          @if (isInteractionAllowed()) {
+            @if (isSummaryLoading) {
+              <div
+                class="summary-inline-loading px-4 sm:px-6 lg:px-8 py-3 text-sm text-stone-600"
+                role="status"
+                aria-live="polite"
+              >
+                <span class="inline-flex items-center gap-2">
+                  <svg
+                    class="animate-spin h-4 w-4 text-stone-500"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      class="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      stroke-width="4"
+                      fill="none"
+                    ></circle>
+                    <path
+                      class="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                    ></path>
+                  </svg>
+                  Generating summary...
+                </span>
+              </div>
+            }
+            <div
+              class="summary-content"
+              style="padding: 1rem"
+              role="article"
+              aria-live="polite"
+            >
+              @if (summaryText && summaryText.length > 0) {
+                <p
+                  class="text-sm sm:text-base text-gray-700 whitespace-pre-wrap"
+                >
+                  {{ summaryText }}
+                </p>
+              } @else {
+                @if (!isSummaryLoading) {
+                  <div class="summary-empty text-gray-500 text-sm">
+                    No summary yet.
+                  </div>
+                }
+              }
+            </div>
+          } @else {
+            <div class="disabled-content">
+              <div class="disabled-overlay">
+                <p class="disabled-message">
+                  <svg
+                    class="w-6 h-6 text-gray-400 mx-auto mb-2"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                    ></path>
+                  </svg>
+                  Select case studies first to unlock this feature
+                </p>
+              </div>
+            </div>
+          }
+        }
       </div>
     </div>
   `,
@@ -398,6 +445,8 @@ export class ExpandableContentComponent {
   @Input() scholars: ScholarData[] = [];
   @Input() caseItems: ReadonlyArray<ModelCaseVO> = [];
   @Input() isCasesLoading: boolean = false;
+  @Input() isSummaryLoading: boolean = false;
+  @Input() summaryText: string = "";
   @Input() keywordsGridConfig = {
     columns: 5,
     gap: 16,

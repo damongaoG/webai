@@ -31,6 +31,7 @@ import { ToastService } from "@/app/shared";
 import { DashboardSharedService } from "../../../dashboard-shared.service";
 import { Result } from "@/app/interfaces/result";
 import { type ModelCaseVO } from "@/app/interfaces/model-case.interface";
+import { type SummarySseItem } from "@/app/interfaces/summary-sse.interface";
 
 @Component({
   selector: "app-feature-card",
@@ -83,12 +84,18 @@ export class FeatureCardComponent implements OnDestroy {
 
   // Hold SSE subscription for casestudies stream (Task 1: trigger only)
   private caseStreamSub?: Subscription;
+  // Hold SSE subscription for summary stream
+  private summaryStreamSub?: Subscription;
 
   // Loading state for casestudies stream (until first payload arrives)
   readonly isLoadingCases = signal<boolean>(false);
+  // Loading state for summary stream
+  readonly isLoadingSummary = signal<boolean>(false);
 
   // Accumulated stream items for case studies (appended upon each valid payload)
   private readonly caseItems = signal<ReadonlyArray<ModelCaseVO>>([]);
+  // Accumulated items for summary stream (if needed by future UI)
+  private readonly summaryItems = signal<ReadonlyArray<SummarySseItem>>([]);
   // Track whether casestudies has been opened via stream or redo success
   private readonly hasOpenedCases = signal<boolean>(false);
 
@@ -156,6 +163,13 @@ export class FeatureCardComponent implements OnDestroy {
         }
       }
 
+      // If expanding summary card, start SSE stream only once per session
+      if (isExpanded && this.featureCard.id === "summary") {
+        if (!this.hasLoadedContent) {
+          this.startSummaryStream();
+        }
+      }
+
       // If collapsing casestudies card, stop SSE stream (do not clear items to preserve once-per-session data)
       if (!isExpanded && this.featureCard.id === "casestudies") {
         if (this.caseStreamSub) {
@@ -163,6 +177,15 @@ export class FeatureCardComponent implements OnDestroy {
           this.caseStreamSub = undefined;
         }
         this.isLoadingCases.set(false);
+      }
+
+      // If collapsing summary card, stop SSE stream
+      if (!isExpanded && this.featureCard.id === "summary") {
+        if (this.summaryStreamSub) {
+          this.summaryStreamSub.unsubscribe();
+          this.summaryStreamSub = undefined;
+        }
+        this.isLoadingSummary.set(false);
       }
     }
   }
@@ -175,6 +198,13 @@ export class FeatureCardComponent implements OnDestroy {
     this.isLoadingCases.set(false);
     this.caseItems.set([]);
     this.hasOpenedCases.set(false);
+
+    if (this.summaryStreamSub) {
+      this.summaryStreamSub.unsubscribe();
+      this.summaryStreamSub = undefined;
+    }
+    this.isLoadingSummary.set(false);
+    this.summaryItems.set([]);
   }
 
   /**
@@ -209,6 +239,10 @@ export class FeatureCardComponent implements OnDestroy {
 
     if (this.featureCard.id === "casestudies" && !this.hasLoadedContent) {
       this.startCaseStudiesStream();
+    }
+
+    if (this.featureCard.id === "summary" && !this.hasLoadedContent) {
+      this.startSummaryStream();
     }
   }
 
@@ -564,7 +598,9 @@ export class FeatureCardComponent implements OnDestroy {
       this.isLoadingScholars() ||
       this.essayStateService.isScholarsLoading() ||
       // When case studies stream is loading, collapse/expand must be disabled
-      this.isLoadingCases()
+      this.isLoadingCases() ||
+      // When summary stream is loading, collapse/expand must be disabled
+      this.isLoadingSummary()
     );
   }
 
@@ -581,6 +617,8 @@ export class FeatureCardComponent implements OnDestroy {
         return this.isLoadingScholars();
       case "casestudies":
         return this.isLoadingCases();
+      case "summary":
+        return this.isLoadingSummary();
       default:
         return false;
     }
@@ -594,6 +632,20 @@ export class FeatureCardComponent implements OnDestroy {
       return this.caseItems();
     }
     return [];
+  }
+
+  /**
+   * Provide concatenated summary text for expandable-content
+   */
+  get summaryText(): string {
+    if (this.featureCard.id !== "summary") return "";
+    const items = this.summaryItems();
+    if (!items || items.length === 0) return "";
+    // Concatenate only defined result chunks in arrival order
+    return items
+      .map((it) => it.result || "")
+      .join("")
+      .trim();
   }
 
   /**
@@ -812,5 +864,55 @@ export class FeatureCardComponent implements OnDestroy {
         }
       },
     });
+  }
+
+  /**
+   * Start the summary SSE stream once per session.
+   * Requires an essayId and at least one selected case id from state.
+   */
+  private startSummaryStream(): void {
+    const essayId = this.essayStateService.essayId();
+    const caseIds = this.essayStateService.selectedCaseItemIds();
+
+    if (!essayId) {
+      this.toastService.error("Please create an essay first to start summary");
+      return;
+    }
+    if (!caseIds || caseIds.length === 0) {
+      this.toastService.error("Select at least one case to stream summary");
+      return;
+    }
+    if (this.summaryStreamSub) {
+      this.summaryStreamSub.unsubscribe();
+      this.summaryStreamSub = undefined;
+    }
+    this.isLoadingSummary.set(true);
+    this.summaryStreamSub = this.essayService
+      .streamSummary(essayId, caseIds)
+      .subscribe({
+        next: (item) => {
+          this.hasLoadedContent = true;
+          const current = this.summaryItems();
+          this.summaryItems.set([...current, item as SummarySseItem]);
+        },
+        error: (err) => {
+          console.error("Error while streaming summary:", err);
+          this.toastService.error(
+            "Failed to stream summary. Please try again.",
+          );
+          this.isLoadingSummary.set(false);
+          if (this.summaryStreamSub) {
+            this.summaryStreamSub.unsubscribe();
+            this.summaryStreamSub = undefined;
+          }
+        },
+        complete: () => {
+          this.isLoadingSummary.set(false);
+          if (this.summaryStreamSub) {
+            this.summaryStreamSub.unsubscribe();
+            this.summaryStreamSub = undefined;
+          }
+        },
+      });
   }
 }
