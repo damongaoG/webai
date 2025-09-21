@@ -166,6 +166,15 @@ export class EssayStateService {
   }
 
   /**
+   * Revert phase from SUMMARY_CONFIRMED -> CASE_SELECTED (used on undo from summary)
+   */
+  revertToCaseSelectedAfterSummaryUndo(): void {
+    if (this._currentPhase() === EssayCreationPhase.SUMMARY_CONFIRMED) {
+      this._currentPhase.set(EssayCreationPhase.CASE_SELECTED);
+    }
+  }
+
+  /**
    * Pre-advance phase when performing a redo action.
    * - TITLE_CREATED -> KEYWORDS_SELECTED
    * - KEYWORDS_SELECTED -> ARGUMENT_SELECTED

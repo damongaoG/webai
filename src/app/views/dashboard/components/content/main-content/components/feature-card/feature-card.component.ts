@@ -22,7 +22,7 @@ import {
 } from "@/app/services/essay-state.service";
 import { EssayService } from "@/app/services/essay.service";
 import { parseKeywordsToData } from "@/app/helper/utils";
-import { catchError, of, Subscription } from "rxjs";
+import { catchError, finalize, of, Subscription } from "rxjs";
 import {
   ArgumentData,
   ScholarData,
@@ -99,6 +99,8 @@ export class FeatureCardComponent implements OnDestroy {
   readonly isLoadingCases = signal<boolean>(false);
   // Loading state for summary stream
   readonly isLoadingSummary = signal<boolean>(false);
+  // Track whether summary stream has completed to control Undo visibility on summary card
+  private readonly summaryCompleted = signal<boolean>(false);
 
   // Accumulated stream items for case studies (appended upon each valid payload)
   private readonly caseItems = signal<ReadonlyArray<ModelCaseVO>>([]);
@@ -337,6 +339,10 @@ export class FeatureCardComponent implements OnDestroy {
     if (this.featureCard.id === "casestudies") {
       return phase === "case_selected" && this.hasOpenedCases();
     }
+    // Show Undo on summary card only after the summary stream has completed
+    if (this.featureCard.id === "summary") {
+      return this.summaryCompleted() && !this.isLoadingSummary();
+    }
     return false;
   }
 
@@ -351,7 +357,6 @@ export class FeatureCardComponent implements OnDestroy {
   }
 
   onUndoClick(): void {
-    // Emit for parent listeners if any
     this.undoClicked.emit();
 
     const essayId = this.essayStateService.essayId();
@@ -360,29 +365,18 @@ export class FeatureCardComponent implements OnDestroy {
       return;
     }
 
-    // Determine which card we're undoing and set loading accordingly
-    if (this.featureCard.id === "arguments") {
-      this.isLoadingArguments.set(true);
-      this.essayStateService.setArgumentsLoading(true);
-    } else if (this.featureCard.id === "references") {
-      this.isLoadingScholars.set(true);
-      this.essayStateService.setScholarsLoading(true);
-    } else if (this.featureCard.id === "casestudies") {
-      // No loading flags needed for undoing case studies -> references
-    }
+    const cardId = this.featureCard.id;
+    this.setUndoLoadingForCard(cardId, true);
 
     this.essayService
       .undoAction(essayId)
       .pipe(
         catchError((error) => {
           console.error("Error performing undo:", error);
-          this.isLoadingArguments.set(false);
-          this.isLoadingScholars.set(false);
-          this.essayStateService.setArgumentsLoading(false);
-          this.essayStateService.setScholarsLoading(false);
           this.toastService.error("Failed to undo. Please try again.");
           return of(null);
         }),
+        finalize(() => this.setUndoLoadingForCard(cardId, false)),
       )
       .subscribe(
         (
@@ -391,82 +385,27 @@ export class FeatureCardComponent implements OnDestroy {
             arguments?: ArgumentData[];
           }> | null,
         ) => {
-          // Clear loading flags
-          this.isLoadingArguments.set(false);
-          this.isLoadingScholars.set(false);
-          this.essayStateService.setArgumentsLoading(false);
-          this.essayStateService.setScholarsLoading(false);
-
           if (!response || response.code !== 1 || !response.data) {
             this.toastService.error("Invalid undo response from server");
             return;
           }
 
-          // Capture phase before local state updates to decide UI transitions
           const previousPhase = this.essayStateService.currentPhase();
-
           const data = response.data;
 
-          // Update local data stores based on which card initiated undo
-          if (this.featureCard.id === "arguments") {
-            // Show keywords from the new API response
-            this.fetchedKeywords.set(parseKeywordsToData(data.keywords ?? ""));
-
-            this.essayStateService.setSelectedKeywords([]);
-
-            // Reset selected argument ids in state since we moved back
-            this.essayStateService.setSelectedArgumentIds([]);
-            // Revert phase ARGUMENT_SELECTED -> KEYWORDS_SELECTED
-            this.essayStateService.revertToKeywordsSelectedAfterUndo();
-          } else if (this.featureCard.id === "references") {
-            // Move phase from scholars_selected -> argument_selected
-            // and show arguments from the new API response
-            const argumentsFromApi = Array.isArray(data.arguments)
-              ? data.arguments
-              : [];
-            this.fetchedArguments.set(argumentsFromApi);
-
-            this.essayStateService.setSelectedArgumentIds([]);
-            // Clear selected scholars and revert to argument_selected
-            this.essayStateService.setSelectedScholarIds([]);
-            // Revert phase SCHOLARS_SELECTED -> ARGUMENT_SELECTED
-            this.essayStateService.revertToArgumentSelectedAfterUndo();
-          } else if (this.featureCard.id === "casestudies") {
-            // Revert phase CASE_SELECTED -> SCHOLARS_SELECTED
-            this.essayStateService.revertToScholarsSelectedAfterUndo();
-            // Clear local opened flag when undoing out of case studies
-            this.hasOpenedCases.set(false);
-            this.caseItems.set([]);
+          if (cardId === "summary") {
+            this.handleUndoForSummary();
+            return;
           }
 
-          // Clear the loaded flag for the card we are undoing from,
-          // so that when the user returns to it and expands again, it re-fetches.
+          this.handleUndoSuccessForCard(cardId, data);
           this.hasLoadedContent = false;
 
-          // Enable redo on the previous-phase feature card globally
-          // If undoing from arguments -> redo appears on keywords card
-          // If undoing from references -> redo appears on arguments card
-          const redoTarget =
-            this.featureCard.id === "arguments"
-              ? "keywords"
-              : this.featureCard.id === "references"
-                ? "arguments"
-                : "references";
+          const redoTarget = this.computeRedoTargetForUndo(cardId);
           this.essayStateService.setRedoState(redoTarget);
           this.lastUndoneCardId.set(redoTarget);
 
-          // Expand/collapse feature cards based on the phase before undo completed
-          // Also update sidebar selection to keep UI state consistent
-          if (previousPhase === "argument_selected") {
-            // Move back to keywords
-            this.dashboardSharedService.selectTask("keywords");
-          } else if (previousPhase === "scholars_selected") {
-            // Move back to arguments
-            this.dashboardSharedService.selectTask("arguments");
-          } else if (previousPhase === "case_selected") {
-            // Move back to references
-            this.dashboardSharedService.selectTask("references");
-          }
+          this.navigateAfterUndo(previousPhase);
         },
       );
   }
@@ -584,6 +523,11 @@ export class FeatureCardComponent implements OnDestroy {
             this.dashboardSharedService.selectTask("casestudies");
             // Mark cases as opened due to successful redo
             this.hasOpenedCases.set(true);
+          } else if (redoTarget === "casestudies") {
+            // Move forward from case studies to summary again
+            this.dashboardSharedService.selectTask("summary");
+            // Start summary stream using existing selections
+            this.startSummaryStream();
           }
 
           // consume redo state globally and locally
@@ -591,6 +535,73 @@ export class FeatureCardComponent implements OnDestroy {
           this.lastUndoneCardId.set(null);
         },
       );
+  }
+
+  private setUndoLoadingForCard(cardId: string, loading: boolean): void {
+    if (cardId === "arguments") {
+      this.isLoadingArguments.set(loading);
+      this.essayStateService.setArgumentsLoading(loading);
+    } else if (cardId === "references") {
+      this.isLoadingScholars.set(loading);
+      this.essayStateService.setScholarsLoading(loading);
+    }
+  }
+
+  private computeRedoTargetForUndo(
+    cardId: string,
+  ): "keywords" | "arguments" | "references" | "casestudies" {
+    if (cardId === "arguments") return "keywords";
+    if (cardId === "references") return "arguments";
+    if (cardId === "casestudies") return "references";
+    return "casestudies";
+  }
+
+  private navigateAfterUndo(previousPhase: string): void {
+    if (previousPhase === "argument_selected") {
+      this.dashboardSharedService.selectTask("keywords");
+    } else if (previousPhase === "scholars_selected") {
+      this.dashboardSharedService.selectTask("arguments");
+    } else if (previousPhase === "case_selected") {
+      this.dashboardSharedService.selectTask("references");
+    }
+  }
+
+  private handleUndoSuccessForCard(
+    cardId: string,
+    data: { keywords?: string; arguments?: ArgumentData[] },
+  ): void {
+    if (cardId === "arguments") {
+      this.fetchedKeywords.set(parseKeywordsToData(data.keywords ?? ""));
+      this.essayStateService.setSelectedKeywords([]);
+      this.essayStateService.setSelectedArgumentIds([]);
+      this.essayStateService.revertToKeywordsSelectedAfterUndo();
+      return;
+    }
+    if (cardId === "references") {
+      const argumentsFromApi = Array.isArray(data.arguments)
+        ? data.arguments
+        : [];
+      this.fetchedArguments.set(argumentsFromApi);
+      this.essayStateService.setSelectedArgumentIds([]);
+      this.essayStateService.setSelectedScholarIds([]);
+      this.essayStateService.revertToArgumentSelectedAfterUndo();
+      return;
+    }
+    if (cardId === "casestudies") {
+      this.essayStateService.revertToScholarsSelectedAfterUndo();
+      this.hasOpenedCases.set(false);
+      this.caseItems.set([]);
+    }
+  }
+
+  private handleUndoForSummary(): void {
+    this.summaryCompleted.set(false);
+    this.summaryItems.set([]);
+    this.hasLoadedContent = false;
+    this.essayStateService.revertToCaseSelectedAfterSummaryUndo();
+    this.essayStateService.setRedoState("casestudies");
+    this.lastUndoneCardId.set("casestudies");
+    this.dashboardSharedService.selectTask("casestudies");
   }
 
   /**
@@ -895,6 +906,8 @@ export class FeatureCardComponent implements OnDestroy {
       this.summaryStreamSub = undefined;
     }
     this.isLoadingSummary.set(true);
+    // Reset completion marker when starting a new stream
+    this.summaryCompleted.set(false);
     this.summaryStreamSub = this.essayService
       .streamSummary(essayId, caseIds)
       .subscribe({
@@ -916,6 +929,7 @@ export class FeatureCardComponent implements OnDestroy {
         },
         complete: () => {
           this.isLoadingSummary.set(false);
+          this.summaryCompleted.set(true);
           if (this.summaryStreamSub) {
             this.summaryStreamSub.unsubscribe();
             this.summaryStreamSub = undefined;
