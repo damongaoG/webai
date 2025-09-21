@@ -3,6 +3,7 @@ import { CommonModule } from "@angular/common";
 import { LucideAngularModule } from "lucide-angular";
 import { DashboardSharedService } from "../dashboard-shared.service";
 import { Subject } from "rxjs";
+import { marked } from "marked";
 
 @Component({
   selector: "app-sample-essay",
@@ -25,30 +26,14 @@ export class SampleEssayComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  getContentParagraphs(): string[] {
+  /**
+   * Render the essay markdown content as HTML
+   * Angular sanitizes strings bound via [innerHTML]
+   */
+  contentHtml(): string {
     const raw = this.dashboardService.getEssayContent()()?.content || "";
-    if (!raw) return [];
-    // Prefer newline-based splitting for reliability; fallback to paragraph-size chunks
-    const byNewline = raw
-      .split(/\n{2,}|\r?\n/) // split on blank lines or single newlines
-      .map((p) => p.trim())
-      .filter((p) => p.length > 0);
-
-    if (byNewline.length > 0) {
-      return byNewline;
-    }
-
-    // Fallback: sentence grouping without adding mock content
-    const sentences = raw.split(/(?<=[.!?])\s+/);
-    const grouped: string[] = [];
-    for (let i = 0; i < sentences.length; i += 2) {
-      const paragraph = sentences
-        .slice(i, i + 2)
-        .join(" ")
-        .trim();
-      if (paragraph) grouped.push(paragraph);
-    }
-    return grouped;
+    if (!raw) return "";
+    return (marked.parse(raw, { async: false, breaks: true }) || "") as string;
   }
 
   onEditAndExport(): void {

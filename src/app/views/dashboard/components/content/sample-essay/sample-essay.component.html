@@ -80,13 +80,13 @@
           </div>
         }
 
-        <!-- Dynamic Content Paragraphs (from generated content only) -->
+        <!-- Dynamic Content rendered from Markdown -->
         <section class="essay-section">
           <div class="section-content">
-            <div class="content-paragraphs">
-              @for (paragraph of getContentParagraphs(); track $index) {
-                <p class="content-paragraph">{{ paragraph }}</p>
-              }
+            <div
+              class="content-paragraphs prose prose-stone max-w-none text-sm sm:text-base"
+            >
+              <div [innerHTML]="contentHtml()"></div>
             </div>
           </div>
         </section>
