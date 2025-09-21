@@ -543,16 +543,11 @@ export class FeatureCardComponent implements OnDestroy {
             // Select references so sidebar reflects the forward step
             this.dashboardSharedService.selectTask("references");
           } else if (redoTarget === "references") {
-            // Move forward to case studies
+            // Move forward to case studies phase
             this.essayStateService.advancePhaseAfterCaseOpen();
-            this.dashboardSharedService.selectTask("casestudies");
-            // Mark cases as opened due to successful redo
-            this.hasOpenedCases.set(true);
           } else if (redoTarget === "casestudies") {
             // Move forward from case studies to summary again
             this.dashboardSharedService.selectTask("summary");
-            // Start summary stream using existing selections
-            this.startSummaryStream();
           }
 
           // consume redo state globally and locally
@@ -990,7 +985,34 @@ export class FeatureCardComponent implements OnDestroy {
   }
 
   onWordcountConfirmed(count: number): void {
-    // Placeholder for API call; for now, just notify the user.
+    // Prepare Sample Essay area; do not toggle summary loading state
+    this.dashboardSharedService.clearEssayContent();
+    this.dashboardSharedService.setIsGenerated(true);
     this.toastService.success(`Generating essay with ${count} words...`);
+  }
+
+  // Forward essayId to modal via template without exposing service directly
+  essayIdForModal(): string | null {
+    return this.essayStateService.essayId();
+  }
+
+  // Handlers for body stream outputs from modal
+  onBodyItem(item: SummarySseItem): void {
+    // Do not alter summary loading/UI state here; just stream body to Sample Essay
+    const chunk = item?.result ?? "";
+    if (chunk && chunk.length > 0) {
+      // Ensure the Sample Essay area is marked as generated
+      this.dashboardSharedService.setIsGenerated(true);
+      this.dashboardSharedService.appendEssayContent(chunk);
+    }
+  }
+
+  onBodyError(err: unknown): void {
+    console.error("Error while streaming body:", err);
+    this.toastService.error("Failed to generate essay. Please try again.");
+  }
+
+  onBodyComplete(): void {
+    // No-op for summary loading; Sample Essay display is independent
   }
 }

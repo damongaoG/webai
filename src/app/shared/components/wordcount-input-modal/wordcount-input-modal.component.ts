@@ -1,7 +1,18 @@
-import { Component, input, output, signal } from "@angular/core";
+import {
+  Component,
+  input,
+  output,
+  signal,
+  inject,
+  OnDestroy,
+} from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { ModalComponent } from "@/app/shared";
+import { EssayService } from "@/app/services/essay.service";
+import { SummarySseItem } from "@/app/interfaces/summary-sse.interface";
+import { EssayStateService } from "@/app/services/essay-state.service";
+import { Subscription } from "rxjs";
 
 @Component({
   selector: "app-wordcount-input-modal",
@@ -63,10 +74,18 @@ import { ModalComponent } from "@/app/shared";
     </app-modal>
   `,
 })
-export class WordcountInputModalComponent {
+export class WordcountInputModalComponent implements OnDestroy {
   visible = input.required<boolean>();
   visibleChange = output<boolean>();
   confirmed = output<number>();
+
+  // Optional essayId input. If not provided, falls back to global EssayStateService.
+  essayId = input<string | null>(null);
+
+  // Stream outputs for parent consumption
+  bodyItem = output<SummarySseItem>();
+  bodyError = output<unknown>();
+  bodyComplete = output<void>();
 
   min = 1000;
   max = 8000;
@@ -74,6 +93,11 @@ export class WordcountInputModalComponent {
 
   showError = signal(false);
   errorMessage = signal("");
+
+  private readonly essayService = inject(EssayService);
+  private readonly essayStateService = inject(EssayStateService);
+
+  private bodySub: Subscription | undefined;
 
   private clamp(value: number): number {
     if (!Number.isFinite(value)) return this.min;
@@ -85,6 +109,10 @@ export class WordcountInputModalComponent {
   }
 
   handleCancel(): void {
+    if (this.bodySub) {
+      this.bodySub.unsubscribe();
+      this.bodySub = undefined;
+    }
     this.visibleChange.emit(false);
     this.reset();
   }
@@ -98,11 +126,61 @@ export class WordcountInputModalComponent {
       );
       return;
     }
+
+    // Resolve essayId from input or global state
+    const providedEssayId = this.essayId();
+    const resolvedEssayId = providedEssayId ?? this.essayStateService.essayId();
+
+    if (!resolvedEssayId) {
+      this.showError.set(true);
+      this.errorMessage.set("No essay found. Please create an essay first.");
+      this.bodyError.emit(new Error("Missing essayId for streamBody"));
+      return;
+    }
+
+    // Emit confirmation and start streaming
     this.showError.set(false);
     this.errorMessage.set("");
     this.confirmed.emit(clamped);
+
+    if (this.bodySub) {
+      this.bodySub.unsubscribe();
+      this.bodySub = undefined;
+    }
+
+    this.bodySub = this.essayService
+      .streamBody(resolvedEssayId, clamped)
+      .subscribe({
+        next: (item) => {
+          // Forward raw stream items to parent; do not modify summary loading/UI elsewhere
+          this.bodyItem.emit(item as SummarySseItem);
+        },
+        error: (err) => {
+          this.bodyError.emit(err);
+          if (this.bodySub) {
+            this.bodySub.unsubscribe();
+            this.bodySub = undefined;
+          }
+        },
+        complete: () => {
+          this.bodyComplete.emit();
+          if (this.bodySub) {
+            this.bodySub.unsubscribe();
+            this.bodySub = undefined;
+          }
+        },
+      });
+
+    // Close modal after submit; stream continues in background
     this.visibleChange.emit(false);
     this.reset();
+  }
+
+  ngOnDestroy(): void {
+    if (this.bodySub) {
+      this.bodySub.unsubscribe();
+      this.bodySub = undefined;
+    }
   }
 
   private reset(): void {

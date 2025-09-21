@@ -324,4 +324,109 @@ export class EssayService {
       };
     });
   }
+
+  /**
+   * Stream essay body via SSE.
+   * Endpoint: GET /anon/model/paper/sse/{essayId}/body?wordCount=...
+   * Emits parsed SummarySseItem objects for event "body" (or default "message").
+   * Auto-completes when a terminal message is received (index === -1 && status === 'DONE').
+   */
+  streamBody(
+    essayId: string,
+    wordCount: number,
+  ): Observable<Readonly<SummarySseItem>> {
+    return new Observable<Readonly<SummarySseItem>>((subscriber) => {
+      if (typeof window === "undefined") {
+        subscriber.error(
+          new Error("SSE is only supported in browser environment"),
+        );
+        return undefined;
+      }
+
+      const controller = new AbortController();
+      const wc =
+        Number.isFinite(wordCount) && wordCount > 0 ? String(wordCount) : "";
+      const url = `${this.apiUrl}/anon/model/paper/sse/${encodeURIComponent(
+        essayId,
+      )}/body${wc ? `?wordCount=${encodeURIComponent(wc)}` : ""}`;
+
+      const headers = new Headers({
+        "Content-Type": "application/json",
+        Accept: "text/event-stream, application/json",
+      });
+
+      let carry = "";
+      let completed = false;
+
+      (async () => {
+        try {
+          const response = await fetch(url, {
+            method: "GET",
+            headers,
+            signal: controller.signal,
+          });
+
+          if (!response.ok) {
+            throw new Error(
+              `SSE request failed with status ${response.status}`,
+            );
+          }
+
+          const body = response.body;
+          if (!body) {
+            throw new Error("SSE response has no body");
+          }
+
+          const reader = body.getReader();
+          const decoder = new TextDecoder();
+          while (true) {
+            const { value, done } = await reader.read();
+            if (done) break;
+
+            const text = decoder.decode(value, { stream: true });
+            const parsed = parseSseStreamChunkAll(text, carry);
+            carry = parsed.carry;
+
+            for (const evt of parsed.events) {
+              if (evt.event !== "body" && evt.event !== "message") {
+                continue;
+              }
+
+              const item = safeJsonParse<SummarySseItem>(evt.data);
+              if (!item) continue;
+
+              subscriber.next(item);
+
+              const terminalLike = {
+                index: item.index,
+                status: item.status,
+              } as unknown as ModelCaseVO;
+              if (isTerminalCase(terminalLike)) {
+                completed = true;
+                controller.abort();
+                subscriber.complete();
+                return;
+              }
+            }
+          }
+
+          if (!completed) {
+            subscriber.complete();
+          }
+        } catch (err) {
+          if ((err as any)?.name === "AbortError") {
+            if (!completed) {
+              subscriber.complete();
+            }
+            return;
+          }
+          subscriber.error(err);
+        }
+      })();
+
+      return () => {
+        controller.abort();
+      };
+    });
+  }
 }

@@ -113,6 +113,57 @@ export class DashboardSharedService {
     this.taskItems.set(tasks);
   }
 
+  /**
+   * Set generated flag for Sample Essay visibility
+   */
+  setIsGenerated(isGenerated: boolean): void {
+    this.isGenerated.set(isGenerated);
+  }
+
+  /**
+   * Replace the entire essay content (title and body)
+   */
+  setEssay(title: string | null, content: string | null): void {
+    this.essayContent.set({
+      title: title ?? "",
+      content: content ?? "",
+    });
+  }
+
+  /**
+   * Replace only the essay body content, keeping current title if any
+   */
+  setEssayContent(content: string): void {
+    const current = this.essayContent();
+    this.essayContent.set({
+      title: current?.title ?? "",
+      content: content ?? "",
+    });
+  }
+
+  /**
+   * Append text to the essay body content sequentially (for streaming)
+   */
+  appendEssayContent(text: string): void {
+    const current = this.essayContent();
+    const nextContent = (current?.content ?? "") + (text ?? "");
+    this.essayContent.set({
+      title: current?.title ?? "",
+      content: nextContent,
+    });
+  }
+
+  /**
+   * Clear the essay body content while preserving current title if present
+   */
+  clearEssayContent(): void {
+    const current = this.essayContent();
+    this.essayContent.set({
+      title: current?.title ?? "",
+      content: "",
+    });
+  }
+
   // Expandable state management
   expandFeatureCard(taskId: string) {
     this.expandableState.set({
