@@ -1,5 +1,9 @@
 import { Injectable, signal, computed, inject } from "@angular/core";
 import { ToastService } from "@/app/shared/services";
+import {
+  ArgumentData,
+  ScholarData,
+} from "@/app/interfaces/essay-create.interface";
 
 // Essay creation phases
 export enum EssayCreationPhase {
@@ -76,6 +80,9 @@ export class EssayStateService {
   private readonly _isLoadingScholars = signal(false);
   private readonly _redoAvailable = signal(false);
   private readonly _redoTargetCardId = signal<string | null>(null);
+  // Shared caches for available data to avoid redundant fetches across cards
+  private readonly _availableArguments = signal<ArgumentData[]>([]);
+  private readonly _availableScholars = signal<ScholarData[]>([]);
 
   // Public computed signals for component consumption
   public readonly essayId = computed(() => this._essayId());
@@ -95,6 +102,10 @@ export class EssayStateService {
   public readonly isScholarsLoading = computed(() => this._isLoadingScholars());
   public readonly currentPhase = computed(() => this._currentPhase());
   public readonly redoTargetCardId = computed(() => this._redoTargetCardId());
+  public readonly availableArguments = computed(() =>
+    this._availableArguments(),
+  );
+  public readonly availableScholars = computed(() => this._availableScholars());
 
   // Computed permissions based on current state - now properly reactive to phase changes
   public readonly interactionPermissions = computed(() => {
@@ -220,6 +231,25 @@ export class EssayStateService {
   clearRedoState(): void {
     this._redoTargetCardId.set(null);
     this._redoAvailable.set(false);
+  }
+
+  /**
+   * Update shared caches for available data
+   */
+  setAvailableArguments(args: ArgumentData[]): void {
+    this._availableArguments.set(Array.isArray(args) ? args : []);
+  }
+
+  clearAvailableArguments(): void {
+    this._availableArguments.set([]);
+  }
+
+  setAvailableScholars(scholars: ScholarData[]): void {
+    this._availableScholars.set(Array.isArray(scholars) ? scholars : []);
+  }
+
+  clearAvailableScholars(): void {
+    this._availableScholars.set([]);
   }
 
   /**
@@ -473,6 +503,8 @@ export class EssayStateService {
     this._isLoadingScholars.set(false);
     this._redoTargetCardId.set(null);
     this._redoAvailable.set(false);
+    this._availableArguments.set([]);
+    this._availableScholars.set([]);
   }
 
   /**

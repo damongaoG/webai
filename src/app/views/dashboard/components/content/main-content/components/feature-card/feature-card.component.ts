@@ -138,28 +138,32 @@ export class FeatureCardComponent implements OnDestroy {
       }
 
       // If expanding arguments card, fetch arguments from API (only first time per session)
-      if (
-        isExpanded &&
-        this.featureCard.id === "arguments" &&
-        !this.hasLoadedContent
-      ) {
-        this.fetchArguments();
+      if (isExpanded && this.featureCard.id === "arguments") {
+        const sharedArgs = this.essayStateService.availableArguments();
+        if (Array.isArray(sharedArgs) && sharedArgs.length > 0) {
+          this.fetchedArguments.set(sharedArgs);
+          this.hasLoadedContent = true;
+        } else if (!this.hasLoadedContent) {
+          this.fetchArguments();
+        }
       }
 
       // If expanding references card, conditionally fetch scholars from API (only first time per session)
-      if (
-        isExpanded &&
-        this.featureCard.id === "references" &&
-        !this.hasLoadedContent
-      ) {
-        const phase = this.essayStateService.currentPhase();
-        const hasLocalScholars = this.fetchedScholars().length > 0;
-        // Only fetch when moving forward from arguments, or when no local data exists
-        if (
-          phase === EssayCreationPhase.ARGUMENT_SELECTED ||
-          !hasLocalScholars
-        ) {
-          this.fetchScholars();
+      if (isExpanded && this.featureCard.id === "references") {
+        const sharedScholars = this.essayStateService.availableScholars();
+        if (Array.isArray(sharedScholars) && sharedScholars.length > 0) {
+          this.fetchedScholars.set(sharedScholars);
+          this.hasLoadedContent = true;
+        } else if (!this.hasLoadedContent) {
+          const phase = this.essayStateService.currentPhase();
+          const hasLocalScholars = this.fetchedScholars().length > 0;
+          // Only fetch when moving forward from arguments, or when no local data exists
+          if (
+            phase === EssayCreationPhase.ARGUMENT_SELECTED ||
+            !hasLocalScholars
+          ) {
+            this.fetchScholars();
+          }
         }
       }
 
@@ -234,16 +238,31 @@ export class FeatureCardComponent implements OnDestroy {
       this.fetchKeywords();
     }
 
-    if (this.featureCard.id === "arguments" && !this.hasLoadedContent) {
-      this.fetchArguments();
+    if (this.featureCard.id === "arguments") {
+      const sharedArgs = this.essayStateService.availableArguments();
+      if (Array.isArray(sharedArgs) && sharedArgs.length > 0) {
+        this.fetchedArguments.set(sharedArgs);
+        this.hasLoadedContent = true;
+      } else if (!this.hasLoadedContent) {
+        this.fetchArguments();
+      }
     }
 
-    if (this.featureCard.id === "references" && !this.hasLoadedContent) {
-      const phase = this.essayStateService.currentPhase();
-      const hasLocalScholars = this.fetchedScholars().length > 0;
-      // Avoid re-fetch on undo-driven navigation back to references when data already exists
-      if (phase === EssayCreationPhase.ARGUMENT_SELECTED || !hasLocalScholars) {
-        this.fetchScholars();
+    if (this.featureCard.id === "references") {
+      const sharedScholars = this.essayStateService.availableScholars();
+      if (Array.isArray(sharedScholars) && sharedScholars.length > 0) {
+        this.fetchedScholars.set(sharedScholars);
+        this.hasLoadedContent = true;
+      } else if (!this.hasLoadedContent) {
+        const phase = this.essayStateService.currentPhase();
+        const hasLocalScholars = this.fetchedScholars().length > 0;
+        // Avoid re-fetch on undo-driven navigation back to references when data already exists
+        if (
+          phase === EssayCreationPhase.ARGUMENT_SELECTED ||
+          !hasLocalScholars
+        ) {
+          this.fetchScholars();
+        }
       }
     }
 
@@ -308,7 +327,9 @@ export class FeatureCardComponent implements OnDestroy {
 
   get argumentsData(): ArgumentData[] {
     if (this.featureCard.id === "arguments") {
-      // Return fetched arguments if available, otherwise return empty array
+      // Prefer shared cache to avoid redundant fetches after redo
+      const shared = this.essayStateService.availableArguments();
+      if (Array.isArray(shared) && shared.length > 0) return shared;
       return this.fetchedArguments();
     }
     return [];
@@ -316,6 +337,8 @@ export class FeatureCardComponent implements OnDestroy {
 
   get scholarsData(): ScholarData[] {
     if (this.featureCard.id === "references") {
+      const shared = this.essayStateService.availableScholars();
+      if (Array.isArray(shared) && shared.length > 0) return shared;
       return this.fetchedScholars();
     }
     return [];
@@ -508,12 +531,14 @@ export class FeatureCardComponent implements OnDestroy {
               ? data.arguments
               : [];
             this.fetchedArguments.set(argumentsFromApi);
+            this.essayStateService.setAvailableArguments(argumentsFromApi);
             this.essayStateService.advancePhaseAfterArgumentsFetchSuccess();
             // Select arguments so sidebar reflects the forward step
             this.dashboardSharedService.selectTask("arguments");
           } else if (redoTarget === "arguments") {
             // Move forward to scholars available again
             this.fetchedScholars.set([]);
+            this.essayStateService.clearAvailableScholars();
             this.essayStateService.advancePhaseAfterScholarsFetchSuccess();
             // Select references so sidebar reflects the forward step
             this.dashboardSharedService.selectTask("references");
@@ -582,6 +607,7 @@ export class FeatureCardComponent implements OnDestroy {
         ? data.arguments
         : [];
       this.fetchedArguments.set(argumentsFromApi);
+      this.essayStateService.setAvailableArguments(argumentsFromApi);
       this.essayStateService.setSelectedArgumentIds([]);
       this.essayStateService.setSelectedScholarIds([]);
       this.essayStateService.revertToArgumentSelectedAfterUndo();
@@ -759,6 +785,9 @@ export class FeatureCardComponent implements OnDestroy {
           if (response && response.code === 1 && response.data.arguments) {
             // Store the fetched arguments
             this.fetchedArguments.set(response.data.arguments);
+            this.essayStateService.setAvailableArguments(
+              response.data.arguments,
+            );
             // Advance phase to ARGUMENT_SELECTED to lock keywords and allow references
             this.essayStateService.advancePhaseAfterArgumentsFetchSuccess();
             this.hasLoadedContent = true;
@@ -825,6 +854,7 @@ export class FeatureCardComponent implements OnDestroy {
           this.essayStateService.setScholarsLoading(false);
           if (response && response.code === 1 && response.data?.scholars) {
             this.fetchedScholars.set(response.data.scholars);
+            this.essayStateService.setAvailableScholars(response.data.scholars);
             // Advance phase to SCHOLARS_SELECTED to lock arguments
             this.essayStateService.advancePhaseAfterScholarsFetchSuccess();
             this.hasLoadedContent = true;
