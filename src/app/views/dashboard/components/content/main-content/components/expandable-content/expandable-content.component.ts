@@ -30,6 +30,7 @@ import {
   ScholarData,
 } from "@/app/interfaces/essay-create.interface";
 import { type ModelCaseVO } from "@/app/interfaces/model-case.interface";
+import { marked } from "marked";
 
 /**
  * Expandable content component that handles different types of expandable content
@@ -374,11 +375,10 @@ import { type ModelCaseVO } from "@/app/interfaces/model-case.interface";
               aria-live="polite"
             >
               @if (summaryText && summaryText.length > 0) {
-                <p
-                  class="text-sm sm:text-base text-gray-700 whitespace-pre-wrap"
-                >
-                  {{ summaryText }}
-                </p>
+                <div
+                  class="text-sm sm:text-base text-gray-700"
+                  [innerHTML]="summaryHtml()"
+                ></div>
               } @else {
                 @if (!isSummaryLoading) {
                   <div class="summary-empty text-gray-500 text-sm">
@@ -684,5 +684,15 @@ export class ExpandableContentComponent {
         this.essayStateService.removeSelectedCaseItemId(cid);
       }
     }
+  }
+
+  /**
+   * Render summary markdown to HTML
+   * Angular will sanitize the string bound via [innerHTML]
+   */
+  summaryHtml(): string {
+    if (!this.summaryText) return "";
+    return (marked.parse(this.summaryText, { async: false, breaks: true }) ||
+      "") as string;
   }
 }
