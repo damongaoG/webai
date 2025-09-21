@@ -129,6 +129,15 @@
       (keywordDeselected)="onKeywordDeselected($event)"
       (argumentSelected)="onArgumentSelected($event)"
       (argumentDeselected)="onArgumentDeselected($event)"
+      (generateEssay)="onGenerateEssay()"
     />
   }
+
+  <!-- Wordcount Input Modal -->
+  <app-wordcount-input-modal
+    *ngIf="featureCard.id === 'summary'"
+    [visible]="wordcountModalVisible()"
+    (visibleChange)="wordcountModalVisible.set($event)"
+    (confirmed)="onWordcountConfirmed($event)"
+  />
 </div>

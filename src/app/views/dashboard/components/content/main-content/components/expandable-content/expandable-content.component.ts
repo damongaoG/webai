@@ -379,6 +379,18 @@ import { marked } from "marked";
                   class="text-sm sm:text-base text-gray-700"
                   [innerHTML]="summaryHtml()"
                 ></div>
+                @if (!isSummaryLoading) {
+                  <div class="mt-4">
+                    <button
+                      type="button"
+                      class="inline-flex items-center gap-2 px-3 py-2 rounded-md bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                      (click)="onGenerateEssayClick()"
+                      aria-label="Generate full essay from summary"
+                    >
+                      <span>Generate Essay</span>
+                    </button>
+                  </div>
+                }
               } @else {
                 @if (!isSummaryLoading) {
                   <div class="summary-empty text-gray-500 text-sm">
@@ -464,6 +476,7 @@ export class ExpandableContentComponent {
   @Output() argumentDeselected = new EventEmitter<ArgumentData>();
   @Output() animationStart = new EventEmitter<void>();
   @Output() animationComplete = new EventEmitter<void>();
+  @Output() generateEssay = new EventEmitter<void>();
 
   // Inject services
   private readonly essayStateService = inject(EssayStateService);
@@ -694,5 +707,12 @@ export class ExpandableContentComponent {
     if (!this.summaryText) return "";
     return (marked.parse(this.summaryText, { async: false, breaks: true }) ||
       "") as string;
+  }
+
+  /**
+   * Prompt user for essay word count and emit clamped value (1000–8000)
+   */
+  onGenerateEssayClick(): void {
+    this.generateEssay.emit();
   }
 }

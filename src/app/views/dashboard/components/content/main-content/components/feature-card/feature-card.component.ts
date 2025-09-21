@@ -28,6 +28,7 @@ import {
   ScholarData,
 } from "@/app/interfaces/essay-create.interface";
 import { ToastService } from "@/app/shared";
+import { WordcountInputModalComponent } from "@/app/shared/components/wordcount-input-modal/wordcount-input-modal.component";
 import { DashboardSharedService } from "../../../dashboard-shared.service";
 import { Result } from "@/app/interfaces/result";
 import { type ModelCaseVO } from "@/app/interfaces/model-case.interface";
@@ -36,7 +37,11 @@ import { type SummarySseItem } from "@/app/interfaces/summary-sse.interface";
 @Component({
   selector: "app-feature-card",
   standalone: true,
-  imports: [CommonModule, ExpandableContentComponent],
+  imports: [
+    CommonModule,
+    ExpandableContentComponent,
+    WordcountInputModalComponent,
+  ],
   templateUrl: "./feature-card.component.html",
   styleUrl: "./feature-card.component.scss",
 })
@@ -63,6 +68,9 @@ export class FeatureCardComponent implements OnDestroy {
   private readonly essayService = inject(EssayService);
   private readonly toastService = inject(ToastService);
   private readonly dashboardSharedService = inject(DashboardSharedService);
+
+  // Visibility state for wordcount modal
+  wordcountModalVisible = signal(false);
 
   // Signal to store fetched keywords
   private readonly fetchedKeywords = signal<KeywordData[]>([]);
@@ -914,5 +922,31 @@ export class FeatureCardComponent implements OnDestroy {
           }
         },
       });
+  }
+
+  /**
+   * Handle child request to generate full essay after summary completed.
+   * Currently validates presence of essayId and shows a confirmation toast with word count.
+   * Can be extended to call an API to generate the full essay.
+   */
+  onGenerateEssay(): void {
+    // Only actionable for the summary card
+    if (this.featureCard.id !== "summary") return;
+    const essayId = this.essayStateService.essayId();
+    if (!essayId) {
+      this.toastService.error("Please create an essay first to generate essay");
+      return;
+    }
+    // Open wordcount input modal
+    this.openWordcountModal();
+  }
+
+  private openWordcountModal(): void {
+    this.wordcountModalVisible.set(true);
+  }
+
+  onWordcountConfirmed(count: number): void {
+    // Placeholder for API call; for now, just notify the user.
+    this.toastService.success(`Generating essay with ${count} words...`);
   }
 }
