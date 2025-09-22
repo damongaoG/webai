@@ -259,13 +259,13 @@ import { marked } from "marked";
                             [href]="item.link"
                             target="_blank"
                             rel="noopener noreferrer"
-                            >Case #{{ item.index + 1 }}</a
+                            >{{ item.results?.[0]?.title ?? "" }}</a
                           >
                         } @else {
                           <div
                             class="text-sm sm:text-base font-medium text-gray-800"
                           >
-                            Case #{{ item.index + 1 }}
+                            {{ item.results?.[0]?.title ?? "" }}
                           </div>
                         }
                       </div>

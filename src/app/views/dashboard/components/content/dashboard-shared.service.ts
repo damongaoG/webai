@@ -70,6 +70,9 @@ export class DashboardSharedService {
   // Generated status
   private isGenerated = signal<boolean>(false);
 
+  // Global UI lock to disable feature card expand/collapse interactions
+  private uiLocked = signal<boolean>(false);
+
   // Expandable state for feature cards
   private expandableState = signal<ExpandableState>({
     isExpanded: false,
@@ -90,6 +93,27 @@ export class DashboardSharedService {
 
   getExpandableState() {
     return this.expandableState;
+  }
+
+  /**
+   * Read current UI lock state
+   */
+  isUiLocked(): boolean {
+    return this.uiLocked();
+  }
+
+  /**
+   * Set UI lock state to enable/disable interactions globally
+   */
+  setUiLocked(locked: boolean): void {
+    this.uiLocked.set(locked);
+  }
+
+  /**
+   * Expose the UI lock signal for reactive reads in components
+   */
+  uiLockedSignal() {
+    return this.uiLocked;
   }
 
   // Setters

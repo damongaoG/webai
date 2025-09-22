@@ -43,6 +43,4 @@ export class SampleEssayComponent implements OnInit, OnDestroy {
   get isContentGenerating(): boolean {
     return this.isLoading || false;
   }
-
-  // Title is rendered directly in template when provided; no fallback here
 }

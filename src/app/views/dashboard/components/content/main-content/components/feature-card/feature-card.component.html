@@ -138,7 +138,7 @@
     *ngIf="featureCard.id === 'summary'"
     [visible]="wordcountModalVisible()"
     [essayId]="essayIdForModal()"
-    (visibleChange)="wordcountModalVisible.set($event)"
+    (visibleChange)="onModalVisibleChange($event)"
     (confirmed)="onWordcountConfirmed($event)"
     (bodyItem)="onBodyItem($event)"
     (bodyError)="onBodyError($event)"

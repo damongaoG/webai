@@ -109,6 +109,14 @@ export class FeatureCardComponent implements OnDestroy {
   // Track whether casestudies has been opened via stream or redo success
   private readonly hasOpenedCases = signal<boolean>(false);
 
+  // Read-only computed for global UI lock
+  private get uiLocked(): boolean {
+    return this.dashboardSharedService.isUiLocked();
+  }
+
+  // Track whether body streaming has started to control collapse/lock timing
+  private bodyStreamStarted = false;
+
   onExpandClick(): void {
     // Block interaction when not allowed or while any content is loading
     if (this.isExpandDisabled) {
@@ -632,6 +640,7 @@ export class FeatureCardComponent implements OnDestroy {
   get isExpandDisabled(): boolean {
     return (
       !this.isInteractionAllowed ||
+      this.uiLocked ||
       this.isLoadingKeywords() ||
       this.isLoadingArguments() ||
       this.essayStateService.isArgumentsLoading() ||
@@ -984,6 +993,14 @@ export class FeatureCardComponent implements OnDestroy {
     this.wordcountModalVisible.set(true);
   }
 
+  onModalVisibleChange(visible: boolean): void {
+    this.wordcountModalVisible.set(visible);
+    // If modal closes before streaming starts, unlock; otherwise keep locked until stream completes/errors
+    if (!visible && !this.bodyStreamStarted) {
+      this.dashboardSharedService.setUiLocked(false);
+    }
+  }
+
   onWordcountConfirmed(count: number): void {
     // Prepare Sample Essay area; do not toggle summary loading state
     this.dashboardSharedService.clearEssayContent();
@@ -1001,6 +1018,12 @@ export class FeatureCardComponent implements OnDestroy {
     // Do not alter summary loading/UI state here; just stream body to Sample Essay
     const chunk = item?.result ?? "";
     if (chunk && chunk.length > 0) {
+      // On first valid body chunk, collapse summary and lock UI
+      if (!this.bodyStreamStarted) {
+        this.bodyStreamStarted = true;
+        this.dashboardSharedService.collapseFeatureCard();
+        this.dashboardSharedService.setUiLocked(true);
+      }
       // Ensure the Sample Essay area is marked as generated
       this.dashboardSharedService.setIsGenerated(true);
       this.dashboardSharedService.appendEssayContent(chunk);
@@ -1010,9 +1033,14 @@ export class FeatureCardComponent implements OnDestroy {
   onBodyError(err: unknown): void {
     console.error("Error while streaming body:", err);
     this.toastService.error("Failed to generate essay. Please try again.");
+    // Unlock UI on error
+    this.dashboardSharedService.setUiLocked(false);
+    this.bodyStreamStarted = false;
   }
 
   onBodyComplete(): void {
-    // No-op for summary loading; Sample Essay display is independent
+    // Unlock UI when generation completes
+    this.dashboardSharedService.setUiLocked(false);
+    this.bodyStreamStarted = false;
   }
 }
