@@ -17,3 +17,10 @@
       Menlo, Monaco, Courier, monospace;
   }
 }
+
+/* Shared component styles */
+@layer components {
+  .checkbox-lg {
+    @apply h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer;
+  }
+}

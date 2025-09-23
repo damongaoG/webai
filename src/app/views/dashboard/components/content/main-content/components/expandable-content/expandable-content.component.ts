@@ -121,6 +121,7 @@ import { marked } from "marked";
                 >
                   <input
                     type="checkbox"
+                    class="checkbox-lg"
                     [checked]="areAllSelected"
                     [indeterminate]="isPartiallySelected"
                     (change)="onToggleSelectAll($event)"
@@ -137,7 +138,7 @@ import { marked } from "marked";
                   <li class="py-2 flex items-start gap-3">
                     <input
                       type="checkbox"
-                      class="mt-1 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                      class="mt-1 checkbox-lg"
                       [checked]="isScholarSelected(scholar.id)"
                       (change)="onScholarChange(scholar.id, $event)"
                       aria-label="Select reference"
@@ -227,6 +228,7 @@ import { marked } from "marked";
                   >
                     <input
                       type="checkbox"
+                      class="checkbox-lg"
                       [checked]="areAllCasesSelected"
                       [indeterminate]="isPartiallyCasesSelected"
                       (change)="onToggleSelectAllCases($event)"
@@ -247,7 +249,7 @@ import { marked } from "marked";
                     <div class="flex items-start gap-3 mb-2">
                       <input
                         type="checkbox"
-                        class="mt-1 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                        class="mt-1 checkbox-lg"
                         [checked]="isCaseItemSelected(item.id)"
                         (change)="onCaseItemChange(item.id, $event)"
                         aria-label="Select case study"
