@@ -5,6 +5,10 @@ import {
   EventEmitter,
   computed,
   inject,
+  ViewChild,
+  ElementRef,
+  OnChanges,
+  SimpleChanges,
 } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import {
@@ -400,6 +404,8 @@ import { marked } from "marked";
                   </div>
                 }
               }
+              <!-- Anchor to keep page scrolled to bottom while summary grows -->
+              <div #summaryBottomAnchor aria-hidden="true"></div>
             </div>
           } @else {
             <div class="disabled-content">
@@ -452,7 +458,7 @@ import { marked } from "marked";
     ]),
   ],
 })
-export class ExpandableContentComponent {
+export class ExpandableContentComponent implements OnChanges {
   @Input() expandableState!: ExpandableState;
   @Input() keywordsData: KeywordData[] = [];
   @Input() argumentsData: ArgumentData[] = [];
@@ -483,6 +489,9 @@ export class ExpandableContentComponent {
   // Inject services
   private readonly essayStateService = inject(EssayStateService);
   private readonly sidebarStateService = inject(SidebarStateService);
+
+  @ViewChild("summaryBottomAnchor")
+  private summaryBottomAnchor?: ElementRef<HTMLElement>;
 
   // Signal for expanded state
   isExpanded = computed(() => this.expandableState?.isExpanded ?? false);
@@ -551,6 +560,11 @@ export class ExpandableContentComponent {
    */
   onAnimationDone(): void {
     this.animationComplete.emit();
+    // After expand animation completes, ensure we are at the bottom if summary is open
+    if (this.expandableState?.contentType === "summary" && this.isExpanded()) {
+      // Defer until DOM settles
+      setTimeout(() => this.scrollSummaryToBottom(), 0);
+    }
   }
 
   /**
@@ -716,5 +730,32 @@ export class ExpandableContentComponent {
    */
   onGenerateEssayClick(): void {
     this.generateEssay.emit();
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    // When summary text updates while summary panel is open, keep scrolling to bottom
+    if (
+      ("summaryText" in changes || "isSummaryLoading" in changes) &&
+      this.expandableState?.contentType === "summary" &&
+      this.isExpanded()
+    ) {
+      // Defer to next tick to let the DOM render new content
+      setTimeout(() => this.scrollSummaryToBottom(), 0);
+    }
+  }
+
+  private scrollSummaryToBottom(): void {
+    const anchor = this.summaryBottomAnchor?.nativeElement;
+    if (anchor) {
+      anchor.scrollIntoView({ behavior: "smooth", block: "end" });
+    } else {
+      // Fallback: scroll window
+      try {
+        window.scrollTo({
+          top: document.body.scrollHeight,
+          behavior: "smooth",
+        });
+      } catch {}
+    }
   }
 }
