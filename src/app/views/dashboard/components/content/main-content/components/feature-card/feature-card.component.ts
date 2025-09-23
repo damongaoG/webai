@@ -109,11 +109,6 @@ export class FeatureCardComponent implements OnDestroy {
   // Track whether casestudies has been opened via stream or redo success
   private readonly hasOpenedCases = signal<boolean>(false);
 
-  // Read-only computed for global UI lock
-  private get uiLocked(): boolean {
-    return this.dashboardSharedService.isUiLocked();
-  }
-
   // Track whether body streaming has started to control collapse/lock timing
   private bodyStreamStarted = false;
 
@@ -358,6 +353,13 @@ export class FeatureCardComponent implements OnDestroy {
 
   get shouldShowUndoButton(): boolean {
     const phase = this.essayStateService.currentPhase();
+    // Never show Undo for summary when summary is locked by modal submit
+    if (
+      this.featureCard.id === "summary" &&
+      this.dashboardSharedService.isSummaryLocked()
+    ) {
+      return false;
+    }
     if (this.isExpandDisabled) return false;
 
     if (phase === "argument_selected" && this.featureCard.id === "arguments") {
@@ -639,8 +641,10 @@ export class FeatureCardComponent implements OnDestroy {
    */
   get isExpandDisabled(): boolean {
     return (
+      // Force-disable expand for summary when locked by modal submit
+      (this.featureCard.id === "summary" &&
+        this.dashboardSharedService.isSummaryLocked()) ||
       !this.isInteractionAllowed ||
-      this.uiLocked ||
       this.isLoadingKeywords() ||
       this.isLoadingArguments() ||
       this.essayStateService.isArgumentsLoading() ||
@@ -995,16 +999,14 @@ export class FeatureCardComponent implements OnDestroy {
 
   onModalVisibleChange(visible: boolean): void {
     this.wordcountModalVisible.set(visible);
-    // If modal closes before streaming starts, unlock; otherwise keep locked until stream completes/errors
-    if (!visible && !this.bodyStreamStarted) {
-      this.dashboardSharedService.setUiLocked(false);
-    }
   }
 
   onWordcountConfirmed(count: number): void {
     // Prepare Sample Essay area; do not toggle summary loading state
     this.dashboardSharedService.clearEssayContent();
     this.dashboardSharedService.setIsGenerated(true);
+    // Lock summary interactions and suppress Undo from now on
+    this.dashboardSharedService.setSummaryLocked(true);
     this.toastService.success(`Generating essay with ${count} words...`);
   }
 
@@ -1022,7 +1024,6 @@ export class FeatureCardComponent implements OnDestroy {
       if (!this.bodyStreamStarted) {
         this.bodyStreamStarted = true;
         this.dashboardSharedService.collapseFeatureCard();
-        this.dashboardSharedService.setUiLocked(true);
       }
       // Ensure the Sample Essay area is marked as generated
       this.dashboardSharedService.setIsGenerated(true);
@@ -1033,14 +1034,14 @@ export class FeatureCardComponent implements OnDestroy {
   onBodyError(err: unknown): void {
     console.error("Error while streaming body:", err);
     this.toastService.error("Failed to generate essay. Please try again.");
-    // Unlock UI on error
-    this.dashboardSharedService.setUiLocked(false);
     this.bodyStreamStarted = false;
+    // Keep summary locked as per requirement even on error
+    this.dashboardSharedService.setSummaryLocked(true);
   }
 
   onBodyComplete(): void {
-    // Unlock UI when generation completes
-    this.dashboardSharedService.setUiLocked(false);
     this.bodyStreamStarted = false;
+    // Keep summary locked as per requirement even after completion
+    this.dashboardSharedService.setSummaryLocked(true);
   }
 }

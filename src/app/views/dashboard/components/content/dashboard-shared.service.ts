@@ -70,8 +70,8 @@ export class DashboardSharedService {
   // Generated status
   private isGenerated = signal<boolean>(false);
 
-  // Global UI lock to disable feature card expand/collapse interactions
-  private uiLocked = signal<boolean>(false);
+  // Persistent lock specifically for summary card: hides undo and disables expand
+  private summaryLocked = signal<boolean>(false);
 
   // Expandable state for feature cards
   private expandableState = signal<ExpandableState>({
@@ -96,24 +96,14 @@ export class DashboardSharedService {
   }
 
   /**
-   * Read current UI lock state
+   * Summary-specific lock for suppressing Undo and expand on summary card
    */
-  isUiLocked(): boolean {
-    return this.uiLocked();
+  setSummaryLocked(locked: boolean): void {
+    this.summaryLocked.set(locked);
   }
 
-  /**
-   * Set UI lock state to enable/disable interactions globally
-   */
-  setUiLocked(locked: boolean): void {
-    this.uiLocked.set(locked);
-  }
-
-  /**
-   * Expose the UI lock signal for reactive reads in components
-   */
-  uiLockedSignal() {
-    return this.uiLocked;
+  isSummaryLocked(): boolean {
+    return this.summaryLocked();
   }
 
   // Setters

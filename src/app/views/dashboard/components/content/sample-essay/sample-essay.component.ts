@@ -6,6 +6,7 @@ import {
   ViewChild,
   ElementRef,
   AfterViewInit,
+  effect,
 } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { LucideAngularModule } from "lucide-angular";
@@ -28,6 +29,15 @@ export class SampleEssayComponent implements OnInit, OnDestroy, AfterViewInit {
   isLoading = false;
 
   @ViewChild("bottomAnchor") bottomAnchor?: ElementRef<HTMLDivElement>;
+
+  // Auto-scroll to bottom whenever essay content updates
+  private autoScrollEffect = effect(() => {
+    const isGenerated = this.dashboardService.getIsGenerated()();
+    const content = this.dashboardService.getEssayContent()()?.content ?? "";
+    if (!isGenerated) return;
+    // Defer until DOM updates render
+    setTimeout(() => this.scrollToBottom(), 0);
+  });
 
   ngOnInit(): void {}
 
