@@ -149,7 +149,6 @@ import { marked } from "marked";
                     tabindex="0"
                     [attr.aria-selected]="isScholarSelected(scholar.id)"
                     (click)="onScholarItemClick(scholar.id, $event)"
-                    (keydown)="onScholarItemKeydown(scholar.id, $event)"
                   >
                     <input
                       type="checkbox"
@@ -157,7 +156,6 @@ import { marked } from "marked";
                       [checked]="isScholarSelected(scholar.id)"
                       (change)="onScholarChange(scholar.id, $event)"
                       (click)="$event.stopPropagation()"
-                      (keydown)="$event.stopPropagation()"
                       aria-label="Select reference"
                     />
                     <div class="min-w-0 flex-1">
@@ -604,14 +602,6 @@ export class ExpandableContentComponent implements OnChanges {
       return;
     }
     this.toggleScholarSelectionById(scholarId);
-  }
-
-  onScholarItemKeydown(scholarId: string, event: KeyboardEvent): void {
-    const key = event.key;
-    if (key === "Enter" || key === " ") {
-      event.preventDefault();
-      this.toggleScholarSelectionById(scholarId);
-    }
   }
 
   private toggleScholarSelectionById(scholarId: string): void {
