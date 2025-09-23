@@ -78,6 +78,7 @@ import { IconComponent } from "@/app/shared";
         align-items: center;
         gap: 0.5rem;
         position: relative;
+        z-index: 50;
       }
 
       @media (min-width: 640px) {

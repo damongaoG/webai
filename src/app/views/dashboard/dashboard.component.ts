@@ -463,6 +463,8 @@ import {
       .top-header {
         backdrop-filter: blur(10px);
         border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        position: relative;
+        z-index: 30;
       }
 
       /* Sidebar toggle button */
