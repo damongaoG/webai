@@ -137,9 +137,16 @@ import { marked } from "marked";
                   >
                 </label>
               </div>
-              <ul class="divide-y divide-gray-200/50">
+              <ul
+                class="divide-y divide-gray-200/50"
+                role="list"
+                aria-label="References"
+              >
                 @for (scholar of scholars; track scholar.id) {
-                  <li class="py-2 flex items-start gap-3">
+                  <li
+                    class="py-2 flex items-start gap-3 rounded-md transition-colors duration-150 hover:bg-blue-50 focus-within:bg-blue-50 cursor-pointer"
+                    role="listitem"
+                  >
                     <input
                       type="checkbox"
                       class="mt-1 checkbox-lg"
