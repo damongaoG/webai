@@ -146,12 +146,18 @@ import { marked } from "marked";
                   <li
                     class="py-2 flex items-start gap-3 rounded-md transition-colors duration-150 hover:bg-blue-50 focus-within:bg-blue-50 cursor-pointer"
                     role="listitem"
+                    tabindex="0"
+                    [attr.aria-selected]="isScholarSelected(scholar.id)"
+                    (click)="onScholarItemClick(scholar.id, $event)"
+                    (keydown)="onScholarItemKeydown(scholar.id, $event)"
                   >
                     <input
                       type="checkbox"
                       class="mt-1 checkbox-lg"
                       [checked]="isScholarSelected(scholar.id)"
                       (change)="onScholarChange(scholar.id, $event)"
+                      (click)="$event.stopPropagation()"
+                      (keydown)="$event.stopPropagation()"
                       aria-label="Select reference"
                     />
                     <div class="min-w-0 flex-1">
@@ -588,6 +594,32 @@ export class ExpandableContentComponent implements OnChanges {
       this.essayStateService.addSelectedScholarId(scholarId);
     } else {
       this.essayStateService.removeSelectedScholarId(scholarId);
+    }
+  }
+
+  onScholarItemClick(scholarId: string, event: MouseEvent): void {
+    const target = event.target as HTMLElement | null;
+    // Do not toggle if the click originated from an interactive element
+    if (target && target.closest("input, button, a, label")) {
+      return;
+    }
+    this.toggleScholarSelectionById(scholarId);
+  }
+
+  onScholarItemKeydown(scholarId: string, event: KeyboardEvent): void {
+    const key = event.key;
+    if (key === "Enter" || key === " ") {
+      event.preventDefault();
+      this.toggleScholarSelectionById(scholarId);
+    }
+  }
+
+  private toggleScholarSelectionById(scholarId: string): void {
+    if (!scholarId) return;
+    if (this.isScholarSelected(scholarId)) {
+      this.essayStateService.removeSelectedScholarId(scholarId);
+    } else {
+      this.essayStateService.addSelectedScholarId(scholarId);
     }
   }
 
