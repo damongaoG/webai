@@ -260,6 +260,7 @@ import { marked } from "marked";
                 @for (item of visibleCaseItems; track item.id) {
                   <div
                     class="case-item rounded-md border border-gray-200/70 p-3 sm:p-4 bg-white/60"
+                    [@caseItemFade]
                   >
                     <div class="flex items-start gap-3 mb-2">
                       <input
@@ -318,6 +319,7 @@ import { marked } from "marked";
                     }
                   </div>
                 }
+                <div #casesBottomAnchor aria-hidden="true"></div>
               </div>
             } @else {
               @if (!isCasesLoading) {
@@ -467,6 +469,18 @@ import { marked } from "marked";
         animate("300ms cubic-bezier(0.4, 0.0, 0.2, 1)"),
       ]),
     ]),
+    trigger("caseItemFade", [
+      transition(":enter", [
+        style({ opacity: 0, transform: "translateY(6px)" }),
+        animate("200ms ease-out", style({ opacity: 1, transform: "none" })),
+      ]),
+      transition(":leave", [
+        animate(
+          "150ms ease-in",
+          style({ opacity: 0, transform: "translateY(-4px)" }),
+        ),
+      ]),
+    ]),
   ],
 })
 export class ExpandableContentComponent implements OnChanges {
@@ -503,6 +517,9 @@ export class ExpandableContentComponent implements OnChanges {
 
   @ViewChild("summaryBottomAnchor")
   private summaryBottomAnchor?: ElementRef<HTMLElement>;
+
+  @ViewChild("casesBottomAnchor")
+  private casesBottomAnchor?: ElementRef<HTMLElement>;
 
   // Signal for expanded state
   isExpanded = computed(() => this.expandableState?.isExpanded ?? false);
@@ -575,6 +592,13 @@ export class ExpandableContentComponent implements OnChanges {
     if (this.expandableState?.contentType === "summary" && this.isExpanded()) {
       // Defer until DOM settles
       setTimeout(() => this.scrollSummaryToBottom(), 0);
+    }
+    // Ensure we are at the bottom if case studies is open
+    if (
+      this.expandableState?.contentType === "casestudies" &&
+      this.isExpanded()
+    ) {
+      setTimeout(() => this.scrollCasesToBottom(), 0);
     }
   }
 
@@ -771,6 +795,14 @@ export class ExpandableContentComponent implements OnChanges {
       // Defer to next tick to let the DOM render new content
       setTimeout(() => this.scrollSummaryToBottom(), 0);
     }
+    // When case items update while case studies panel is open, keep scrolling to bottom
+    if (
+      ("caseItems" in changes || "isCasesLoading" in changes) &&
+      this.expandableState?.contentType === "casestudies" &&
+      this.isExpanded()
+    ) {
+      setTimeout(() => this.scrollCasesToBottom(), 0);
+    }
   }
 
   private scrollSummaryToBottom(): void {
@@ -779,6 +811,20 @@ export class ExpandableContentComponent implements OnChanges {
       anchor.scrollIntoView({ behavior: "smooth", block: "end" });
     } else {
       // Fallback: scroll window
+      try {
+        window.scrollTo({
+          top: document.body.scrollHeight,
+          behavior: "smooth",
+        });
+      } catch {}
+    }
+  }
+
+  private scrollCasesToBottom(): void {
+    const anchor = this.casesBottomAnchor?.nativeElement;
+    if (anchor) {
+      anchor.scrollIntoView({ behavior: "smooth", block: "end" });
+    } else {
       try {
         window.scrollTo({
           top: document.body.scrollHeight,
