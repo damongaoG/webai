@@ -17,7 +17,10 @@ import {
 } from "./interfaces/feature-card.interface";
 import { KeywordData } from "./interfaces/keyword.interface";
 import { TaskType } from "@/app/interfaces/task.interface";
-import { EssayStateService } from "@/app/services/essay-state.service";
+import {
+  EssayStateService,
+  EssayCreationPhase,
+} from "@/app/services/essay-state.service";
 
 @Component({
   selector: "app-main-content",
@@ -31,6 +34,7 @@ export class MainContentComponent implements OnInit {
   private readonly essayStateService = inject(EssayStateService);
   @ViewChildren(FeatureCardComponent)
   featureCardComponents!: QueryList<FeatureCardComponent>;
+  private autoExpandedKeywords = false;
 
   constructor() {
     // Listen to shared service expandable state changes
@@ -38,6 +42,20 @@ export class MainContentComponent implements OnInit {
       const sharedState = this.dashboardService.getExpandableState()();
       this.syncWithSharedState(sharedState);
     });
+    // Auto-expand keywords when essay phase becomes TITLE_CREATED
+    effect(
+      () => {
+        const phase = this.essayStateService.currentPhase();
+        if (
+          phase === EssayCreationPhase.TITLE_CREATED &&
+          !this.autoExpandedKeywords
+        ) {
+          this.dashboardService.expandFeatureCard("keywords");
+          this.autoExpandedKeywords = true;
+        }
+      },
+      { allowSignalWrites: true },
+    );
   }
 
   ngOnInit(): void {
