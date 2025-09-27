@@ -33,7 +33,10 @@ import {
   ArgumentData,
   ScholarData,
 } from "@/app/interfaces/essay-create.interface";
-import { type ModelCaseVO } from "@/app/interfaces/model-case.interface";
+import {
+  type ModelCaseVO,
+  type ModelCaseResultItem,
+} from "@/app/interfaces/model-case.interface";
 import { marked } from "marked";
 
 /**
@@ -634,7 +637,15 @@ export class ExpandableContentComponent implements OnChanges {
   get visibleCaseItems(): ReadonlyArray<ModelCaseVO> {
     const items = this.caseItems ?? [];
     if (!Array.isArray(items) || items.length === 0) return items;
-    return items.filter((i) => !i.error && (i.results?.length ?? 0) > 0);
+    return items.filter((i) => {
+      if (i.error) return false;
+      const results: ReadonlyArray<ModelCaseResultItem> = i.results ?? [];
+      if (results.length === 0) return false;
+      const allUnspecified = results.every((r: ModelCaseResultItem) =>
+        this.isResultUnspecified(r),
+      );
+      return !allUnspecified;
+    });
   }
 
   /**
@@ -716,6 +727,18 @@ export class ExpandableContentComponent implements OnChanges {
     if (!this.summaryText) return "";
     return (marked.parse(this.summaryText, { async: false, breaks: true }) ||
       "") as string;
+  }
+
+  /**
+   * Check whether a case result has all fields marked as 'Not specified'
+   */
+  private isResultUnspecified(r: ModelCaseResultItem | undefined): boolean {
+    const normalize = (v?: string) => (v ?? "").trim().toLowerCase();
+    return (
+      normalize(r?.background) === "not specified" &&
+      normalize(r?.methodology) === "not specified" &&
+      normalize(r?.findings) === "not specified"
+    );
   }
 
   /**
