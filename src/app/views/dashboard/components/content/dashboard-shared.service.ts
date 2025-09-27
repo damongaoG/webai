@@ -79,6 +79,9 @@ export class DashboardSharedService {
     contentType: "",
   });
 
+  // One-shot preloaded summary text (used after redo from cases)
+  private preloadedSummaryText = signal<string>("");
+
   // Getters
   getTaskItems() {
     return this.taskItems;
@@ -93,6 +96,29 @@ export class DashboardSharedService {
 
   getExpandableState() {
     return this.expandableState;
+  }
+
+  /**
+   * Preload summary text to be consumed by the summary card upon expand.
+   */
+  setPreloadedSummaryText(text: string): void {
+    this.preloadedSummaryText.set(text ?? "");
+  }
+
+  /**
+   * Read without clearing. Useful to decide whether to consume.
+   */
+  peekPreloadedSummaryText(): string {
+    return this.preloadedSummaryText();
+  }
+
+  /**
+   * Consume and clear the preloaded summary text.
+   */
+  takePreloadedSummaryText(): string {
+    const value = this.preloadedSummaryText();
+    this.preloadedSummaryText.set("");
+    return value;
   }
 
   /**

@@ -180,10 +180,13 @@ export class FeatureCardComponent implements OnDestroy {
         }
       }
 
-      // If expanding summary card, start SSE stream only once per session
+      // If expanding summary card, use preloaded summary first; otherwise start SSE once per session
       if (isExpanded && this.featureCard.id === "summary") {
         if (!this.hasLoadedContent) {
-          this.startSummaryStream();
+          const consumed = this.consumePreloadedSummaryIfAny();
+          if (!consumed) {
+            this.startSummaryStream();
+          }
         }
       }
 
@@ -274,7 +277,10 @@ export class FeatureCardComponent implements OnDestroy {
     }
 
     if (this.featureCard.id === "summary" && !this.hasLoadedContent) {
-      this.startSummaryStream();
+      const consumed = this.consumePreloadedSummaryIfAny();
+      if (!consumed) {
+        this.startSummaryStream();
+      }
     }
   }
 
@@ -416,6 +422,7 @@ export class FeatureCardComponent implements OnDestroy {
           response: Result<{
             keywords?: string;
             arguments?: ArgumentData[];
+            summary?: string;
           }> | null,
         ) => {
           if (!response || response.code !== 1 || !response.data) {
@@ -557,6 +564,18 @@ export class FeatureCardComponent implements OnDestroy {
             this.essayStateService.advancePhaseAfterCaseOpen();
           } else if (redoTarget === "casestudies") {
             // Move forward from case studies to summary again
+            const summaryFromApi = (data as { summary?: string }).summary ?? "";
+            if (summaryFromApi && summaryFromApi.length > 0) {
+              // Store for the summary card to consume upon expand
+              this.dashboardSharedService.setPreloadedSummaryText(
+                summaryFromApi,
+              );
+            }
+            // Ensure phase reflects summary so interactions are enabled
+            const currentCaseIds = this.essayStateService.selectedCaseItemIds();
+            if (Array.isArray(currentCaseIds) && currentCaseIds.length > 0) {
+              this.essayStateService.setSelectedCaseItemIds(currentCaseIds);
+            }
             this.dashboardSharedService.selectTask("summary");
           }
 
@@ -565,6 +584,25 @@ export class FeatureCardComponent implements OnDestroy {
           this.lastUndoneCardId.set(null);
         },
       );
+  }
+
+  /**
+   * Try to consume preloaded summary (set during redo from cases). Returns true if consumed.
+   */
+  private consumePreloadedSummaryIfAny(): boolean {
+    const text = this.dashboardSharedService.peekPreloadedSummaryText();
+    if (text && text.length > 0) {
+      // Consume and render
+      const finalText = this.dashboardSharedService.takePreloadedSummaryText();
+      this.summaryItems.set([
+        { index: 0, result: finalText } as SummarySseItem,
+      ]);
+      this.summaryCompleted.set(true);
+      this.isLoadingSummary.set(false);
+      this.hasLoadedContent = true; // avoid SSE
+      return true;
+    }
+    return false;
   }
 
   private setUndoLoadingForCard(cardId: string, loading: boolean): void {
