@@ -60,16 +60,27 @@ export class EssayEditorComponent implements OnInit, AfterViewInit, OnDestroy {
   async onExportPdf(): Promise<void> {
     const el = this.printArea?.nativeElement;
     if (!el) return;
-    const { default: html2pdf } = await import("html2pdf.js");
-    const options: any = {
-      filename:
-        (this.titleControl.value || "essay").replace(/\s+/g, "-") + ".pdf",
-      margin: 10,
-      pagebreak: { mode: ["css", "legacy"] },
-      html2canvas: { scale: 2 },
-      jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
-    };
-    await (html2pdf as any)().set(options).from(el).save();
+    const previousClassName = el.className;
+    el.classList.remove("sr-only");
+
+    // Wait a microtask so styles/layout can apply before capture
+    await Promise.resolve();
+
+    try {
+      const { default: html2pdf } = await import("html2pdf.js");
+      const options: any = {
+        filename:
+          (this.titleControl.value || "essay").replace(/\s+/g, "-") + ".pdf",
+        margin: 10,
+        pagebreak: { mode: ["css", "legacy"] },
+        html2canvas: { scale: 2, useCORS: true, backgroundColor: "#ffffff" },
+        jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+      };
+      await (html2pdf as any)().set(options).from(el).save();
+    } finally {
+      // Restore hidden state regardless of success/failure
+      el.className = previousClassName;
+    }
   }
 
   onContentInput(event: Event): void {
