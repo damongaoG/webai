@@ -10,8 +10,9 @@ import {
 } from "@angular/core";
 import { FormControl, ReactiveFormsModule } from "@angular/forms";
 import { QuillModule } from "ngx-quill";
-import { Router, ActivatedRoute } from "@angular/router";
+import { Router } from "@angular/router";
 import { DashboardSharedService } from "../../dashboard/components/content/dashboard-shared.service";
+import { EssayStateService } from "@/app/services/essay-state.service";
 
 @Component({
   selector: "app-essay-editor",
@@ -22,8 +23,8 @@ import { DashboardSharedService } from "../../dashboard/components/content/dashb
 })
 export class EssayEditorComponent implements OnInit, AfterViewInit, OnDestroy {
   private router = inject(Router);
-  private route = inject(ActivatedRoute);
   private dashboardService = inject(DashboardSharedService);
+  private essayStateService = inject(EssayStateService);
 
   titleControl = new FormControl<string>("");
   contentControl = new FormControl<string>("");
@@ -43,9 +44,7 @@ export class EssayEditorComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngOnInit(): void {
     const essay = this.dashboardService.getEssayContent()();
-    this.titleControl.setValue(
-      this.route.snapshot.queryParamMap.get("title") ?? essay?.title ?? "",
-    );
+    this.titleControl.setValue(this.essayStateService.essayTitle() ?? "");
     this.contentControl.setValue(essay?.content ?? "");
   }
 

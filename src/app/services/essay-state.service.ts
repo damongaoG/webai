@@ -85,6 +85,7 @@ export class EssayStateService {
   private readonly _availableScholars = signal<ScholarData[]>([]);
 
   // Public computed signals for component consumption
+  public readonly essayTitle = computed(() => this._essayTitle());
   public readonly essayId = computed(() => this._essayId());
   public readonly selectedKeywords = computed(() => this._selectedKeywords());
   public readonly selectedArgumentIds = computed(() =>
