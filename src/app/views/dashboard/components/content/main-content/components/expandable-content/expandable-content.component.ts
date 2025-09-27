@@ -205,36 +205,6 @@ import { marked } from "marked";
 
         @if (expandableState.contentType === "casestudies" && isExpanded()) {
           @if (isInteractionAllowed()) {
-            @if (isCasesLoading) {
-              <div
-                class="casestudies-inline-loading px-4 sm:px-6 lg:px-8 py-3 text-sm text-stone-600"
-                role="status"
-                aria-live="polite"
-              >
-                <span class="inline-flex items-center gap-2">
-                  <svg
-                    class="animate-spin h-4 w-4 text-stone-500"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      class="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      stroke-width="4"
-                      fill="none"
-                    ></circle>
-                    <path
-                      class="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
-                    ></path>
-                  </svg>
-                  Loading case studies...
-                </span>
-              </div>
-            }
             @if (visibleCaseItems.length > 0) {
               <div class="casestudies-list space-y-3" style="padding: 1rem">
                 <div class="grid-toolbar" *ngIf="visibleCaseItems.length > 0">
@@ -357,36 +327,6 @@ import { marked } from "marked";
 
         @if (expandableState.contentType === "summary" && isExpanded()) {
           @if (isInteractionAllowed()) {
-            @if (isSummaryLoading) {
-              <div
-                class="summary-inline-loading px-4 sm:px-6 lg:px-8 py-3 text-sm text-stone-600"
-                role="status"
-                aria-live="polite"
-              >
-                <span class="inline-flex items-center gap-2">
-                  <svg
-                    class="animate-spin h-4 w-4 text-stone-500"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      class="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      stroke-width="4"
-                      fill="none"
-                    ></circle>
-                    <path
-                      class="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
-                    ></path>
-                  </svg>
-                  Generating summary...
-                </span>
-              </div>
-            }
             <div
               class="summary-content"
               style="padding: 1rem"
