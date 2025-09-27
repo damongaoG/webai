@@ -602,6 +602,12 @@ export class FeatureCardComponent implements OnDestroy {
   ): void {
     if (cardId === "arguments") {
       this.fetchedKeywords.set(parseKeywordsToData(data.keywords ?? ""));
+      // Clear cached arguments so next expand will refetch based on newly selected keywords
+      this.fetchedArguments.set([]);
+      this.essayStateService.clearAvailableArguments();
+      // Also clear scholars caches since we rewound before arguments stage
+      this.fetchedScholars.set([]);
+      this.essayStateService.clearAvailableScholars();
       this.essayStateService.setSelectedKeywords([]);
       this.essayStateService.setSelectedArgumentIds([]);
       this.essayStateService.revertToKeywordsSelectedAfterUndo();
@@ -613,22 +619,42 @@ export class FeatureCardComponent implements OnDestroy {
         : [];
       this.fetchedArguments.set(argumentsFromApi);
       this.essayStateService.setAvailableArguments(argumentsFromApi);
+      // Clear scholars caches so next expand of references refetches based on new arguments
+      this.fetchedScholars.set([]);
+      this.essayStateService.clearAvailableScholars();
       this.essayStateService.setSelectedArgumentIds([]);
       this.essayStateService.setSelectedScholarIds([]);
       this.essayStateService.revertToArgumentSelectedAfterUndo();
       return;
     }
     if (cardId === "casestudies") {
-      this.essayStateService.revertToScholarsSelectedAfterUndo();
+      // Stop active case stream and reset loading
+      if (this.caseStreamSub) {
+        this.caseStreamSub.unsubscribe();
+        this.caseStreamSub = undefined;
+      }
+      this.isLoadingCases.set(false);
+      // Reset local caches so next expand will start streaming again
       this.hasOpenedCases.set(false);
       this.caseItems.set([]);
+      this.hasLoadedContent = false;
+      // Revert phase back to scholars
+      this.essayStateService.revertToScholarsSelectedAfterUndo();
     }
   }
 
   private handleUndoForSummary(): void {
+    // Stop active summary stream and reset loading
+    if (this.summaryStreamSub) {
+      this.summaryStreamSub.unsubscribe();
+      this.summaryStreamSub = undefined;
+    }
+    this.isLoadingSummary.set(false);
+    // Reset local caches so next expand will start streaming again
     this.summaryCompleted.set(false);
     this.summaryItems.set([]);
     this.hasLoadedContent = false;
+    // Revert phase back to cases and set redo target accordingly
     this.essayStateService.revertToCaseSelectedAfterSummaryUndo();
     this.essayStateService.setRedoState("casestudies");
     this.lastUndoneCardId.set("casestudies");
