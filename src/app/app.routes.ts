@@ -15,6 +15,15 @@ export const routes: Routes = [
     },
   },
   {
+    path: "editor",
+    loadComponent: () =>
+      import("./views/editor/essay-editor/essay-editor.component").then(
+        (m) => m.EssayEditorComponent,
+      ),
+    canActivate: [authGuard],
+    data: { title: "Essay Editor" },
+  },
+  {
     path: "dashboard",
     loadComponent: () =>
       import("./views/dashboard/dashboard.component").then(

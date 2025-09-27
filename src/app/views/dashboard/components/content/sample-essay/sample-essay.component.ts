@@ -13,6 +13,7 @@ import { LucideAngularModule } from "lucide-angular";
 import { DashboardSharedService } from "../dashboard-shared.service";
 import { Subject } from "rxjs";
 import { marked } from "marked";
+import { Router } from "@angular/router";
 
 @Component({
   selector: "app-sample-essay",
@@ -23,6 +24,7 @@ import { marked } from "marked";
 })
 export class SampleEssayComponent implements OnInit, OnDestroy, AfterViewInit {
   dashboardService = inject(DashboardSharedService);
+  private router = inject(Router);
 
   private destroy$ = new Subject<void>();
 
@@ -69,7 +71,11 @@ export class SampleEssayComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   onEditAndExport(): void {
-    console.log("Edit and export action triggered");
+    this.router.navigate(["/editor"], {
+      queryParams: {
+        title: this.dashboardService.getEssayContent()()?.title ?? "",
+      },
+    });
   }
 
   get isContentGenerating(): boolean {

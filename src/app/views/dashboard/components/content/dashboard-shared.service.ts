@@ -19,7 +19,7 @@ export interface EssayContent {
   content: string;
 }
 
-@Injectable()
+@Injectable({ providedIn: "root" })
 export class DashboardSharedService {
   // Available task items
   private taskItems = signal<TaskItem[]>([

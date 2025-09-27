@@ -1,0 +1,50 @@
+<div class="editor-page px-4 sm:px-6 lg:px-8 py-4">
+  <header class="flex items-center justify-between mb-4">
+    <button
+      type="button"
+      class="inline-flex items-center gap-2 text-sm px-3 py-2 rounded-md border border-gray-200 hover:bg-gray-50"
+      (click)="onBack()"
+      aria-label="Back to dashboard"
+    >
+      ← Back
+    </button>
+    <div class="flex items-center gap-3">
+      <button
+        type="button"
+        class="inline-flex items-center gap-2 text-sm px-3 py-2 rounded-md border border-gray-200 hover:bg-gray-50"
+        (click)="onExportPdf()"
+        aria-label="Export to PDF"
+      >
+        Export PDF
+      </button>
+    </div>
+  </header>
+
+  <main class="grid grid-cols-1 gap-4">
+    <input
+      class="w-full border border-gray-200 rounded-md px-3 py-2 text-base"
+      [formControl]="titleControl"
+      type="text"
+      placeholder="Enter essay title"
+      aria-label="Essay title"
+    />
+
+    <quill-editor
+      class="min-h-[300px] bg-white border border-gray-200 rounded-md"
+      [modules]="quillModules"
+      [placeholder]="'Write your essay here...'"
+      [formControl]="contentControl"
+      aria-label="Essay content editor"
+      role="textbox"
+      theme="snow"
+    ></quill-editor>
+
+    <!-- Printable area -->
+    <section #printArea aria-label="Printable content" class="sr-only">
+      <article>
+        <h1 class="text-xl font-semibold mb-3">{{ titleControl.value }}</h1>
+        <div [innerHTML]="contentControl.value"></div>
+      </article>
+    </section>
+  </main>
+</div>

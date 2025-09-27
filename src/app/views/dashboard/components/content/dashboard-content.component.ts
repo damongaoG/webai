@@ -16,7 +16,7 @@ import { DashboardSharedService } from "./dashboard-shared.service";
     MainContentComponent,
     SampleEssayComponent,
   ],
-  providers: [DashboardSharedService],
+  providers: [],
   template: `
     <div
       class="content-container h-full flex flex-col lg:flex-row gap-4"
