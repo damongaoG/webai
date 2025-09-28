@@ -57,13 +57,26 @@ export class EssayEditorComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   async onExportPdf(): Promise<void> {
-    const el = this.printArea?.nativeElement;
-    if (!el) return;
-    const previousClassName = el.className;
-    el.classList.remove("sr-only");
+    const source = this.printArea?.nativeElement;
+    if (!source) return;
 
-    // Wait a microtask so styles/layout can apply before capture
-    await Promise.resolve();
+    // Clone the source and render off-screen to avoid visual flicker
+    const clone = source.cloneNode(true) as HTMLDivElement;
+    clone.classList.remove("sr-only");
+    clone.setAttribute("aria-hidden", "true");
+    clone.style.position = "fixed";
+    clone.style.left = "200vw"; // keep it far off-screen but rendered
+    clone.style.top = "0";
+    clone.style.opacity = "1";
+    clone.style.pointerEvents = "none";
+    // Ensure consistent width for pagination
+    const width = source.offsetWidth || source.clientWidth;
+    if (width) clone.style.width = `${width}px`;
+
+    document.body.appendChild(clone);
+
+    // Wait a frame so layout/styles apply before capture
+    await new Promise(requestAnimationFrame);
 
     try {
       const { default: html2pdf } = await import("html2pdf.js");
@@ -72,13 +85,18 @@ export class EssayEditorComponent implements OnInit, AfterViewInit, OnDestroy {
           (this.titleControl.value || "essay").replace(/\s+/g, "-") + ".pdf",
         margin: 10,
         pagebreak: { mode: ["css", "legacy"] },
-        html2canvas: { scale: 2, useCORS: true, backgroundColor: "#ffffff" },
+        html2canvas: {
+          scale: 2,
+          useCORS: true,
+          backgroundColor: "#ffffff",
+          windowWidth: clone.scrollWidth,
+          windowHeight: clone.scrollHeight,
+        },
         jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
       };
-      await (html2pdf as any)().set(options).from(el).save();
+      await (html2pdf as any)().set(options).from(clone).save();
     } finally {
-      // Restore hidden state regardless of success/failure
-      el.className = previousClassName;
+      clone.remove();
     }
   }
 
