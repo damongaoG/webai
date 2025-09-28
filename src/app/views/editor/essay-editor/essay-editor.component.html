@@ -1,4 +1,4 @@
-<div class="editor-page px-4 sm:px-6 lg:px-8 py-4">
+<div class="editor-page px-4 sm:px-6 lg:px-8 py-4 bg-white h-screen">
   <header class="flex items-center justify-between mb-4">
     <button
       type="button"
@@ -34,6 +34,7 @@
       [modules]="quillModules"
       [placeholder]="'Write your essay here...'"
       [formControl]="contentControl"
+      (onEditorCreated)="onEditorCreated($event)"
       aria-label="Essay content editor"
       role="textbox"
       theme="snow"

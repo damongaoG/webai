@@ -41,6 +41,7 @@ export class EssayEditorComponent implements OnInit, AfterViewInit, OnDestroy {
 
   @ViewChild("printArea") printArea?: ElementRef<HTMLDivElement>;
   @ViewChild("editable") editable?: ElementRef<HTMLDivElement>;
+  private quill?: any;
 
   ngOnInit(): void {
     const essay = this.dashboardService.getEssayContent()();
@@ -57,47 +58,35 @@ export class EssayEditorComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   async onExportPdf(): Promise<void> {
-    const source = this.printArea?.nativeElement;
-    if (!source) return;
+    const filename =
+      (this.titleControl.value || "essay").replace(/\s+/g, "-") + ".pdf";
+    const pdfMakeModule = await import("pdfmake/build/pdfmake");
+    const pdfFontsModule = await import("pdfmake/build/vfs_fonts");
+    const pdfMake: any =
+      (pdfMakeModule as any).default || (pdfMakeModule as any);
+    const pdfFonts: any =
+      (pdfFontsModule as any).default || (pdfFontsModule as any);
+    pdfMake.vfs = pdfFonts.vfs;
 
-    // Clone the source and render off-screen to avoid visual flicker
-    const clone = source.cloneNode(true) as HTMLDivElement;
-    clone.classList.remove("sr-only");
-    clone.setAttribute("aria-hidden", "true");
-    clone.style.position = "fixed";
-    clone.style.left = "200vw"; // keep it far off-screen but rendered
-    clone.style.top = "0";
-    clone.style.opacity = "1";
-    clone.style.pointerEvents = "none";
-    // Ensure consistent width for pagination
-    const width = source.offsetWidth || source.clientWidth;
-    if (width) clone.style.width = `${width}px`;
+    const delta = this.getCurrentDelta();
+    const content = this.deltaToPdfMake(delta);
 
-    document.body.appendChild(clone);
-
-    // Wait a frame so layout/styles apply before capture
-    await new Promise(requestAnimationFrame);
-
-    try {
-      const { default: html2pdf } = await import("html2pdf.js");
-      const options: any = {
-        filename:
-          (this.titleControl.value || "essay").replace(/\s+/g, "-") + ".pdf",
-        margin: 10,
-        pagebreak: { mode: ["css", "legacy"] },
-        html2canvas: {
-          scale: 2,
-          useCORS: true,
-          backgroundColor: "#ffffff",
-          windowWidth: clone.scrollWidth,
-          windowHeight: clone.scrollHeight,
+    const docDefinition: any = {
+      pageSize: "A4",
+      pageMargins: [20, 30, 20, 30],
+      content: [
+        {
+          text: this.titleControl.value || "",
+          fontSize: 18,
+          bold: true,
+          margin: [0, 0, 0, 12],
         },
-        jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
-      };
-      await (html2pdf as any)().set(options).from(clone).save();
-    } finally {
-      clone.remove();
-    }
+        ...content,
+      ],
+      defaultStyle: { fontSize: 12 },
+    };
+
+    pdfMake.createPdf(docDefinition).download(filename);
   }
 
   onContentInput(event: Event): void {
@@ -110,5 +99,111 @@ export class EssayEditorComponent implements OnInit, AfterViewInit, OnDestroy {
     // Sync after exec
     const html = this.editable?.nativeElement.innerHTML ?? "";
     this.contentControl.setValue(html);
+  }
+
+  onEditorCreated(editor: any): void {
+    this.quill = editor;
+  }
+
+  private getCurrentDelta(): any {
+    if (this.quill && typeof this.quill.getContents === "function") {
+      return this.quill.getContents();
+    }
+    // Fallback: derive from HTML in contentControl (best-effort as plain text)
+    const html = this.contentControl.value || "";
+    const text = html.replace(/<[^>]+>/g, "\n").replace(/\n+/, "\n");
+    return { ops: [{ insert: text }] };
+  }
+
+  private deltaToPdfMake(delta: any): any[] {
+    const result: any[] = [];
+    let currentList: { type: "ordered" | "bullet"; items: any[] } | null = null;
+
+    const flushList = () => {
+      if (currentList && currentList.items.length) {
+        if (currentList.type === "ordered") {
+          result.push({ ol: currentList.items, margin: [0, 4, 0, 4] });
+        } else {
+          result.push({ ul: currentList.items, margin: [0, 4, 0, 4] });
+        }
+      }
+      currentList = null;
+    };
+
+    for (const op of delta?.ops || []) {
+      const insert = op.insert;
+      const attrs = op.attributes || {};
+
+      // Handle embedded newlines as separate paragraphs
+      const parts = typeof insert === "string" ? insert.split("\n") : [insert];
+      for (let i = 0; i < parts.length; i++) {
+        const piece = parts[i];
+        const isLast = i === parts.length - 1;
+        const baseText = typeof piece === "string" ? piece : "";
+
+        const styled = this.applyAttributesToText(baseText, attrs);
+
+        if (!isLast) {
+          // line ended: decide block type
+          if (attrs.list === "ordered" || attrs.list === "bullet") {
+            if (!currentList || currentList.type !== attrs.list) {
+              flushList();
+              currentList = { type: attrs.list, items: [] } as any;
+            }
+            currentList!.items.push({
+              text: styled.text,
+              bold: styled.bold,
+              italics: styled.italics,
+              decoration: styled.decoration,
+            });
+          } else {
+            flushList();
+            result.push({
+              text: styled.text,
+              bold: styled.bold,
+              italics: styled.italics,
+              decoration: styled.decoration,
+              margin: [0, 0, 0, 8],
+            });
+          }
+        } else if (baseText) {
+          // middle line without trailing newline
+          if (currentList !== null && currentList.items) {
+            currentList.items.push({
+              text: styled.text,
+              bold: styled.bold,
+              italics: styled.italics,
+              decoration: styled.decoration,
+            });
+          } else {
+            result.push({
+              text: styled.text,
+              bold: styled.bold,
+              italics: styled.italics,
+              decoration: styled.decoration,
+            });
+          }
+        }
+      }
+    }
+
+    flushList();
+    return result.length ? result : [{ text: "" }];
+  }
+
+  private applyAttributesToText(text: string, attrs: any): any {
+    const out: any = { text: text ?? "" };
+    if (attrs.bold) out.bold = true;
+    if (attrs.italic) out.italics = true;
+    if (attrs.underline) out.decoration = "underline";
+    if (attrs.header === 1) {
+      out.fontSize = 18;
+      out.bold = true;
+    }
+    if (attrs.header === 2) {
+      out.fontSize = 16;
+      out.bold = true;
+    }
+    return out;
   }
 }

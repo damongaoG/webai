@@ -94,6 +94,8 @@ export class FeatureCardComponent implements OnDestroy {
   private caseStreamSub?: Subscription;
   // Hold SSE subscription for summary stream
   private summaryStreamSub?: Subscription;
+  // Track body streaming to disable Generate button while active
+  readonly isBodyStreaming = signal<boolean>(false);
 
   // Loading state for casestudies stream (until first payload arrives)
   readonly isLoadingCases = signal<boolean>(false);
@@ -1072,6 +1074,8 @@ export class FeatureCardComponent implements OnDestroy {
     // Lock summary interactions and suppress Undo from now on
     this.dashboardSharedService.setSummaryLocked(true);
     this.toastService.success(`Generating essay with ${count} words...`);
+    // Mark body streaming as active to disable Generate button
+    this.isBodyStreaming.set(true);
   }
 
   // Forward essayId to modal via template without exposing service directly
@@ -1101,11 +1105,15 @@ export class FeatureCardComponent implements OnDestroy {
     this.bodyStreamStarted = false;
     // Keep summary locked as per requirement even on error
     this.dashboardSharedService.setSummaryLocked(true);
+    // Re-enable Generate button on error
+    this.isBodyStreaming.set(false);
   }
 
   onBodyComplete(): void {
     this.bodyStreamStarted = false;
     // Keep summary locked as per requirement even after completion
     this.dashboardSharedService.setSummaryLocked(true);
+    // Re-enable Generate button on complete
+    this.isBodyStreaming.set(false);
   }
 }

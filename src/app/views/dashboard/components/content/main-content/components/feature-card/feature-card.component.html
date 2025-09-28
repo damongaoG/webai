@@ -158,6 +158,7 @@
       [isCasesLoading]="isLoadingCases()"
       [isSummaryLoading]="isLoadingSummary()"
       [summaryText]="summaryText"
+      [disableGenerate]="isBodyStreaming()"
       (keywordSelected)="onKeywordSelected($event)"
       (keywordDeselected)="onKeywordDeselected($event)"
       (argumentSelected)="onArgumentSelected($event)"

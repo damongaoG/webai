@@ -347,6 +347,8 @@ import { marked } from "marked";
                       type="button"
                       class="inline-flex items-center gap-2 px-3 py-2 rounded-md bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                       (click)="onGenerateEssayClick()"
+                  [disabled]="disableGenerate"
+                  [attr.aria-disabled]="disableGenerate ? 'true' : null"
                       aria-label="Generate full essay from summary"
                     >
                       <span>Generate Essay</span>
@@ -435,6 +437,7 @@ export class ExpandableContentComponent implements OnChanges {
   @Input() isCasesLoading: boolean = false;
   @Input() isSummaryLoading: boolean = false;
   @Input() summaryText: string = "";
+  @Input() disableGenerate: boolean = false;
   @Input() keywordsGridConfig = {
     columns: 5,
     gap: 16,
