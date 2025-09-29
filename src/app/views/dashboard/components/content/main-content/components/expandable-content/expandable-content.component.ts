@@ -236,13 +236,13 @@ import { marked } from "marked";
                     [@caseItemFade]
                   >
                     <div class="flex items-start gap-3 mb-2">
-                      <input
-                        type="checkbox"
-                        class="mt-1 checkbox-lg"
-                        [checked]="isCaseItemSelected(item.id)"
-                        (change)="onCaseItemChange(item.id, $event)"
-                        aria-label="Select case study"
-                      />
+                      <!--                      <input-->
+                      <!--                        type="checkbox"-->
+                      <!--                        class="mt-1 checkbox-lg"-->
+                      <!--                        [checked]="isCaseItemSelected(item.id)"-->
+                      <!--                        (change)="onCaseItemChange(item.id, $event)"-->
+                      <!--                        aria-label="Select case study"-->
+                      <!--                      />-->
                       <div class="min-w-0 flex-1">
                         @if (item.link) {
                           <a
@@ -694,19 +694,6 @@ export class ExpandableContentComponent implements OnChanges {
     return size > 0 && size < total;
   }
 
-  isCaseItemSelected(id: string | undefined): boolean {
-    if (!id) return false;
-    return this.essayStateService.selectedCaseItemIds().includes(id);
-  }
-
-  onCaseItemChange(id: string | undefined, event: Event): void {
-    const input = event.target as HTMLInputElement | null;
-    const isChecked = !!input?.checked;
-    if (!id) return;
-    if (isChecked) this.essayStateService.addSelectedCaseItemId(id);
-    else this.essayStateService.removeSelectedCaseItemId(id);
-  }
-
   isResultSelected(
     caseId: string | undefined,
     resultId: string | undefined,
@@ -741,11 +728,20 @@ export class ExpandableContentComponent implements OnChanges {
   selectAllCases(): void {
     const items = this.visibleCaseItems;
     if (!items || items.length === 0) return;
-    const previously = new Set(this.essayStateService.selectedCaseItemIds());
     for (const it of items) {
-      const id = it.id as string | undefined;
-      if (id && !previously.has(id)) {
-        this.essayStateService.addSelectedCaseItemId(id);
+      const caseId = it.id as string | undefined;
+      if (!caseId) continue;
+      // Ensure parent case is selected
+      this.essayStateService.addSelectedCaseItemId(caseId);
+      // Select all result ids for this case
+      const resultIds = (it.results ?? [])
+        .map((r) => r?.id)
+        .filter(Boolean) as string[];
+      if (resultIds.length > 0) {
+        this.essayStateService.setSelectedResultIdsForCase(caseId, resultIds);
+      } else {
+        // If no results, clear any residual selection to keep state consistent
+        this.essayStateService.setSelectedResultIdsForCase(caseId, []);
       }
     }
   }
@@ -753,13 +749,13 @@ export class ExpandableContentComponent implements OnChanges {
   clearCaseSelection(): void {
     const items = this.visibleCaseItems;
     if (!items || items.length === 0) return;
-    const visibleIds = new Set(
-      items.map((i) => i.id).filter(Boolean) as string[],
-    );
-    for (const cid of this.essayStateService.selectedCaseItemIds()) {
-      if (visibleIds.has(cid)) {
-        this.essayStateService.removeSelectedCaseItemId(cid);
-      }
+    for (const it of items) {
+      const caseId = it.id as string | undefined;
+      if (!caseId) continue;
+      // Clear all selected results for this case
+      this.essayStateService.setSelectedResultIdsForCase(caseId, []);
+      // Deselect parent case id
+      this.essayStateService.removeSelectedCaseItemId(caseId);
     }
   }
 
