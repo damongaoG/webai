@@ -4,5 +4,6 @@ import type { ModelCaseVO } from "../interfaces/model-case.interface";
 export function isTerminalCase(vo: ModelCaseVO | undefined | null): boolean {
   if (!vo) return false;
   if (vo.index !== -1) return false;
-  return vo.status === "DONE";
+  const status = (vo.status ?? "").toString();
+  return status === "DONE";
 }

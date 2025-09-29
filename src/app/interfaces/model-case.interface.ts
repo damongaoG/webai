@@ -1,6 +1,7 @@
 export const SseCaseEventName = "case" as const;
 
 export interface ModelCaseResultItem {
+  id?: string;
   title: string;
   timePeriod?: string;
   background?: string;
