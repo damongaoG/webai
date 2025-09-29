@@ -109,12 +109,11 @@ export class EssayEditorComponent implements OnInit, AfterViewInit, OnDestroy {
   readonly quillModules: { toolbar: any[] } = {
     toolbar: [
       [
-        { font: [...TOOLBAR_FONT_OPTIONS] },
+        // { font: [...TOOLBAR_FONT_OPTIONS] },
         { size: [...TOOLBAR_SIZE_OPTIONS] },
       ],
       ["bold", "italic", "underline"],
       [{ list: "ordered" }, { list: "bullet" }],
-      [{ header: [1, 2, false] }],
       ["clean"],
     ],
   };
@@ -249,18 +248,12 @@ export class EssayEditorComponent implements OnInit, AfterViewInit, OnDestroy {
               currentList = { type: attrs.list, items: [] } as any;
             }
             currentList!.items.push({
-              text: styled.text,
-              bold: styled.bold,
-              italics: styled.italics,
-              decoration: styled.decoration,
+              ...styled,
             });
           } else {
             flushList();
             result.push({
-              text: styled.text,
-              bold: styled.bold,
-              italics: styled.italics,
-              decoration: styled.decoration,
+              ...styled,
               margin: [0, 0, 0, 8],
             });
           }
@@ -268,17 +261,11 @@ export class EssayEditorComponent implements OnInit, AfterViewInit, OnDestroy {
           // middle line without trailing newline
           if (currentList !== null && currentList.items) {
             currentList.items.push({
-              text: styled.text,
-              bold: styled.bold,
-              italics: styled.italics,
-              decoration: styled.decoration,
+              ...styled,
             });
           } else {
             result.push({
-              text: styled.text,
-              bold: styled.bold,
-              italics: styled.italics,
-              decoration: styled.decoration,
+              ...styled,
             });
           }
         }
@@ -298,6 +285,14 @@ export class EssayEditorComponent implements OnInit, AfterViewInit, OnDestroy {
     const resolvedSize = this.resolveFontSize(attrs.size);
     if (resolvedSize) {
       out.fontSize = resolvedSize;
+    }
+
+    // Prepare for font family mapping.
+    if (typeof attrs.font === "string" && attrs.font) {
+      const pdfFont = this.resolvePdfMakeFont(attrs.font);
+      if (pdfFont) {
+        out.font = pdfFont;
+      }
     }
 
     if (attrs.header === 1) {
@@ -442,6 +437,10 @@ export class EssayEditorComponent implements OnInit, AfterViewInit, OnDestroy {
       }
     }
 
+    return undefined;
+  }
+
+  private resolvePdfMakeFont(fontName: string): string | undefined {
     return undefined;
   }
 }
