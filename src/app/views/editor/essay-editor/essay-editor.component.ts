@@ -12,8 +12,73 @@ import { FormControl, ReactiveFormsModule } from "@angular/forms";
 import { QuillModule } from "ngx-quill";
 import { Router } from "@angular/router";
 import { marked } from "marked";
+import Quill from "quill";
 import { DashboardSharedService } from "../../dashboard/components/content/dashboard-shared.service";
 import { EssayStateService } from "@/app/services/essay-state.service";
+
+const FONT_FAMILY_WHITELIST: readonly string[] = [
+  "Arial",
+  "Georgia",
+  "Helvetica",
+  "Times New Roman",
+  "Courier New",
+];
+
+const FONT_SIZE_WHITELIST: readonly string[] = [
+  "12px",
+  "14px",
+  "16px",
+  "18px",
+  "24px",
+  "32px",
+];
+
+const TOOLBAR_FONT_OPTIONS: (string | false)[] = [
+  false,
+  ...FONT_FAMILY_WHITELIST,
+];
+const TOOLBAR_SIZE_OPTIONS: (string | false)[] = [
+  false,
+  ...FONT_SIZE_WHITELIST,
+];
+
+const FONT_FAMILY_MAP: Record<string, string> = {
+  Arial: '"Arial", sans-serif',
+  Georgia: '"Georgia", serif',
+  Helvetica: '"Helvetica", sans-serif',
+  "Times New Roman": '"Times New Roman", serif',
+  "Courier New": '"Courier New", monospace',
+};
+
+const SIZE_ALIAS_TO_VALUE: Record<string, number> = {
+  small: 10,
+  large: 18,
+  huge: 32,
+};
+
+const isBrowser =
+  typeof window !== "undefined" && typeof document !== "undefined";
+
+const registerWhitelistedAttributor = (
+  path: string,
+  whitelist: readonly string[],
+) => {
+  const attributor: any = Quill.import(path);
+  if (!attributor) {
+    return;
+  }
+
+  attributor.whitelist = [...whitelist];
+  Quill.register(attributor, true);
+};
+
+if (isBrowser) {
+  registerWhitelistedAttributor(
+    "attributors/style/font",
+    FONT_FAMILY_WHITELIST,
+  );
+  registerWhitelistedAttributor("attributors/style/size", FONT_SIZE_WHITELIST);
+}
 
 @Component({
   selector: "app-essay-editor",
@@ -31,9 +96,22 @@ export class EssayEditorComponent implements OnInit, AfterViewInit, OnDestroy {
   contentControl = new FormControl<string>("");
   private initialContentHtml = "";
 
-  // Quill configuration: keep it minimal and extensible
-  quillModules: any = {
+  readonly quillFormats: string[] = [
+    "font",
+    "size",
+    "bold",
+    "italic",
+    "underline",
+    "list",
+    "header",
+  ];
+
+  readonly quillModules: { toolbar: any[] } = {
     toolbar: [
+      [
+        { font: [...TOOLBAR_FONT_OPTIONS] },
+        { size: [...TOOLBAR_SIZE_OPTIONS] },
+      ],
       ["bold", "italic", "underline"],
       [{ list: "ordered" }, { list: "bullet" }],
       [{ header: [1, 2, false] }],
@@ -44,6 +122,8 @@ export class EssayEditorComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild("printArea") printArea?: ElementRef<HTMLDivElement>;
   @ViewChild("editable") editable?: ElementRef<HTMLDivElement>;
   private quill?: any;
+  private toolbarObservers: MutationObserver[] = [];
+  private toolbarCleanup: Array<() => void> = [];
 
   ngOnInit(): void {
     const essay = this.dashboardService.getEssayContent()();
@@ -55,8 +135,6 @@ export class EssayEditorComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit(): void {}
-
-  ngOnDestroy(): void {}
 
   onBack(): void {
     this.router.navigate(["/dashboard"]);
@@ -108,6 +186,8 @@ export class EssayEditorComponent implements OnInit, AfterViewInit, OnDestroy {
 
   onEditorCreated(editor: any): void {
     this.quill = editor;
+
+    this.decorateToolbarPickers(editor);
 
     const initial = this.initialContentHtml.trim();
     if (!initial) {
@@ -214,6 +294,12 @@ export class EssayEditorComponent implements OnInit, AfterViewInit, OnDestroy {
     if (attrs.bold) out.bold = true;
     if (attrs.italic) out.italics = true;
     if (attrs.underline) out.decoration = "underline";
+
+    const resolvedSize = this.resolveFontSize(attrs.size);
+    if (resolvedSize) {
+      out.fontSize = resolvedSize;
+    }
+
     if (attrs.header === 1) {
       out.fontSize = 18;
       out.bold = true;
@@ -232,5 +318,130 @@ export class EssayEditorComponent implements OnInit, AfterViewInit, OnDestroy {
 
     return (marked.parse(markdown, { async: false, breaks: true }) ||
       "") as string;
+  }
+
+  ngOnDestroy(): void {
+    this.toolbarObservers.forEach((observer) => observer.disconnect());
+    this.toolbarObservers = [];
+
+    this.toolbarCleanup.forEach((dispose) => dispose());
+    this.toolbarCleanup = [];
+  }
+
+  private decorateToolbarPickers(editor: any): void {
+    if (!isBrowser) {
+      return;
+    }
+
+    const toolbarModule = editor?.getModule?.("toolbar");
+    const toolbarEl = toolbarModule?.container as HTMLElement | undefined;
+    if (!toolbarEl) {
+      return;
+    }
+
+    this.decoratePicker(toolbarEl, "font", "Default", (el, value) => {
+      const family = FONT_FAMILY_MAP[value] ?? value;
+      el.style.fontFamily = family;
+    });
+
+    this.decoratePicker(toolbarEl, "size", "Normal", (el, value) => {
+      el.style.fontSize = value;
+    });
+  }
+
+  private decoratePicker(
+    toolbarEl: HTMLElement,
+    format: "font" | "size",
+    fallbackLabel: string,
+    applyStyle: (el: HTMLElement, value: string) => void,
+  ): void {
+    const picker = toolbarEl.querySelector<HTMLElement>(
+      `.ql-picker.ql-${format}`,
+    );
+    if (!picker) {
+      return;
+    }
+
+    const updateLabel = (element: HTMLElement | null) => {
+      if (!element) {
+        return;
+      }
+
+      const datasetValue = element.dataset?.["value"];
+      const value = datasetValue ?? element.getAttribute("data-value");
+      const label = !value || value === "false" ? fallbackLabel : value;
+
+      element.setAttribute("data-label", label);
+
+      if (!value || value === "false") {
+        element.style.removeProperty(
+          format === "font" ? "font-family" : "font-size",
+        );
+        return;
+      }
+
+      applyStyle(element, value);
+    };
+
+    const labelElement = picker.querySelector<HTMLElement>(".ql-picker-label");
+    updateLabel(labelElement);
+
+    picker.querySelectorAll<HTMLElement>(".ql-picker-item").forEach((item) => {
+      updateLabel(item);
+    });
+
+    if (labelElement) {
+      const observer = new MutationObserver(() => updateLabel(labelElement));
+      observer.observe(labelElement, {
+        attributes: true,
+        attributeFilter: ["data-value"],
+      });
+      this.toolbarObservers.push(observer);
+    }
+
+    const scheduleRefresh = () => {
+      if (typeof window !== "undefined" && window.requestAnimationFrame) {
+        window.requestAnimationFrame(() => updateLabel(labelElement));
+      } else {
+        updateLabel(labelElement);
+      }
+    };
+
+    picker.addEventListener("click", scheduleRefresh);
+    picker.addEventListener("keydown", scheduleRefresh);
+
+    this.toolbarCleanup.push(() => {
+      picker.removeEventListener("click", scheduleRefresh);
+      picker.removeEventListener("keydown", scheduleRefresh);
+    });
+  }
+
+  private resolveFontSize(size: unknown): number | undefined {
+    if (size == null) {
+      return undefined;
+    }
+
+    if (typeof size === "number" && Number.isFinite(size)) {
+      return size;
+    }
+
+    if (typeof size === "string") {
+      const aliasValue = SIZE_ALIAS_TO_VALUE[size.toLowerCase()];
+      if (aliasValue) {
+        return aliasValue;
+      }
+
+      const pxMatch = size.match(/^(\d+(?:\.\d+)?)px$/i);
+      if (pxMatch) {
+        return Number.parseFloat(pxMatch[1]);
+      }
+
+      const numericValue = Number.parseFloat(size);
+      if (!Number.isNaN(numericValue)) {
+        return numericValue;
+      }
+    }
+
+    return undefined;
   }
 }

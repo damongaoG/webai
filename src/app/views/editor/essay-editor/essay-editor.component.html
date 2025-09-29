@@ -32,6 +32,7 @@
     <quill-editor
       class="min-h-[300px] bg-white border border-gray-200 rounded-md"
       [modules]="quillModules"
+      [formats]="quillFormats"
       [placeholder]="'Write your essay here...'"
       [formControl]="contentControl"
       (onEditorCreated)="onEditorCreated($event)"
