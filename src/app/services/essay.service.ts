@@ -276,7 +276,7 @@ export class EssayService {
 
   /**
    * Stream essay body via SSE.
-   * Endpoint: GET /anon/model/paper/sse/{essayId}/body?wordCount=...
+   * Endpoint: POST /anon/model/paper/sse/{essayId}/body
    * Emits parsed SummarySseItem objects for event "body" (or default "message").
    * Auto-completes when a terminal message is received (index === -1 && status === 'DONE').
    */
@@ -284,11 +284,13 @@ export class EssayService {
     essayId: string,
     wordCount: number,
   ): Observable<Readonly<SummarySseItem>> {
-    const wc =
-      Number.isFinite(wordCount) && wordCount > 0 ? String(wordCount) : "";
+    const sanitized =
+      Number.isFinite(wordCount) && wordCount > 0
+        ? Math.floor(wordCount)
+        : undefined;
     const url = `${this.apiUrl}/anon/model/paper/sse/${encodeURIComponent(
       essayId,
-    )}/body${wc ? `?wordCount=${encodeURIComponent(wc)}` : ""}`;
+    )}/body`;
 
     return this.streamSse<SummarySseItem>(
       url,
@@ -299,6 +301,14 @@ export class EssayService {
           index: item.index,
           status: item.status,
         } as unknown as ModelCaseVO),
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "text/event-stream, application/json",
+        },
+        body: JSON.stringify(sanitized ? { wordCount: sanitized } : {}),
+      },
     );
   }
 }

@@ -87,8 +87,8 @@ export class WordcountInputModalComponent implements OnDestroy {
   bodyError = output<unknown>();
   bodyComplete = output<void>();
 
-  min = 1000;
-  max = 8000;
+  min = 800;
+  max = 20000;
   wordcount = 2000;
 
   showError = signal(false);
