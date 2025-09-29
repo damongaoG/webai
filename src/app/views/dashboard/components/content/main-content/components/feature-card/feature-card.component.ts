@@ -1076,6 +1076,8 @@ export class FeatureCardComponent implements OnDestroy {
     this.toastService.success(`Generating essay with ${count} words...`);
     // Mark body streaming as active to disable Generate button
     this.isBodyStreaming.set(true);
+    this.dashboardSharedService.setBodyStreaming(true);
+    this.dashboardSharedService.setBodyCompleted(false);
   }
 
   // Forward essayId to modal via template without exposing service directly
@@ -1095,6 +1097,8 @@ export class FeatureCardComponent implements OnDestroy {
       }
       // Ensure the Sample Essay area is marked as generated
       this.dashboardSharedService.setIsGenerated(true);
+      // Ensure streaming flag stays true while chunks arrive
+      this.dashboardSharedService.setBodyStreaming(true);
       this.dashboardSharedService.appendEssayContent(chunk);
     }
   }
@@ -1107,6 +1111,8 @@ export class FeatureCardComponent implements OnDestroy {
     this.dashboardSharedService.setSummaryLocked(true);
     // Re-enable Generate button on error
     this.isBodyStreaming.set(false);
+    this.dashboardSharedService.setBodyStreaming(false);
+    this.dashboardSharedService.setBodyCompleted(false);
   }
 
   onBodyComplete(): void {
@@ -1115,5 +1121,7 @@ export class FeatureCardComponent implements OnDestroy {
     this.dashboardSharedService.setSummaryLocked(true);
     // Re-enable Generate button on complete
     this.isBodyStreaming.set(false);
+    this.dashboardSharedService.setBodyStreaming(false);
+    this.dashboardSharedService.setBodyCompleted(true);
   }
 }

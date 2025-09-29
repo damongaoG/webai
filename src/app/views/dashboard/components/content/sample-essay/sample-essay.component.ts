@@ -79,6 +79,11 @@ export class SampleEssayComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   get isContentGenerating(): boolean {
-    return this.isLoading || false;
+    // Disable Edit & Export until body stream completes
+    const generated = this.dashboardService.getIsGenerated()();
+    const completed = this.dashboardService.getBodyCompleted()();
+    const streaming = this.dashboardService.getBodyStreaming()();
+    // If not generated yet, keep disabled. If streaming or not completed, keep disabled.
+    return !generated || streaming || !completed;
   }
 }

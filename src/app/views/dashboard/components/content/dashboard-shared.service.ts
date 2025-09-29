@@ -70,6 +70,10 @@ export class DashboardSharedService {
   // Generated status
   private isGenerated = signal<boolean>(false);
 
+  // Streaming state for full essay body
+  private bodyStreaming = signal<boolean>(false);
+  private bodyCompleted = signal<boolean>(false);
+
   // Persistent lock specifically for summary card: hides undo and disables expand
   private summaryLocked = signal<boolean>(false);
 
@@ -92,6 +96,15 @@ export class DashboardSharedService {
 
   getIsGenerated() {
     return this.isGenerated;
+  }
+
+  // Body streaming/completion getters
+  getBodyStreaming() {
+    return this.bodyStreaming;
+  }
+
+  getBodyCompleted() {
+    return this.bodyCompleted;
   }
 
   getExpandableState() {
@@ -158,6 +171,17 @@ export class DashboardSharedService {
    */
   setIsGenerated(isGenerated: boolean): void {
     this.isGenerated.set(isGenerated);
+  }
+
+  /**
+   * Update streaming flags for the essay body stream
+   */
+  setBodyStreaming(isStreaming: boolean): void {
+    this.bodyStreaming.set(isStreaming);
+  }
+
+  setBodyCompleted(completed: boolean): void {
+    this.bodyCompleted.set(completed);
   }
 
   /**

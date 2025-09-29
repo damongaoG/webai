@@ -273,17 +273,24 @@ import { marked } from "marked";
                             }
                             @if (r.background) {
                               <div class="text-gray-600 text-xs">
-                                Background: {{ r.background }}
+                                <span class="font-bold italic"
+                                  >Background:</span
+                                >
+                                {{ r.background }}
                               </div>
                             }
                             @if (r.methodology) {
                               <div class="text-gray-600 text-xs">
-                                Methodology: {{ r.methodology }}
+                                <span class="font-bold italic"
+                                  >Methodology:</span
+                                >
+                                {{ r.methodology }}
                               </div>
                             }
                             @if (r.findings) {
                               <div class="text-gray-600 text-xs">
-                                Findings: {{ r.findings }}
+                                <span class="font-bold italic">Findings:</span>
+                                {{ r.findings }}
                               </div>
                             }
                           </li>
@@ -347,8 +354,8 @@ import { marked } from "marked";
                       type="button"
                       class="inline-flex items-center gap-2 px-3 py-2 rounded-md bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                       (click)="onGenerateEssayClick()"
-                  [disabled]="disableGenerate"
-                  [attr.aria-disabled]="disableGenerate ? 'true' : null"
+                      [disabled]="disableGenerate"
+                      [attr.aria-disabled]="disableGenerate ? 'true' : null"
                       aria-label="Generate full essay from summary"
                     >
                       <span>Generate Essay</span>

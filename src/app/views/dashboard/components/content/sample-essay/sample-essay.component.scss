@@ -160,6 +160,21 @@
       &:active {
         transform: translateY(0);
       }
+
+      &:disabled,
+      &[aria-disabled="true"] {
+        @apply bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed shadow-none;
+        .action-icon,
+        .arrow-icon {
+          @apply opacity-50;
+        }
+        .action-text {
+          @apply text-gray-400;
+        }
+        &:hover {
+          transform: none;
+        }
+      }
     }
   }
 }

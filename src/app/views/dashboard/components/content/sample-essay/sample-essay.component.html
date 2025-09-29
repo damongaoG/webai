@@ -104,6 +104,7 @@
           type="button"
           (click)="onEditAndExport()"
           [disabled]="isContentGenerating"
+          [attr.aria-disabled]="isContentGenerating ? 'true' : 'false'"
         >
           <!-- Edit Icon -->
           <img
