@@ -214,62 +214,90 @@ export class EssayEditorComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private deltaToPdfMake(delta: any): any[] {
     const result: any[] = [];
-    let currentList: { type: "ordered" | "bullet"; items: any[] } | null = null;
+
+    let activeListType: "ordered" | "bullet" | null = null;
+    let activeListItems: any[] = [];
+    let lineSegments: any[] = [];
 
     const flushList = () => {
-      if (currentList && currentList.items.length) {
-        if (currentList.type === "ordered") {
-          result.push({ ol: currentList.items, margin: [0, 4, 0, 4] });
+      if (activeListType && activeListItems.length) {
+        if (activeListType === "ordered") {
+          result.push({ ol: activeListItems, margin: [0, 4, 0, 4] });
         } else {
-          result.push({ ul: currentList.items, margin: [0, 4, 0, 4] });
+          result.push({ ul: activeListItems, margin: [0, 4, 0, 4] });
         }
       }
-      currentList = null;
+      activeListType = null;
+      activeListItems = [];
+    };
+
+    const finalizeLine = (blockAttrs: any) => {
+      // Build a paragraph or list item from collected inline segments
+      const paragraph: any =
+        lineSegments.length === 0
+          ? { text: "" }
+          : lineSegments.length === 1
+            ? { ...lineSegments[0] }
+            : { text: [...lineSegments] };
+
+      // Apply block-level attributes like headers
+      if (blockAttrs && typeof blockAttrs.header !== "undefined") {
+        if (blockAttrs.header === 1) {
+          paragraph.fontSize = 18;
+          paragraph.bold = true;
+        } else if (blockAttrs.header === 2) {
+          paragraph.fontSize = 16;
+          paragraph.bold = true;
+        }
+      }
+
+      const listType = blockAttrs?.list as "ordered" | "bullet" | undefined;
+      if (listType === "ordered" || listType === "bullet") {
+        if (activeListType !== listType) {
+          flushList();
+          activeListType = listType;
+        }
+        activeListItems.push(paragraph);
+      } else {
+        // Not a list line → ensure any open list is flushed first
+        flushList();
+        // Add default spacing for standalone paragraphs
+        if (!paragraph.margin) {
+          paragraph.margin = [0, 0, 0, 8];
+        }
+        result.push(paragraph);
+      }
+
+      // Reset line buffer
+      lineSegments = [];
     };
 
     for (const op of delta?.ops || []) {
       const insert = op.insert;
       const attrs = op.attributes || {};
 
-      // Handle embedded newlines as separate paragraphs
-      const parts = typeof insert === "string" ? insert.split("\n") : [insert];
-      for (let i = 0; i < parts.length; i++) {
-        const piece = parts[i];
-        const isLast = i === parts.length - 1;
-        const baseText = typeof piece === "string" ? piece : "";
+      if (typeof insert === "string") {
+        const pieces = insert.split("\n");
+        for (let i = 0; i < pieces.length; i++) {
+          const part = pieces[i];
+          const isLast = i === pieces.length - 1;
 
-        const styled = this.applyAttributesToText(baseText, attrs);
-
-        if (!isLast) {
-          // line ended: decide block type
-          if (attrs.list === "ordered" || attrs.list === "bullet") {
-            if (!currentList || currentList.type !== attrs.list) {
-              flushList();
-              currentList = { type: attrs.list, items: [] } as any;
-            }
-            currentList!.items.push({
-              ...styled,
-            });
-          } else {
-            flushList();
-            result.push({
-              ...styled,
-              margin: [0, 0, 0, 8],
-            });
+          if (part) {
+            const inline = this.applyAttributesToText(part, attrs);
+            lineSegments.push(inline);
           }
-        } else if (baseText) {
-          // middle line without trailing newline
-          if (currentList !== null && currentList.items) {
-            currentList.items.push({
-              ...styled,
-            });
-          } else {
-            result.push({
-              ...styled,
-            });
+
+          // Newline boundary → finalize current line using newline's attributes (in this op)
+          if (!isLast) {
+            finalizeLine(attrs);
           }
         }
       }
+    }
+
+    // Flush any remaining buffered line as a paragraph (no list attributes)
+    if (lineSegments.length) {
+      finalizeLine({});
     }
 
     flushList();
@@ -287,7 +315,7 @@ export class EssayEditorComponent implements OnInit, AfterViewInit, OnDestroy {
       out.fontSize = resolvedSize;
     }
 
-    // Prepare for font family mapping.
+    // Prepare for font family mapping (if enabled later).
     if (typeof attrs.font === "string" && attrs.font) {
       const pdfFont = this.resolvePdfMakeFont(attrs.font);
       if (pdfFont) {
@@ -295,14 +323,7 @@ export class EssayEditorComponent implements OnInit, AfterViewInit, OnDestroy {
       }
     }
 
-    if (attrs.header === 1) {
-      out.fontSize = 18;
-      out.bold = true;
-    }
-    if (attrs.header === 2) {
-      out.fontSize = 16;
-      out.bold = true;
-    }
+    // Intentionally ignore block-level attributes (e.g., header, list) here.
     return out;
   }
 

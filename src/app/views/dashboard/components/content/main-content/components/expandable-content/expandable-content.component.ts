@@ -775,9 +775,9 @@ export class ExpandableContentComponent implements OnChanges {
   private isResultUnspecified(r: ModelCaseResultItem | undefined): boolean {
     const normalize = (v?: string) => (v ?? "").trim().toLowerCase();
     return (
-      normalize(r?.background) === "not specified" &&
-      normalize(r?.methodology) === "not specified" &&
-      normalize(r?.findings) === "not specified"
+      normalize(r?.background) === "Not specified" &&
+      normalize(r?.methodology) === "Not specified" &&
+      normalize(r?.findings) === "Not specified"
     );
   }
 
