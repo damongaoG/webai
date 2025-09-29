@@ -20,14 +20,15 @@ import {
   SseSummaryEventName,
   type SummarySseItem,
 } from "../interfaces/summary-sse.interface";
+import { ToastService } from "../shared";
 
 @Injectable({
   providedIn: "root",
 })
 export class EssayService {
   private readonly http = inject(HttpClient);
-  // Note: Using model-processor-service endpoint for essay creation
   private readonly apiUrl = environment.modelProcessorServiceUrl;
+  private readonly toastService = inject(ToastService);
 
   private readonly headers = new HttpHeaders({
     "Content-Type": "application/json",
@@ -54,6 +55,7 @@ export class EssayService {
     parseItem: (data: string) => T | undefined,
     isTerminal: (item: T) => boolean,
     fetchInit?: RequestInit,
+    onJsonResponse?: (json: any) => Error | undefined,
   ): Observable<Readonly<T>> {
     return new Observable<Readonly<T>>((subscriber) => {
       if (typeof window === "undefined") {
@@ -87,6 +89,23 @@ export class EssayService {
             throw new Error(
               `SSE request failed with status ${response.status}`,
             );
+          }
+
+          // If server responded with JSON (non-SSE), allow optional handler
+          const contentType = response.headers?.get("content-type") ?? "";
+          if (contentType.includes("application/json")) {
+            try {
+              const json = await (response as any).json();
+              const maybeErr = onJsonResponse?.(json);
+              if (maybeErr) {
+                subscriber.error(maybeErr);
+              } else {
+                subscriber.complete();
+              }
+            } catch (e) {
+              subscriber.error(e);
+            }
+            return;
           }
 
           const body = response.body;
@@ -308,6 +327,28 @@ export class EssayService {
           Accept: "text/event-stream, application/json",
         },
         body: JSON.stringify(sanitized ? { wordCount: sanitized } : {}),
+      },
+      (json) => {
+        // When server responds JSON instead of SSE, treat code !== 1 as failure
+        try {
+          const code =
+            json && typeof json === "object" && "code" in json
+              ? Number((json as any).code)
+              : NaN;
+          if (!Number.isFinite(code) || code !== 1) {
+            this.toastService.error(
+              "Failed to generate essay. Please try again.",
+            );
+            return new Error("Essay generation failed (non-success code)");
+          }
+          // code === 1 -> consider it a success without streaming content
+          return undefined;
+        } catch {
+          this.toastService.error(
+            "Failed to generate essay. Please try again.",
+          );
+          return new Error("Essay generation failed (invalid JSON)");
+        }
       },
     );
   }
