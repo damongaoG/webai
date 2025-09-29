@@ -11,6 +11,7 @@ import {
 import { FormControl, ReactiveFormsModule } from "@angular/forms";
 import { QuillModule } from "ngx-quill";
 import { Router } from "@angular/router";
+import { marked } from "marked";
 import { DashboardSharedService } from "../../dashboard/components/content/dashboard-shared.service";
 import { EssayStateService } from "@/app/services/essay-state.service";
 
@@ -28,6 +29,7 @@ export class EssayEditorComponent implements OnInit, AfterViewInit, OnDestroy {
 
   titleControl = new FormControl<string>("");
   contentControl = new FormControl<string>("");
+  private initialContentHtml = "";
 
   // Quill configuration: keep it minimal and extensible
   quillModules: any = {
@@ -46,7 +48,10 @@ export class EssayEditorComponent implements OnInit, AfterViewInit, OnDestroy {
   ngOnInit(): void {
     const essay = this.dashboardService.getEssayContent()();
     this.titleControl.setValue(this.essayStateService.essayTitle() ?? "");
-    this.contentControl.setValue(essay?.content ?? "");
+
+    const rawContent = essay?.content ?? "";
+    this.initialContentHtml = this.convertMarkdownToHtml(rawContent);
+    this.contentControl.setValue(this.initialContentHtml);
   }
 
   ngAfterViewInit(): void {}
@@ -103,6 +108,19 @@ export class EssayEditorComponent implements OnInit, AfterViewInit, OnDestroy {
 
   onEditorCreated(editor: any): void {
     this.quill = editor;
+
+    const initial = this.initialContentHtml.trim();
+    if (!initial) {
+      return;
+    }
+
+    const currentText =
+      typeof editor?.getText === "function" ? editor.getText().trim() : "";
+
+    if (!currentText) {
+      editor?.clipboard?.dangerouslyPasteHTML(initial);
+      this.contentControl.setValue(initial, { emitEvent: false });
+    }
   }
 
   private getCurrentDelta(): any {
@@ -205,5 +223,14 @@ export class EssayEditorComponent implements OnInit, AfterViewInit, OnDestroy {
       out.bold = true;
     }
     return out;
+  }
+
+  private convertMarkdownToHtml(markdown: string | null | undefined): string {
+    if (!markdown) {
+      return "";
+    }
+
+    return (marked.parse(markdown, { async: false, breaks: true }) ||
+      "") as string;
   }
 }
