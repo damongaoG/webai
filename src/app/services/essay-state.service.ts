@@ -25,6 +25,8 @@ export interface EssayState {
   selectedArgumentIds: string[];
   selectedScholarIds: string[];
   selectedCaseItemIds: string[];
+  /** Map from caseId -> selected resultIds */
+  selectedCaseResultMap: Record<string, string[]>;
   isCreating: boolean;
   errorMessage: string | null;
   created: boolean;
@@ -52,6 +54,7 @@ export class EssayStateService {
     selectedArgumentIds: [],
     selectedScholarIds: [],
     selectedCaseItemIds: [],
+    selectedCaseResultMap: {},
     isCreating: false,
     errorMessage: null,
     created: false,
@@ -72,6 +75,9 @@ export class EssayStateService {
   );
   private readonly _selectedCaseItemIds = signal<string[]>(
     this.initialState.selectedCaseItemIds,
+  );
+  private readonly _selectedCaseResultMap = signal<Record<string, string[]>>(
+    this.initialState.selectedCaseResultMap,
   );
   private readonly _isCreating = signal(this.initialState.isCreating);
   private readonly _errorMessage = signal(this.initialState.errorMessage);
@@ -97,6 +103,9 @@ export class EssayStateService {
   public readonly selectedCaseItemIds = computed(() =>
     this._selectedCaseItemIds(),
   );
+  public readonly selectedCaseResultMap = computed(() =>
+    this._selectedCaseResultMap(),
+  );
   public readonly isArgumentsLoading = computed(() =>
     this._isLoadingArguments(),
   );
@@ -118,6 +127,7 @@ export class EssayStateService {
       selectedArgumentIds: this._selectedArgumentIds(),
       selectedScholarIds: this._selectedScholarIds(),
       selectedCaseItemIds: this._selectedCaseItemIds(),
+      selectedCaseResultMap: this._selectedCaseResultMap(),
       isCreating: this._isCreating(),
       errorMessage: this._errorMessage(),
       created: this._created(),
@@ -417,6 +427,45 @@ export class EssayStateService {
     this.setSelectedCaseItemIds(next);
   }
 
+  /** Replace selected result ids for a specific case id */
+  setSelectedResultIdsForCase(caseId: string, resultIds: string[]): void {
+    const current = this._selectedCaseResultMap();
+    const next: Record<string, string[]> = {
+      ...current,
+      [caseId]: [...resultIds],
+    };
+    this._selectedCaseResultMap.set(next);
+  }
+
+  /** Add a single result id for a case */
+  addSelectedResultId(caseId: string, resultId: string): void {
+    const current = this._selectedCaseResultMap();
+    const list = current[caseId] ?? [];
+    if (list.includes(resultId)) return;
+    this.setSelectedResultIdsForCase(caseId, [...list, resultId]);
+    // Ensure the parent case is selected when any result is selected
+    const selectedCases = this._selectedCaseItemIds();
+    if (!selectedCases.includes(caseId)) {
+      this.addSelectedCaseItemId(caseId);
+    }
+  }
+
+  /** Remove a single result id for a case */
+  removeSelectedResultId(caseId: string, resultId: string): void {
+    const current = this._selectedCaseResultMap();
+    const list = current[caseId] ?? [];
+    if (list.length === 0) return;
+    const nextList = list.filter((id) => id !== resultId);
+    this.setSelectedResultIdsForCase(caseId, nextList);
+    // If no results remain for this case, remove the parent case selection
+    if (nextList.length === 0) {
+      const selectedCases = this._selectedCaseItemIds();
+      if (selectedCases.includes(caseId)) {
+        this.removeSelectedCaseItemId(caseId);
+      }
+    }
+  }
+
   /**
    * Add a single keyword to selectedKeywords immutably
    */
@@ -497,6 +546,7 @@ export class EssayStateService {
     this._selectedArgumentIds.set(this.initialState.selectedArgumentIds);
     this._selectedScholarIds.set(this.initialState.selectedScholarIds);
     this._selectedCaseItemIds.set(this.initialState.selectedCaseItemIds);
+    this._selectedCaseResultMap.set({});
     this._isCreating.set(this.initialState.isCreating);
     this._errorMessage.set(this.initialState.errorMessage);
     this._created.set(this.initialState.created);

@@ -53,6 +53,7 @@ export class EssayService {
     validEventNames: ReadonlyArray<string>,
     parseItem: (data: string) => T | undefined,
     isTerminal: (item: T) => boolean,
+    fetchInit?: RequestInit,
   ): Observable<Readonly<T>> {
     return new Observable<Readonly<T>>((subscriber) => {
       if (typeof window === "undefined") {
@@ -63,7 +64,12 @@ export class EssayService {
       }
 
       const controller = new AbortController();
-      const headers = this.createSseHeaders();
+      // Merge default SSE headers with any provided headers
+      const defaultHeaders = this.createSseHeaders();
+      if (fetchInit?.headers) {
+        const extra = new Headers(fetchInit.headers as HeadersInit);
+        extra.forEach((value, key) => defaultHeaders.set(key, value));
+      }
 
       let carry = "";
       let completed = false;
@@ -71,8 +77,9 @@ export class EssayService {
       (async () => {
         try {
           const response = await fetch(url, {
-            method: "GET",
-            headers,
+            method: fetchInit?.method ?? "GET",
+            ...(fetchInit ?? {}),
+            headers: defaultHeaders,
             signal: controller.signal,
           });
 
@@ -236,14 +243,11 @@ export class EssayService {
    */
   streamSummary(
     essayId: string,
-    caseIds: ReadonlyArray<string>,
+    selections: ReadonlyArray<{ caseId: string; resultIds: string[] }>,
   ): Observable<Readonly<SummarySseItem>> {
-    const query = (caseIds ?? [])
-      .map((id) => `caseIds=${encodeURIComponent(id)}`)
-      .join("&");
     const url = `${this.apiUrl}/anon/model/paper/sse/${encodeURIComponent(
       essayId,
-    )}/summary${query ? `?${query}` : ""}`;
+    )}/summary`;
 
     return this.streamSse<SummarySseItem>(
       url,
@@ -254,6 +258,19 @@ export class EssayService {
           index: item.index,
           status: item.status,
         } as unknown as ModelCaseVO),
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "text/event-stream, application/json",
+        },
+        body: JSON.stringify(
+          (selections ?? []).map((s) => ({
+            caseId: s.caseId,
+            resultIds: s.resultIds,
+          })),
+        ),
+      },
     );
   }
 

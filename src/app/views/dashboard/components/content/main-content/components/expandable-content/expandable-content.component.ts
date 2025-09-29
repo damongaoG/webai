@@ -262,37 +262,50 @@ import { marked } from "marked";
                       </div>
                     </div>
                     @if (item.results?.length) {
-                      <ul class="case-results list-disc pl-5 space-y-1">
+                      <ul class="case-results space-y-1">
                         @for (r of item.results; track r.title) {
-                          <li>
-                            <span class="font-medium">{{ r.title }}</span>
-                            @if (r.timePeriod) {
-                              <span class="opacity-70">
-                                ({{ r.timePeriod }})</span
-                              >
-                            }
-                            @if (r.background) {
-                              <div class="text-gray-600 text-xs">
-                                <span class="font-bold italic"
-                                  >Background:</span
-                                >
-                                {{ r.background }}
+                          <li class="flex items-start gap-2">
+                            <input
+                              type="checkbox"
+                              class="mt-1 checkbox-lg"
+                              [checked]="isResultSelected(item.id, r.id)"
+                              (change)="onResultChange(item.id, r.id, $event)"
+                              aria-label="Select case result"
+                            />
+                            <div class="min-w-0 flex-1">
+                              <div class="font-medium text-sm sm:text-base">
+                                {{ r.title }}
+                                @if (r.timePeriod) {
+                                  <span class="opacity-70">
+                                    ({{ r.timePeriod }})</span
+                                  >
+                                }
                               </div>
-                            }
-                            @if (r.methodology) {
-                              <div class="text-gray-600 text-xs">
-                                <span class="font-bold italic"
-                                  >Methodology:</span
-                                >
-                                {{ r.methodology }}
-                              </div>
-                            }
-                            @if (r.findings) {
-                              <div class="text-gray-600 text-xs">
-                                <span class="font-bold italic">Findings:</span>
-                                {{ r.findings }}
-                              </div>
-                            }
+                              @if (r.background) {
+                                <div class="text-gray-600 text-xs">
+                                  <span class="font-bold italic"
+                                    >Background:</span
+                                  >
+                                  {{ r.background }}
+                                </div>
+                              }
+                              @if (r.methodology) {
+                                <div class="text-gray-600 text-xs">
+                                  <span class="font-bold italic"
+                                    >Methodology:</span
+                                  >
+                                  {{ r.methodology }}
+                                </div>
+                              }
+                              @if (r.findings) {
+                                <div class="text-gray-600 text-xs">
+                                  <span class="font-bold italic"
+                                    >Findings:</span
+                                  >
+                                  {{ r.findings }}
+                                </div>
+                              }
+                            </div>
                           </li>
                         }
                       </ul>
@@ -692,6 +705,27 @@ export class ExpandableContentComponent implements OnChanges {
     if (!id) return;
     if (isChecked) this.essayStateService.addSelectedCaseItemId(id);
     else this.essayStateService.removeSelectedCaseItemId(id);
+  }
+
+  isResultSelected(
+    caseId: string | undefined,
+    resultId: string | undefined,
+  ): boolean {
+    if (!caseId || !resultId) return false;
+    const map = this.essayStateService.selectedCaseResultMap();
+    return Array.isArray(map[caseId]) && map[caseId].includes(resultId);
+  }
+
+  onResultChange(
+    caseId: string | undefined,
+    resultId: string | undefined,
+    event: Event,
+  ): void {
+    const input = event.target as HTMLInputElement | null;
+    const isChecked = !!input?.checked;
+    if (!caseId || !resultId) return;
+    if (isChecked) this.essayStateService.addSelectedResultId(caseId, resultId);
+    else this.essayStateService.removeSelectedResultId(caseId, resultId);
   }
 
   onToggleSelectAllCases(event: Event): void {

@@ -133,17 +133,26 @@ export class FeatureCardComponent implements OnDestroy {
         this.featureCard.id,
       );
 
-      // If expanding keywords card, fetch keywords from API (only first time per session)
-      if (
-        isExpanded &&
-        this.featureCard.id === "keywords" &&
-        !this.hasLoadedContent
-      ) {
-        this.fetchKeywords();
+      if (isExpanded) {
+        this.performExpandSideEffects();
+      } else {
+        this.performCollapseSideEffects();
       }
+    }
+  }
 
-      // If expanding arguments card, fetch arguments from API (only first time per session)
-      if (isExpanded && this.featureCard.id === "arguments") {
+  /**
+   * Centralized expand-time side effects for each card type
+   */
+  private performExpandSideEffects(): void {
+    switch (this.featureCard.id) {
+      case "keywords": {
+        if (!this.hasLoadedContent) {
+          this.fetchKeywords();
+        }
+        return;
+      }
+      case "arguments": {
         const sharedArgs = this.essayStateService.availableArguments();
         if (Array.isArray(sharedArgs) && sharedArgs.length > 0) {
           this.fetchedArguments.set(sharedArgs);
@@ -151,10 +160,9 @@ export class FeatureCardComponent implements OnDestroy {
         } else if (!this.hasLoadedContent) {
           this.fetchArguments();
         }
+        return;
       }
-
-      // If expanding references card, conditionally fetch scholars from API (only first time per session)
-      if (isExpanded && this.featureCard.id === "references") {
+      case "references": {
         const sharedScholars = this.essayStateService.availableScholars();
         if (Array.isArray(sharedScholars) && sharedScholars.length > 0) {
           this.fetchedScholars.set(sharedScholars);
@@ -162,7 +170,6 @@ export class FeatureCardComponent implements OnDestroy {
         } else if (!this.hasLoadedContent) {
           const phase = this.essayStateService.currentPhase();
           const hasLocalScholars = this.fetchedScholars().length > 0;
-          // Only fetch when moving forward from arguments, or when no local data exists
           if (
             phase === EssayCreationPhase.ARGUMENT_SELECTED ||
             !hasLocalScholars
@@ -170,45 +177,49 @@ export class FeatureCardComponent implements OnDestroy {
             this.fetchScholars();
           }
         }
+        return;
       }
-
-      // If expanding casestudies card, start SSE stream only once per session
-      if (isExpanded && this.featureCard.id === "casestudies") {
+      case "casestudies": {
         if (!this.hasLoadedContent) {
           this.startCaseStudiesStream();
         } else {
-          // Already loaded in this session; just mark as opened for UI/undo visibility
           this.hasOpenedCases.set(true);
         }
+        return;
       }
-
-      // If expanding summary card, use preloaded summary first; otherwise start SSE once per session
-      if (isExpanded && this.featureCard.id === "summary") {
+      case "summary": {
         if (!this.hasLoadedContent) {
           const consumed = this.consumePreloadedSummaryIfAny();
           if (!consumed) {
             this.startSummaryStream();
           }
         }
+        return;
       }
+      default:
+        return;
+    }
+  }
 
-      // If collapsing casestudies card, stop SSE stream (do not clear items to preserve once-per-session data)
-      if (!isExpanded && this.featureCard.id === "casestudies") {
-        if (this.caseStreamSub) {
-          this.caseStreamSub.unsubscribe();
-          this.caseStreamSub = undefined;
-        }
-        this.isLoadingCases.set(false);
+  /**
+   * Centralized collapse-time cleanup for streaming cards
+   */
+  private performCollapseSideEffects(): void {
+    if (this.featureCard.id === "casestudies") {
+      if (this.caseStreamSub) {
+        this.caseStreamSub.unsubscribe();
+        this.caseStreamSub = undefined;
       }
-
-      // If collapsing summary card, stop SSE stream
-      if (!isExpanded && this.featureCard.id === "summary") {
-        if (this.summaryStreamSub) {
-          this.summaryStreamSub.unsubscribe();
-          this.summaryStreamSub = undefined;
-        }
-        this.isLoadingSummary.set(false);
+      this.isLoadingCases.set(false);
+      return;
+    }
+    if (this.featureCard.id === "summary") {
+      if (this.summaryStreamSub) {
+        this.summaryStreamSub.unsubscribe();
+        this.summaryStreamSub = undefined;
       }
+      this.isLoadingSummary.set(false);
+      return;
     }
   }
 
@@ -242,48 +253,7 @@ export class FeatureCardComponent implements OnDestroy {
       return;
     }
 
-    if (this.featureCard.id === "keywords" && !this.hasLoadedContent) {
-      this.fetchKeywords();
-    }
-
-    if (this.featureCard.id === "arguments") {
-      const sharedArgs = this.essayStateService.availableArguments();
-      if (Array.isArray(sharedArgs) && sharedArgs.length > 0) {
-        this.fetchedArguments.set(sharedArgs);
-        this.hasLoadedContent = true;
-      } else if (!this.hasLoadedContent) {
-        this.fetchArguments();
-      }
-    }
-
-    if (this.featureCard.id === "references") {
-      const sharedScholars = this.essayStateService.availableScholars();
-      if (Array.isArray(sharedScholars) && sharedScholars.length > 0) {
-        this.fetchedScholars.set(sharedScholars);
-        this.hasLoadedContent = true;
-      } else if (!this.hasLoadedContent) {
-        const phase = this.essayStateService.currentPhase();
-        const hasLocalScholars = this.fetchedScholars().length > 0;
-        // Avoid re-fetch on undo-driven navigation back to references when data already exists
-        if (
-          phase === EssayCreationPhase.ARGUMENT_SELECTED ||
-          !hasLocalScholars
-        ) {
-          this.fetchScholars();
-        }
-      }
-    }
-
-    if (this.featureCard.id === "casestudies" && !this.hasLoadedContent) {
-      this.startCaseStudiesStream();
-    }
-
-    if (this.featureCard.id === "summary" && !this.hasLoadedContent) {
-      const consumed = this.consumePreloadedSummaryIfAny();
-      if (!consumed) {
-        this.startSummaryStream();
-      }
-    }
+    this.performExpandSideEffects();
   }
 
   onExpandHoverStart(): void {
@@ -996,6 +966,7 @@ export class FeatureCardComponent implements OnDestroy {
   private startSummaryStream(): void {
     const essayId = this.essayStateService.essayId();
     const caseIds = this.essayStateService.selectedCaseItemIds();
+    const resultMap = this.essayStateService.selectedCaseResultMap();
 
     if (!essayId) {
       this.toastService.error("Please create an essay first to start summary");
@@ -1012,8 +983,13 @@ export class FeatureCardComponent implements OnDestroy {
     this.isLoadingSummary.set(true);
     // Reset completion marker when starting a new stream
     this.summaryCompleted.set(false);
+    const selections = (caseIds ?? []).map((cid) => ({
+      caseId: cid,
+      resultIds: Array.isArray(resultMap[cid]) ? resultMap[cid] : [],
+    }));
+
     this.summaryStreamSub = this.essayService
-      .streamSummary(essayId, caseIds)
+      .streamSummary(essayId, selections)
       .subscribe({
         next: (item) => {
           this.hasLoadedContent = true;
