@@ -236,13 +236,6 @@ import { marked } from "marked";
                     [@caseItemFade]
                   >
                     <div class="flex items-start gap-3 mb-2">
-                      <!--                      <input-->
-                      <!--                        type="checkbox"-->
-                      <!--                        class="mt-1 checkbox-lg"-->
-                      <!--                        [checked]="isCaseItemSelected(item.id)"-->
-                      <!--                        (change)="onCaseItemChange(item.id, $event)"-->
-                      <!--                        aria-label="Select case study"-->
-                      <!--                      />-->
                       <div class="min-w-0 flex-1">
                         @if (item.link) {
                           <a

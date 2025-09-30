@@ -195,6 +195,8 @@ export class EssayStateService {
     if (this._currentPhase() === EssayCreationPhase.SUMMARY_CONFIRMED) {
       this._currentPhase.set(EssayCreationPhase.CASE_SELECTED);
       this._selectedCaseItemIds.set([]);
+      // Clear any selected case results to fully reset casestudies selections
+      this._selectedCaseResultMap.set({});
     }
   }
 
