@@ -56,33 +56,8 @@
     font-family: "Courier New", monospace;
   }
 
-  .ql-snow .ql-picker.ql-size .ql-picker-label[data-value="12px"]::before,
-  .ql-snow .ql-picker.ql-size .ql-picker-item[data-value="12px"]::before {
-    font-size: 12px;
-  }
-
-  .ql-snow .ql-picker.ql-size .ql-picker-label[data-value="14px"]::before,
-  .ql-snow .ql-picker.ql-size .ql-picker-item[data-value="14px"]::before {
-    font-size: 14px;
-  }
-
-  .ql-snow .ql-picker.ql-size .ql-picker-label[data-value="16px"]::before,
-  .ql-snow .ql-picker.ql-size .ql-picker-item[data-value="16px"]::before {
+  .ql-snow .ql-picker.ql-size .ql-picker-label::before,
+  .ql-snow .ql-picker.ql-size .ql-picker-item::before {
     font-size: 16px;
-  }
-
-  .ql-snow .ql-picker.ql-size .ql-picker-label[data-value="18px"]::before,
-  .ql-snow .ql-picker.ql-size .ql-picker-item[data-value="18px"]::before {
-    font-size: 18px;
-  }
-
-  .ql-snow .ql-picker.ql-size .ql-picker-label[data-value="24px"]::before,
-  .ql-snow .ql-picker.ql-size .ql-picker-item[data-value="24px"]::before {
-    font-size: 24px;
-  }
-
-  .ql-snow .ql-picker.ql-size .ql-picker-label[data-value="32px"]::before,
-  .ql-snow .ql-picker.ql-size .ql-picker-item[data-value="32px"]::before {
-    font-size: 32px;
   }
 }

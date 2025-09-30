@@ -3,10 +3,10 @@ import {
   AfterViewInit,
   Component,
   ElementRef,
+  inject,
   OnDestroy,
   OnInit,
   ViewChild,
-  inject,
 } from "@angular/core";
 import { FormControl, ReactiveFormsModule } from "@angular/forms";
 import { QuillModule } from "ngx-quill";
@@ -33,10 +33,6 @@ const FONT_SIZE_WHITELIST: readonly string[] = [
   "32px",
 ];
 
-const TOOLBAR_FONT_OPTIONS: (string | false)[] = [
-  false,
-  ...FONT_FAMILY_WHITELIST,
-];
 const TOOLBAR_SIZE_OPTIONS: (string | false)[] = [
   false,
   ...FONT_SIZE_WHITELIST,
@@ -247,19 +243,65 @@ export class EssayEditorComponent implements OnInit, AfterViewInit, OnDestroy {
       }
     });
 
+    const allNodes = container.querySelectorAll<HTMLElement>("*");
+    allNodes.forEach((el) => {
+      const inlineFontSize = el.style?.fontSize;
+      if (!inlineFontSize) {
+        return;
+      }
+
+      const resolved = this.resolveFontSize(inlineFontSize);
+      if (!resolved) {
+        return;
+      }
+
+      // Merge with any existing data-pdfmake JSON on the element
+      const existingAttr = el.getAttribute("data-pdfmake");
+      let payload: Record<string, unknown> = {};
+      if (existingAttr) {
+        try {
+          payload = JSON.parse(existingAttr);
+        } catch {
+          // If existing payload is invalid JSON, overwrite with a clean object
+          payload = {};
+        }
+      }
+      payload["fontSize"] = resolved;
+      el.setAttribute("data-pdfmake", JSON.stringify(payload));
+    });
+
+    const olNodes = container.querySelectorAll<HTMLOListElement>("ol");
+    olNodes.forEach((ol) => {
+      const hasBulletClass = ol.classList.contains("ql-bullet");
+      const hasBulletItem = Array.from(ol.querySelectorAll("li")).some(
+        (li) =>
+          li.getAttribute("data-list") === "bullet" ||
+          li.classList.contains("ql-bullet"),
+      );
+
+      if (hasBulletClass || hasBulletItem) {
+        const ul = document.createElement("ul");
+
+        Array.from(ol.attributes).forEach((attr) => {
+          if (attr.name === "class") return;
+          if (attr.name === "data-list") return;
+          ul.setAttribute(attr.name, attr.value);
+        });
+
+        Array.from(ol.classList).forEach((cls) => {
+          if (cls === "ql-list" || cls === "ql-bullet") return;
+          ul.classList.add(cls);
+        });
+
+        while (ol.firstChild) {
+          ul.appendChild(ol.firstChild);
+        }
+
+        ol.replaceWith(ul);
+      }
+    });
+
     return container.innerHTML;
-  }
-
-  onContentInput(event: Event): void {
-    const html = (event.target as HTMLElement).innerHTML;
-    this.contentControl.setValue(html ?? "");
-  }
-
-  applyFormat(command: string, value?: string): void {
-    document.execCommand(command, false, value);
-    // Sync after exec
-    const html = this.editable?.nativeElement.innerHTML ?? "";
-    this.contentControl.setValue(html);
   }
 
   onEditorCreated(editor: any): void {
@@ -279,131 +321,6 @@ export class EssayEditorComponent implements OnInit, AfterViewInit, OnDestroy {
       editor?.clipboard?.dangerouslyPasteHTML(initial);
       this.contentControl.setValue(initial, { emitEvent: false });
     }
-  }
-
-  private getCurrentDelta(): any {
-    if (this.quill && typeof this.quill.getContents === "function") {
-      return this.quill.getContents();
-    }
-    // Fallback: derive from HTML in contentControl (best-effort as plain text)
-    const html = this.contentControl.value || "";
-    const text = html.replace(/<[^>]+>/g, "\n").replace(/\n+/, "\n");
-    return { ops: [{ insert: text }] };
-  }
-
-  private deltaToPdfMake(delta: any): any[] {
-    const result: any[] = [];
-
-    let activeListType: "ordered" | "bullet" | null = null;
-    let activeListItems: any[] = [];
-    let lineSegments: any[] = [];
-
-    const flushList = () => {
-      if (activeListType && activeListItems.length) {
-        if (activeListType === "ordered") {
-          result.push({ ol: activeListItems, margin: [0, 4, 0, 4] });
-        } else {
-          result.push({ ul: activeListItems, margin: [0, 4, 0, 4] });
-        }
-      }
-      activeListType = null;
-      activeListItems = [];
-    };
-
-    const finalizeLine = (blockAttrs: any) => {
-      // Build a paragraph or list item from collected inline segments
-      const paragraph: any =
-        lineSegments.length === 0
-          ? { text: "" }
-          : lineSegments.length === 1
-            ? { ...lineSegments[0] }
-            : { text: [...lineSegments] };
-
-      // Apply block-level attributes like headers
-      if (blockAttrs && typeof blockAttrs.header !== "undefined") {
-        if (blockAttrs.header === 1) {
-          paragraph.fontSize = 18;
-          paragraph.bold = true;
-        } else if (blockAttrs.header === 2) {
-          paragraph.fontSize = 16;
-          paragraph.bold = true;
-        }
-      }
-
-      const listType = blockAttrs?.list as "ordered" | "bullet" | undefined;
-      if (listType === "ordered" || listType === "bullet") {
-        if (activeListType !== listType) {
-          flushList();
-          activeListType = listType;
-        }
-        activeListItems.push(paragraph);
-      } else {
-        // Not a list line → ensure any open list is flushed first
-        flushList();
-        // Add default spacing for standalone paragraphs
-        if (!paragraph.margin) {
-          paragraph.margin = [0, 0, 0, 8];
-        }
-        result.push(paragraph);
-      }
-
-      // Reset line buffer
-      lineSegments = [];
-    };
-
-    for (const op of delta?.ops || []) {
-      const insert = op.insert;
-      const attrs = op.attributes || {};
-
-      if (typeof insert === "string") {
-        const pieces = insert.split("\n");
-        for (let i = 0; i < pieces.length; i++) {
-          const part = pieces[i];
-          const isLast = i === pieces.length - 1;
-
-          if (part) {
-            const inline = this.applyAttributesToText(part, attrs);
-            lineSegments.push(inline);
-          }
-
-          // Newline boundary → finalize current line using newline's attributes (in this op)
-          if (!isLast) {
-            finalizeLine(attrs);
-          }
-        }
-      }
-    }
-
-    // Flush any remaining buffered line as a paragraph (no list attributes)
-    if (lineSegments.length) {
-      finalizeLine({});
-    }
-
-    flushList();
-    return result.length ? result : [{ text: "" }];
-  }
-
-  private applyAttributesToText(text: string, attrs: any): any {
-    const out: any = { text: text ?? "" };
-    if (attrs.bold) out.bold = true;
-    if (attrs.italic) out.italics = true;
-    if (attrs.underline) out.decoration = "underline";
-
-    const resolvedSize = this.resolveFontSize(attrs.size);
-    if (resolvedSize) {
-      out.fontSize = resolvedSize;
-    }
-
-    // Prepare for font family mapping (if enabled later).
-    if (typeof attrs.font === "string" && attrs.font) {
-      const pdfFont = this.resolvePdfMakeFont(attrs.font);
-      if (pdfFont) {
-        out.font = pdfFont;
-      }
-    }
-
-    // Intentionally ignore block-level attributes (e.g., header, list) here.
-    return out;
   }
 
   private convertMarkdownToHtml(markdown: string | null | undefined): string {
@@ -435,12 +352,11 @@ export class EssayEditorComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     this.decoratePicker(toolbarEl, "font", "Default", (el, value) => {
-      const family = FONT_FAMILY_MAP[value] ?? value;
-      el.style.fontFamily = family;
+      el.style.fontFamily = FONT_FAMILY_MAP[value] ?? value;
     });
 
-    this.decoratePicker(toolbarEl, "size", "Normal", (el, value) => {
-      el.style.fontSize = value;
+    this.decoratePicker(toolbarEl, "size", "Normal", (el, _value) => {
+      el.style.fontSize = "16px";
     });
   }
 
@@ -537,10 +453,6 @@ export class EssayEditorComponent implements OnInit, AfterViewInit, OnDestroy {
       }
     }
 
-    return undefined;
-  }
-
-  private resolvePdfMakeFont(fontName: string): string | undefined {
     return undefined;
   }
 }
