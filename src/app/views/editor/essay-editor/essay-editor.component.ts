@@ -142,16 +142,45 @@ export class EssayEditorComponent implements OnInit, AfterViewInit, OnDestroy {
   async onExportPdf(): Promise<void> {
     const filename =
       (this.titleControl.value || "essay").replace(/\s+/g, "-") + ".pdf";
+
     const pdfMakeModule = await import("pdfmake/build/pdfmake");
     const pdfFontsModule = await import("pdfmake/build/vfs_fonts");
+    const htmlToPdfmakeModule = await import("html-to-pdfmake");
+
     const pdfMake: any =
       (pdfMakeModule as any).default || (pdfMakeModule as any);
     const pdfFonts: any =
       (pdfFontsModule as any).default || (pdfFontsModule as any);
+    const htmlToPdfmake: any =
+      (htmlToPdfmakeModule as any).default || (htmlToPdfmakeModule as any);
+
     pdfMake.vfs = pdfFonts.vfs;
 
-    const delta = this.getCurrentDelta();
-    const content = this.deltaToPdfMake(delta);
+    const rawHtml: string =
+      (this.quill?.root?.innerHTML as string) ||
+      this.contentControl.value ||
+      "";
+    const html = this.normalizeQuillHtml(rawHtml);
+
+    const converted = htmlToPdfmake(html, {
+      defaultStyles: {
+        p: { margin: [0, 0, 0, 8] },
+        ul: { marginBottom: 0, marginLeft: 18 },
+        ol: { marginBottom: 0, marginLeft: 18 },
+        h1: { fontSize: 24, bold: true, margin: [0, 0, 0, 10] },
+        h2: { fontSize: 20, bold: true, margin: [0, 0, 0, 8] },
+        h3: { fontSize: 18, bold: true, margin: [0, 0, 0, 6] },
+      },
+      removeExtraBlanks: false,
+    });
+
+    const content = Array.isArray(converted)
+      ? converted
+      : (converted?.content ?? []);
+    const styles =
+      !Array.isArray(converted) && converted?.styles
+        ? converted.styles
+        : undefined;
 
     const docDefinition: any = {
       pageSize: "A4",
@@ -165,10 +194,60 @@ export class EssayEditorComponent implements OnInit, AfterViewInit, OnDestroy {
         },
         ...content,
       ],
-      defaultStyle: { fontSize: 12 },
+      defaultStyle: { font: "Roboto", fontSize: 14 },
+      styles,
     };
 
     pdfMake.createPdf(docDefinition).download(filename);
+  }
+
+  private normalizeQuillHtml(html: string): string {
+    if (!isBrowser || !html) {
+      return html || "";
+    }
+
+    const container = document.createElement("div");
+    container.innerHTML = html;
+
+    const indentNodes = container.querySelectorAll<HTMLElement>(
+      '[class*="ql-indent-"]',
+    );
+    indentNodes.forEach((el) => {
+      const indentClass = Array.from(el.classList).find((c) =>
+        c.startsWith("ql-indent-"),
+      );
+      if (!indentClass) return;
+      const levelStr = indentClass.replace("ql-indent-", "");
+      const level = Number.parseInt(levelStr, 10);
+      if (Number.isFinite(level) && level > 0) {
+        const emPerLevel = 3;
+        el.style.marginLeft = `${level * emPerLevel}em`;
+      }
+    });
+
+    const alignMap: Record<string, string> = {
+      "ql-align-center": "center",
+      "ql-align-right": "right",
+      "ql-align-justify": "justify",
+    };
+    const alignNodes = container.querySelectorAll<HTMLElement>(
+      ".ql-align-center, .ql-align-right, .ql-align-justify",
+    );
+    alignNodes.forEach((el) => {
+      for (const className of Object.keys(alignMap)) {
+        if (el.classList.contains(className)) {
+          el.style.textAlign = alignMap[className];
+        }
+      }
+    });
+
+    container.querySelectorAll("p").forEach((p) => {
+      if (p.innerHTML.trim().toLowerCase() === "<br>") {
+        p.innerHTML = "&nbsp;";
+      }
+    });
+
+    return container.innerHTML;
   }
 
   onContentInput(event: Event): void {
