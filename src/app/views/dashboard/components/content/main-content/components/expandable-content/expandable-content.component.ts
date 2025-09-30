@@ -773,7 +773,7 @@ export class ExpandableContentComponent implements OnChanges {
    * Check whether a case result has all fields marked as 'Not specified'
    */
   private isResultUnspecified(r: ModelCaseResultItem | undefined): boolean {
-    const normalize = (v?: string) => (v ?? "").trim().toLowerCase();
+    const normalize = (v?: string) => (v ?? "").trim();
     return (
       normalize(r?.background) === "Not specified" &&
       normalize(r?.methodology) === "Not specified" &&

@@ -184,6 +184,7 @@ export class EssayStateService {
   revertToScholarsSelectedAfterUndo(): void {
     if (this._currentPhase() === EssayCreationPhase.CASE_SELECTED) {
       this._currentPhase.set(EssayCreationPhase.SCHOLARS_SELECTED);
+      this._selectedScholarIds.set([]);
     }
   }
 
