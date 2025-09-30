@@ -1,6 +1,6 @@
 import { Injectable, inject } from "@angular/core";
 import { HttpClient, HttpHeaders } from "@angular/common/http";
-import { Observable } from "rxjs";
+import { Observable, tap } from "rxjs";
 import { environment } from "@environment/environment";
 import {
   CreateEssayDto,
@@ -290,6 +290,15 @@ export class EssayService {
           })),
         ),
       },
+    ).pipe(
+      tap((item) => {
+        const isTerminalError =
+          item && item.index === -1 && String(item.status).toUpperCase() === "ERROR";
+        if (isTerminalError) {
+          // Notify user that summary generation failed; do not alter stream control flow
+          this.toastService.error("Generate summary failed. Please try again.");
+        }
+      }),
     );
   }
 
