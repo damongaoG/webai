@@ -1,5 +1,6 @@
 import { TaskType } from "@/app/interfaces/task.interface";
 import { Injectable, signal } from "@angular/core";
+import { type ModelCaseVO } from "@/app/interfaces/model-case.interface";
 
 export interface TaskItem {
   id: string;
@@ -85,6 +86,8 @@ export class DashboardSharedService {
 
   // One-shot preloaded summary text (used after redo from cases)
   private preloadedSummaryText = signal<string>("");
+  // One-shot preloaded case items (used after redo from references)
+  private preloadedCaseItems = signal<ReadonlyArray<ModelCaseVO>>([]);
 
   // Getters
   getTaskItems() {
@@ -132,6 +135,20 @@ export class DashboardSharedService {
     const value = this.preloadedSummaryText();
     this.preloadedSummaryText.set("");
     return value;
+  }
+
+  setPreloadedCaseItems(items: ReadonlyArray<ModelCaseVO>): void {
+    this.preloadedCaseItems.set(Array.isArray(items) ? items : []);
+  }
+
+  peekPreloadedCaseItems(): ReadonlyArray<ModelCaseVO> {
+    return this.preloadedCaseItems();
+  }
+
+  takePreloadedCaseItems(): ReadonlyArray<ModelCaseVO> {
+    const items = this.preloadedCaseItems();
+    this.preloadedCaseItems.set([]);
+    return items;
   }
 
   /**

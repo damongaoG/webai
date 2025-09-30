@@ -181,7 +181,11 @@ export class FeatureCardComponent implements OnDestroy {
       }
       case "casestudies": {
         if (!this.hasLoadedContent) {
-          this.startCaseStudiesStream();
+          // Try to consume preloaded case items first
+          const consumed = this.consumePreloadedCasesIfAny();
+          if (!consumed) {
+            this.startCaseStudiesStream();
+          }
         } else {
           this.hasOpenedCases.set(true);
         }
@@ -475,6 +479,8 @@ export class FeatureCardComponent implements OnDestroy {
           response: Result<{
             keywords?: string;
             arguments?: ArgumentData[];
+            scholars?: ScholarData[];
+            cases?: any[];
           }> | null,
         ) => {
           this.isLoadingArguments.set(false);
@@ -532,8 +538,44 @@ export class FeatureCardComponent implements OnDestroy {
             // Select references so sidebar reflects the forward step
             this.dashboardSharedService.selectTask("references");
           } else if (redoTarget === "references") {
-            // Move forward to case studies phase
+            // Move forward to case studies phase and populate from redo response
             this.essayStateService.advancePhaseAfterCaseOpen();
+
+            // Prefer redo payload to render case studies without starting SSE
+            const rawCases = Array.isArray((data as any).cases)
+              ? ((data as any).cases as any[])
+              : [];
+
+            if (rawCases.length > 0) {
+              const mapped: ModelCaseVO[] = rawCases.map(
+                (c: any, idx: number) => ({
+                  id: (c?.id ?? "") + "",
+                  index: idx,
+                  link: c?.link ?? undefined,
+                  results: Array.isArray(c?.results)
+                    ? c.results.map((r: any) => ({
+                        id: r?.id ? r.id + "" : undefined,
+                        title: r?.title ?? "",
+                        timePeriod: r?.timePeriod,
+                        background: r?.background,
+                        methodology: r?.methodology,
+                        findings: r?.findings,
+                      }))
+                    : [],
+                }),
+              );
+
+              // Fill local cache and mark as loaded to bypass SSE on expand
+              this.caseItems.set(mapped);
+              // Stash in shared service in case the instance is re-rendered
+              this.dashboardSharedService.setPreloadedCaseItems(mapped);
+              this.hasLoadedContent = true;
+              this.hasOpenedCases.set(true);
+              this.isLoadingCases.set(false);
+            }
+
+            // Auto-select and expand casestudies card to show content immediately
+            this.dashboardSharedService.selectTask("casestudies");
           } else if (redoTarget === "casestudies") {
             // Move forward from case studies to summary again
             const summaryFromApi = (data as { summary?: string }).summary ?? "";
@@ -574,6 +616,21 @@ export class FeatureCardComponent implements OnDestroy {
       this.hasLoadedContent = true; // avoid SSE
       return true;
     }
+    return false;
+  }
+
+  private consumePreloadedCasesIfAny(): boolean {
+    const items = this.dashboardSharedService.peekPreloadedCaseItems?.() ?? [];
+    if (Array.isArray(items) && items.length > 0) {
+      const taken =
+        this.dashboardSharedService.takePreloadedCaseItems?.() ?? [];
+      this.caseItems.set(taken as ReadonlyArray<ModelCaseVO>);
+      this.isLoadingCases.set(false);
+      this.hasLoadedContent = true;
+      this.hasOpenedCases.set(true);
+      return true;
+    }
+
     return false;
   }
 
