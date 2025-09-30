@@ -15,6 +15,13 @@ import { marked } from "marked";
 import Quill from "quill";
 import { DashboardSharedService } from "../../dashboard/components/content/dashboard-shared.service";
 import { EssayStateService } from "@/app/services/essay-state.service";
+import { Subject } from "rxjs";
+import {
+  debounceTime,
+  distinctUntilChanged,
+  filter,
+  takeUntil,
+} from "rxjs/operators";
 
 const FONT_FAMILY_WHITELIST: readonly string[] = [
   "Arial",
@@ -92,6 +99,10 @@ export class EssayEditorComponent implements OnInit, AfterViewInit, OnDestroy {
   contentControl = new FormControl<string>("");
   private initialContentHtml = "";
 
+  private readonly storageKeyTitle = "essayEditor.title";
+  private readonly storageKeyContent = "essayEditor.content";
+  private destroy$ = new Subject<void>();
+
   readonly quillFormats: string[] = [
     "font",
     "size",
@@ -127,6 +138,62 @@ export class EssayEditorComponent implements OnInit, AfterViewInit, OnDestroy {
     const rawContent = essay?.content ?? "";
     this.initialContentHtml = this.convertMarkdownToHtml(rawContent);
     this.contentControl.setValue(this.initialContentHtml);
+
+    // Restore from sessionStorage if available
+    if (isBrowser) {
+      try {
+        const savedTitle = sessionStorage.getItem(this.storageKeyTitle);
+        if (savedTitle != null) {
+          this.titleControl.setValue(savedTitle, { emitEvent: false });
+        }
+
+        const savedContent = sessionStorage.getItem(this.storageKeyContent);
+        if (savedContent != null) {
+          this.initialContentHtml = savedContent;
+          this.contentControl.setValue(savedContent, { emitEvent: false });
+        }
+      } catch {
+        // Ignore sessionStorage errors
+      }
+
+      // Persist debounced changes to sessionStorage
+      this.titleControl.valueChanges
+        .pipe(
+          debounceTime(300),
+          distinctUntilChanged(),
+          takeUntil(this.destroy$),
+        )
+        .subscribe((value) => {
+          try {
+            sessionStorage.setItem(this.storageKeyTitle, value ?? "");
+          } catch {}
+        });
+
+      this.contentControl.valueChanges
+        .pipe(
+          debounceTime(300),
+          distinctUntilChanged(),
+          takeUntil(this.destroy$),
+        )
+        .subscribe((value) => {
+          try {
+            sessionStorage.setItem(this.storageKeyContent, value ?? "");
+          } catch {}
+        });
+
+      // Clear when navigating away from /editor
+      this.router.events
+        .pipe(
+          filter((e: any) => e?.constructor?.name === "NavigationStart"),
+          takeUntil(this.destroy$),
+        )
+        .subscribe((e: any) => {
+          const nextUrl: string | undefined = e?.url;
+          if (typeof nextUrl === "string" && !nextUrl.startsWith("/editor")) {
+            this.clearEditorSession();
+          }
+        });
+    }
   }
 
   ngAfterViewInit(): void {}
@@ -333,6 +400,8 @@ export class EssayEditorComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
     this.toolbarObservers.forEach((observer) => observer.disconnect());
     this.toolbarObservers = [];
 
@@ -454,5 +523,13 @@ export class EssayEditorComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     return undefined;
+  }
+
+  private clearEditorSession(): void {
+    if (!isBrowser) return;
+    try {
+      sessionStorage.removeItem(this.storageKeyTitle);
+      sessionStorage.removeItem(this.storageKeyContent);
+    } catch {}
   }
 }
